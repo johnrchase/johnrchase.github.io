@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transformation Quest Deluxe</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%236c4cff'/%3E%3Cpath d='M16 44 L29 31 L34 36 L21 49 Z' fill='white'/%3E%3Cpath d='M33 18 l3 7 7 3 -7 3 -3 7 -3-7 -7-3 7-3z' fill='%23ffb703'/%3E%3Ccircle cx='46' cy='16' r='4' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg1:#f8f5ff; --bg2:#eef7ff; --card:#ffffff; --ink:#1e2342; --muted:#6e7391;
+    --purple:#6c4cff; --purple-soft:#efeaff; --blue:#2f7df6; --green:#1ea97c;
+    --gold:#ffb703; --grid:#dfe4f2; --line:#d7dcee; --red:#df5062; --orange:#ff8c42;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif; color:var(--ink);
+    background:linear-gradient(180deg,var(--bg1),var(--bg2));
+  }
+  .wrap{max-width:1220px;margin:auto;padding:22px}
+  .top{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:16px}
+  h1{margin:0;font-size:clamp(28px,4vw,42px)}
+  .sub{color:var(--muted);margin-top:4px}
+  .stats{display:flex;gap:10px;flex-wrap:wrap}
+  .pill{
+    background:#fff;border:1px solid var(--line);border-radius:999px;padding:10px 14px;
+    font-weight:800; box-shadow:0 6px 18px rgba(66,76,140,.06)
+  }
+  .main{display:grid;grid-template-columns:minmax(0,1.45fr) minmax(340px,.85fr);gap:18px}
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:20px;
+    box-shadow:0 10px 26px rgba(68,77,137,.08)
+  }
+  .board-card{padding:12px}
+  svg{display:block;width:100%;height:auto;touch-action:none}
+  .panel{padding:18px}
+  .section-label{font-weight:900;margin-bottom:8px}
+  .types{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:16px}
+  button{
+    border:1px solid var(--line); background:#fff; color:var(--ink); border-radius:12px;
+    padding:12px 14px; font-size:15px; font-weight:800; cursor:pointer;
+    transition:transform .12s ease, background .12s ease, border-color .12s ease;
+  }
+  button:hover{transform:translateY(-1px)}
+  button.active{background:var(--purple-soft);border-color:var(--purple);color:#4f39d1}
+  button.primary{background:var(--purple);border-color:var(--purple);color:white}
+  button.success{background:var(--green);border-color:var(--green);color:white}
+  .fields{display:grid;gap:10px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  label{display:block;font-size:12px;font-weight:800;color:var(--muted);margin-bottom:4px}
+  input,select{
+    width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;
+    font-size:16px;background:#fff;color:var(--ink)
+  }
+  .actions{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px}
+  .small-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;margin-top:12px}
+  .feedback{
+    margin-top:14px; min-height:48px; padding:12px 13px; border-radius:12px; background:#f5f6fb;
+    color:var(--ink); line-height:1.35
+  }
+  .legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:14px;margin-top:8px}
+  .how{margin-top:18px;padding:16px 18px}
+  .mini{font-size:13px;color:var(--muted);line-height:1.35}
+  .gridline{stroke:var(--grid);stroke-width:1}
+  .axis{stroke:#7a819f;stroke-width:1.8}
+  .num{font-size:10px;fill:#757c9b}
+  .src{fill:#2f7df630;stroke:var(--blue);stroke-width:3;stroke-linejoin:round}
+  .target{fill:none;stroke:var(--purple);stroke-width:3;stroke-dasharray:8 6;stroke-linejoin:round}
+  .attempt{fill:#1ea97c2f;stroke:var(--green);stroke-width:3;stroke-linejoin:round}
+  .vertex{fill:var(--blue)}
+  .targetdot{fill:var(--purple)}
+  .guide{stroke:#8f98bd;stroke-width:2;stroke-dasharray:6 5;fill:none}
+  .guide-strong{stroke:var(--orange);stroke-width:3.4;fill:none}
+  .guide-green{stroke:#20a37b;stroke-width:2;stroke-dasharray:5 5;fill:none}
+  .center-dot{fill:var(--gold);stroke:#cc8b00;stroke-width:1.4}
+  .control-dot{fill:var(--orange);stroke:#b65b20;stroke-width:1.5;cursor:grab}
+  .control-dot:active{cursor:grabbing}
+  .guide-label{font-size:12px;font-weight:800;fill:#5d6488}
+  .src,.target,.attempt,.guide,.guide-strong,.guide-green,.axis,.gridline,.num,.vertex,.targetdot,.center-dot,.guide-label{pointer-events:none}
+  .control-dot{pointer-events:all}
+  .snap-note{font-size:12px;color:#8c6d1f;background:#fff8df;border:1px solid #f0d77a;border-radius:10px;padding:8px 10px}
+  @media(max-width:860px){.main{grid-template-columns:1fr}.wrap{padding:14px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Transformation Quest ✨</h1>
+      <div class="sub">Fun draggable controls with snapping on the grid.</div>
+    </div>
+    <div class="stats">
+      <div class="pill">⭐ <span id="score">0</span> points</div>
+      <div class="pill">🔥 <span id="streak">0</span> streak</div>
+      <div class="pill">Round <span id="round">1</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div>
+      <div class="card board-card">
+        <svg id="board" viewBox="0 0 600 600" aria-label="Coordinate plane"></svg>
+      </div>
+      <div class="legend">
+        <span>🔵 solid = original</span>
+        <span>🟣 dashed = target</span>
+        <span>🟢 green = your animated preview/result</span>
+        <span>🟠 draggable handles = controls</span>
+      </div>
+    </div>
+
+    <div class="card panel">
+      <div class="section-label">Choose a transformation</div>
+      <div class="types" id="types">
+        <button type="button" data-type="translation" class="active">Translate</button>
+        <button type="button" data-type="rotation">Rotate</button>
+        <button type="button" data-type="reflection">Reflect</button>
+        <button type="button" data-type="dilation">Dilate</button>
+      </div>
+
+      <form id="form">
+        <div id="fields" class="fields"></div>
+        <div class="actions">
+          <button class="primary" type="submit">Check my move</button>
+          <button type="button" id="preview">Preview</button>
+        </div>
+      </form>
+
+      <div id="feedback" class="feedback">Drag the orange handles on the graph, or type values below.</div>
+
+      <div class="small-actions">
+        <button type="button" id="hint">💡 Hint</button>
+        <button type="button" id="skip">Skip ↷</button>
+        <button type="button" id="next" class="success" style="display:none">Next →</button>
+      </div>
+
+      <div class="snap-note" style="margin-top:12px">
+        Handles snap to integer lattice points for easy use.
+      </div>
+    </div>
+  </div>
+
+  <div class="card how">
+    <strong>How to play:</strong> The blue polygon is the original figure. The dashed purple polygon is the target.
+    For <strong>translation</strong>, drag the two endpoints of the orange vector. For <strong>reflection</strong>, drag the two endpoints of the orange mirror line.
+    For <strong>rotation</strong> and <strong>dilation</strong>, drag the center point.
+  </div>
+</div>
+
+
+  <div style="text-align:center;color:#7b819c;font-size:12px;margin-top:16px;padding-bottom:6px">
+    Copyright 2026 John Chase • Made with help from ChatGPT<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.0 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a></span>
+  </div>
+
+<script>
+(()=>{
+  const $ = s => document.querySelector(s);
+  const board = $('#board'), fields = $('#fields'), feedback = $('#feedback');
+  let score=0, streak=0, round=1, selected='translation', problem, solved=false, hints=0;
+  let attempt=null, displayAttempt=null, animToken=0, dragHandle=null;
+  const EPS=.04;
+
+  const uiState = {
+    translation:{tail:[0,0], head:[5,0]},
+    reflection:{p1:[0,0], p2:[1,0]},
+    rotation:{center:[0,0], deg:90, dir:'ccw'},
+    dilation:{center:[0,0], k:2}
+  };
+
+  const shapes = [
+    [[-2,-1],[1,-1],[1,1],[-1,2]],
+    [[-2,-1],[0,-1],[1,1],[-1,1]],
+    [[-1,-2],[1,-2],[2,0],[0,2],[-2,0]],
+    [[-2,-1],[1,-1],[2,0],[0,2],[-2,1]],
+    [[-2,-2],[1,-2],[1,0],[2,0],[0,2],[-2,1]]
+  ];
+  const choice = a => a[Math.floor(Math.random()*a.length)];
+  const ri = (a,b) => Math.floor(Math.random()*(b-a+1))+a;
+
+  function reflectedPoint([x,y], q){
+    const dx=q.x2-q.x1, dy=q.y2-q.y1, d=dx*dx+dy*dy;
+    const u=((x-q.x1)*dx+(y-q.y1)*dy)/d;
+    const px=q.x1+u*dx, py=q.y1+u*dy;
+    return [2*px-x, 2*py-y];
+  }
+
+  function transformPoint([x,y], type, q){
+    if(type==='translation') return [x+q.dx, y+q.dy];
+    if(type==='rotation'){
+      const a=q.deg*(q.dir==='cw'?-1:1)*Math.PI/180;
+      const c=Math.cos(a), s=Math.sin(a), X=x-q.cx, Y=y-q.cy;
+      return [q.cx + X*c - Y*s, q.cy + X*s + Y*c];
+    }
+    if(type==='dilation') return [q.cx + q.k*(x-q.cx), q.cy + q.k*(y-q.cy)];
+    if(type==='reflection') return reflectedPoint([x,y], q);
+    return [x,y];
+  }
+
+  function interpolatedPoint(p, type, q, t){
+    if(type==='translation') return [p[0]+q.dx*t, p[1]+q.dy*t];
+    if(type==='rotation'){
+      const a=q.deg*(q.dir==='cw'?-1:1)*Math.PI/180 * t;
+      const c=Math.cos(a), s=Math.sin(a), X=p[0]-q.cx, Y=p[1]-q.cy;
+      return [q.cx + X*c - Y*s, q.cy + X*s + Y*c];
+    }
+    if(type==='dilation'){
+      const k=1+(q.k-1)*t;
+      return [q.cx + k*(p[0]-q.cx), q.cy + k*(p[1]-q.cy)];
+    }
+    if(type==='reflection'){
+      const r = reflectedPoint(p, q);
+      return [p[0] + (r[0]-p[0])*t, p[1] + (r[1]-p[1])*t];
+    }
+    return p;
+  }
+
+  function makeProblem(){
+    const type = choice(['translation','rotation','reflection','dilation']);
+    const base = choice(shapes);
+    const offx = ri(-2,2), offy = ri(-2,2);
+    const shape = base.map(([x,y])=>[x+offx,y+offy]);
+    let q;
+    if(type==='translation') q = {dx:choice([-5,-4,-3,-2,2,3,4,5]), dy:choice([-5,-4,-3,-2,2,3,4,5])};
+    if(type==='rotation') q = {cx:ri(-3,3), cy:ri(-3,3), deg:choice([90,180,270]), dir:choice(['cw','ccw'])};
+    if(type==='dilation') q = {cx:ri(-2,2), cy:ri(-2,2), k:choice([0.5,2])};
+    if(type==='reflection'){
+      const m = choice(['x','y','vert','horiz','diag','antidiag']);
+      if(m==='x') q={x1:-5,y1:0,x2:5,y2:0,label:'the x-axis'};
+      if(m==='y') q={x1:0,y1:-5,x2:0,y2:5,label:'the y-axis'};
+      if(m==='vert'){const c=choice([-3,-2,2,3]); q={x1:c,y1:-5,x2:c,y2:5,label:`x = ${c}`};}
+      if(m==='horiz'){const c=choice([-3,-2,2,3]); q={x1:-5,y1:c,x2:5,y2:c,label:`y = ${c}`};}
+      if(m==='diag'){const b=ri(-2,2); q={x1:-5,y1:-5+b,x2:5,y2:5+b,label:b===0?'y = x':`y = x ${b>0?'+':'-'} ${Math.abs(b)}`};}
+      if(m==='antidiag'){const b=ri(-2,2); q={x1:-5,y1:5+b,x2:5,y2:-5+b,label:b===0?'y = -x':`y = -x ${b>0?'+':'-'} ${Math.abs(b)}`};}
+    }
+    return {type, shape, q, target:shape.map(p=>transformPoint(p, type, q))};
+  }
+
+  function c([x,y]){ return [300 + x*25, 300 - y*25]; }
+  function pts(poly){ return poly.map(p=>c(p).join(',')).join(' '); }
+  function ease(t){ return t<.5 ? 2*t*t : 1 - Math.pow(-2*t+2,2)/2; }
+
+  function lineAcrossBoard(q){
+    const dx=q.x2-q.x1, dy=q.y2-q.y1;
+    const len=Math.hypot(dx,dy) || 1;
+    const ux=dx/len, uy=dy/len;
+    const A=[q.x1-20*ux, q.y1-20*uy];
+    const B=[q.x1+20*ux, q.y1+20*uy];
+    return [A,B];
+  }
+
+  function arrowDef(){
+    return `
+      <defs>
+        <marker id="arrow-purple" markerWidth="10" markerHeight="10" refX="8" refY="3.5" orient="auto" markerUnits="strokeWidth">
+          <path d="M0,0 L0,7 L8,3.5 z" fill="#ff8c42"></path>
+        </marker>
+      </defs>`;
+  }
+
+  function syncFieldsFromUI(){
+    if(selected==='translation'){
+      const dx = uiState.translation.head[0]-uiState.translation.tail[0];
+      const dy = uiState.translation.head[1]-uiState.translation.tail[1];
+      const dxEl = document.getElementById('dx'), dyEl=document.getElementById('dy');
+      if(dxEl) dxEl.value = dx;
+      if(dyEl) dyEl.value = dy;
+    }
+    if(selected==='reflection'){
+      const {p1,p2} = uiState.reflection;
+      const ids = [['x1',p1[0]],['y1',p1[1]],['x2',p2[0]],['y2',p2[1]]];
+      ids.forEach(([id,v])=>{const el=document.getElementById(id); if(el) el.value=v;});
+    }
+    if(selected==='rotation'){
+      const {center,deg,dir} = uiState.rotation;
+      const cx=document.getElementById('cx'), cy=document.getElementById('cy'), d=document.getElementById('deg'), r=document.getElementById('dir');
+      if(cx) cx.value=center[0];
+      if(cy) cy.value=center[1];
+      if(d) d.value=String(deg);
+      if(r) r.value=dir;
+    }
+    if(selected==='dilation'){
+      const {center,k} = uiState.dilation;
+      const cx=document.getElementById('cx'), cy=document.getElementById('cy'), kk=document.getElementById('k');
+      if(cx) cx.value=center[0];
+      if(cy) cy.value=center[1];
+      if(kk) kk.value=k;
+    }
+  }
+
+  function updateUIFromFields(){
+    const n=id=>{const el=document.getElementById(id); const v=el?Number(el.value):NaN; return Number.isFinite(v)?v:null;};
+
+    if(selected==='translation'){
+      const dx=n('dx'), dy=n('dy');
+      if(dx!==null && dy!==null){
+        uiState.translation.head = [uiState.translation.tail[0]+dx, uiState.translation.tail[1]+dy];
+      }
+    }
+    if(selected==='reflection'){
+      const x1=n('x1'), y1=n('y1'), x2=n('x2'), y2=n('y2');
+      if([x1,y1,x2,y2].every(v=>v!==null)){
+        uiState.reflection.p1=[x1,y1];
+        uiState.reflection.p2=[x2,y2];
+      }
+    }
+    if(selected==='rotation'){
+      const cx=n('cx'), cy=n('cy');
+      const deg=document.getElementById('deg'), dir=document.getElementById('dir');
+      if(cx!==null && cy!==null) uiState.rotation.center=[cx,cy];
+      if(deg) uiState.rotation.deg=Number(deg.value);
+      if(dir) uiState.rotation.dir=dir.value;
+    }
+    if(selected==='dilation'){
+      const cx=n('cx'), cy=n('cy'), k=n('k');
+      if(cx!==null && cy!==null) uiState.dilation.center=[cx,cy];
+      if(k!==null) uiState.dilation.k=k;
+    }
+  }
+
+  function currentParams(){
+    updateUIFromFields();
+    if(selected==='translation'){
+      const dx = uiState.translation.head[0]-uiState.translation.tail[0];
+      const dy = uiState.translation.head[1]-uiState.translation.tail[1];
+      return {dx,dy};
+    }
+    if(selected==='reflection'){
+      const {p1,p2}=uiState.reflection;
+      return {x1:p1[0], y1:p1[1], x2:p2[0], y2:p2[1]};
+    }
+    if(selected==='rotation'){
+      const {center,deg,dir}=uiState.rotation;
+      return {cx:center[0], cy:center[1], deg, dir};
+    }
+    if(selected==='dilation'){
+      const {center,k}=uiState.dilation;
+      return {cx:center[0], cy:center[1], k};
+    }
+    return null;
+  }
+
+  function drawCurrentGuide(){
+    const q = currentParams();
+    let h='';
+    if(selected==='translation' && q){
+      const tail=uiState.translation.tail, head=uiState.translation.head;
+      const [x1,y1]=c(tail), [x2,y2]=c(head);
+      h += `<line class="guide-strong" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" marker-end="url(#arrow-purple)"/>`;
+      h += `<circle class="control-dot" data-handle="trans-tail" cx="${x1}" cy="${y1}" r="7"/>`;
+      h += `<circle class="control-dot" data-handle="trans-head" cx="${x2}" cy="${y2}" r="7"/>`;
+      h += `<text class="guide-label" x="${(x1+x2)/2+8}" y="${(y1+y2)/2-8}">Δx=${q.dx}, Δy=${q.dy}</text>`;
+    }
+    if(selected==='reflection' && q){
+      const [A,B]=lineAcrossBoard(q);
+      const [x1,y1]=c(A), [x2,y2]=c(B);
+      const [p1x,p1y]=c(uiState.reflection.p1), [p2x,p2y]=c(uiState.reflection.p2);
+      h += `<line class="guide-strong" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}"/>`;
+      h += `<circle class="control-dot" data-handle="refl-p1" cx="${p1x}" cy="${p1y}" r="7"/>`;
+      h += `<circle class="control-dot" data-handle="refl-p2" cx="${p2x}" cy="${p2y}" r="7"/>`;
+      h += `<text class="guide-label" x="${(p1x+p2x)/2+8}" y="${(p1y+p2y)/2-8}">mirror line</text>`;
+    }
+    if(selected==='rotation' && q){
+      const ctr=[q.cx,q.cy];
+      const [cx1,cy1]=c(ctr);
+      h += `<circle class="center-dot control-dot" data-handle="rot-center" cx="${cx1}" cy="${cy1}" r="8"/>`;
+      h += `<text class="guide-label" x="${cx1+10}" y="${cy1-10}">center (${q.cx}, ${q.cy})</text>`;
+      const p0=problem.shape[0], p1=transformPoint(p0,'rotation',q);
+      const [x1,y1]=c(p0), [x2,y2]=c(p1);
+      h += `<line class="guide" x1="${cx1}" y1="${cy1}" x2="${x1}" y2="${y1}"/>`;
+      h += `<line class="guide-green" x1="${cx1}" y1="${cy1}" x2="${x2}" y2="${y2}"/>`;
+    }
+    if(selected==='dilation' && q){
+      const ctr=[q.cx,q.cy];
+      const [cx1,cy1]=c(ctr);
+      h += `<circle class="center-dot control-dot" data-handle="dil-center" cx="${cx1}" cy="${cy1}" r="8"/>`;
+      h += `<text class="guide-label" x="${cx1+10}" y="${cy1-10}">center (${q.cx}, ${q.cy}), k=${q.k}</text>`;
+      for(let i=0;i<problem.shape.length;i++){
+        const p0=problem.shape[i], p1=transformPoint(p0,'dilation',q);
+        const [x1,y1]=c(p0), [x2,y2]=c(p1);
+        h += `<line class="guide" x1="${cx1}" y1="${cy1}" x2="${x1}" y2="${y1}"/>`;
+        h += `<line class="guide-green" x1="${cx1}" y1="${cy1}" x2="${x2}" y2="${y2}"/>`;
+      }
+    }
+    return h;
+  }
+
+  function draw(){
+    let h = arrowDef();
+    for(let i=-10;i<=10;i++){
+      const x=300+i*25, y=300-i*25;
+      h += `<line class="gridline" x1="${x}" y1="50" x2="${x}" y2="550"/>`;
+      h += `<line class="gridline" x1="50" y1="${y}" x2="550" y2="${y}"/>`;
+    }
+    h += `<line class="axis" x1="50" y1="300" x2="550" y2="300"/>`;
+    h += `<line class="axis" x1="300" y1="50" x2="300" y2="550"/>`;
+    for(let i=-10;i<=10;i+=2){
+      if(i!==0){
+        h += `<text class="num" x="${300+i*25}" y="315" text-anchor="middle">${i}</text>`;
+        h += `<text class="num" x="290" y="${304-i*25}" text-anchor="end">${i}</text>`;
+      }
+    }
+    h += `<polygon class="target" points="${pts(problem.target)}"/>`;
+    problem.target.forEach(p=>{ const [x,y]=c(p); h += `<circle class="targetdot" cx="${x}" cy="${y}" r="4"/>`; });
+
+    h += `<polygon class="src" points="${pts(problem.shape)}"/>`;
+    problem.shape.forEach((p,i)=>{
+      const [x,y]=c(p);
+      h += `<circle class="vertex" cx="${x}" cy="${y}" r="4"/>`;
+      h += `<text class="num" x="${x+7}" y="${y-7}">${String.fromCharCode(65+i)}</text>`;
+    });
+
+    const showPoly = displayAttempt || attempt;
+    if(showPoly) h += `<polygon class="attempt" points="${pts(showPoly)}"/>`;
+
+    h += drawCurrentGuide();
+    board.innerHTML = h;
+  }
+
+  function renderFields(){
+    if(selected==='translation') fields.innerHTML = `
+      <div class="mini">Drag the two orange endpoints of the vector on the graph, or type Δx and Δy.</div>
+      <div class="two">
+        <div><label>Horizontal change Δx</label><input id="dx" inputmode="decimal"></div>
+        <div><label>Vertical change Δy</label><input id="dy" inputmode="decimal"></div>
+      </div>`;
+    if(selected==='rotation') fields.innerHTML = `
+      <div class="mini">Drag the orange center point on the graph, or type the center below.</div>
+      <div class="two">
+        <div><label>Center x</label><input id="cx" inputmode="decimal"></div>
+        <div><label>Center y</label><input id="cy" inputmode="decimal"></div>
+      </div>
+      <div class="two">
+        <div><label>Angle</label><select id="deg"><option value="90">90°</option><option value="180">180°</option><option value="270">270°</option></select></div>
+        <div><label>Direction</label><select id="dir"><option value="ccw">Counterclockwise</option><option value="cw">Clockwise</option></select></div>
+      </div>`;
+    if(selected==='dilation') fields.innerHTML = `
+      <div class="mini">Drag the orange center point on the graph, or type the center below.</div>
+      <div class="two">
+        <div><label>Center x</label><input id="cx" inputmode="decimal"></div>
+        <div><label>Center y</label><input id="cy" inputmode="decimal"></div>
+      </div>
+      <div><label>Scale factor</label><input id="k" inputmode="decimal"></div>`;
+    if(selected==='reflection') fields.innerHTML = `
+      <div class="mini">Drag the two orange endpoints of the mirror line on the graph, or type two points on the line.</div>
+      <div class="two">
+        <div><label>Point 1 x</label><input id="x1" inputmode="decimal"></div>
+        <div><label>Point 1 y</label><input id="y1" inputmode="decimal"></div>
+        <div><label>Point 2 x</label><input id="x2" inputmode="decimal"></div>
+        <div><label>Point 2 y</label><input id="y2" inputmode="decimal"></div>
+      </div>`;
+
+    syncFieldsFromUI();
+    fields.querySelectorAll('input,select').forEach(el=>{
+      el.addEventListener('input', ()=>{attempt=null; displayAttempt=null; updateUIFromFields(); draw();});
+      el.addEventListener('change', ()=>{attempt=null; displayAttempt=null; updateUIFromFields(); draw();});
+    });
+  }
+
+  function tell(msg, good=false){
+    feedback.textContent = msg;
+    feedback.style.background = good ? '#e8f7f1' : '#f5f6fb';
+  }
+
+  function buildAttempt(){
+    const q = currentParams();
+    if(!q){ tell('Please enter valid transformation information.'); return null; }
+    if(selected==='reflection' && Math.hypot(q.x2-q.x1, q.y2-q.y1) < .001){
+      tell('Use two different points to define the mirror line.');
+      return null;
+    }
+    if(selected==='dilation' && Math.abs(q.k) < 1e-10){
+      tell('Use a nonzero scale factor.');
+      return null;
+    }
+    return {type:selected, q, poly:problem.shape.map(p=>transformPoint(p, selected, q))};
+  }
+
+  function animateAttempt(type, q, onDone){
+    const myToken = ++animToken;
+    const duration = 800;
+    const start = performance.now();
+    function step(now){
+      if(myToken !== animToken) return;
+      let t = Math.min(1, (now-start)/duration);
+      t = ease(t);
+      displayAttempt = problem.shape.map(p => interpolatedPoint(p, type, q, t));
+      draw();
+      if(t < 1){
+        requestAnimationFrame(step);
+      }else{
+        displayAttempt = problem.shape.map(p => transformPoint(p, type, q));
+        attempt = displayAttempt.map(p=>[p[0],p[1]]);
+        draw();
+        if(onDone) onDone();
+      }
+    }
+    requestAnimationFrame(step);
+  }
+
+  function same(a,b){
+    if(a.length !== b.length) return false;
+    const used = new Array(b.length).fill(false);
+    for(const p of a){
+      let best = -1, bestD = Infinity;
+      for(let j=0;j<b.length;j++){
+        if(used[j]) continue;
+        const d = Math.hypot(p[0]-b[j][0], p[1]-b[j][1]);
+        if(d < bestD){ bestD = d; best = j; }
+      }
+      if(best < 0 || bestD >= EPS) return false;
+      used[best] = true;
+    }
+    return true;
+  }
+
+  $('#preview').addEventListener('click', ()=>{
+    const built = buildAttempt();
+    if(!built) return;
+    attempt = null;
+    animateAttempt(built.type, built.q, ()=>tell('Preview complete. Does the green image land exactly on the dashed target?'));
+  });
+
+  $('#form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    if(solved) return;
+    const built = buildAttempt();
+    if(!built) return;
+    attempt = null;
+    animateAttempt(built.type, built.q, ()=>{
+      const correct = same(built.poly, problem.target);
+      if(correct){
+        solved = true;
+        streak++;
+        const gained = 10 + Math.min(streak-1, 5)*2;
+        score += gained;
+        $('#score').textContent = score;
+        $('#streak').textContent = streak;
+        const alternate = built.type !== problem.type;
+        tell(alternate
+          ? `🎉 Perfect! That is a different valid transformation. +${gained} points.`
+          : `🎉 Perfect! +${gained} points.`, true);
+        $('#next').style.display = 'block';
+        $('#skip').style.display = 'none';
+        $('#hint').style.display = 'none';
+      }else{
+        streak = 0;
+        $('#streak').textContent = 0;
+        tell('Not quite. Your transformed figure does not land exactly on the target yet.');
+      }
+    });
+  });
+
+  function svgClientToCoord(evt){
+    const rect = board.getBoundingClientRect();
+    const sx = (evt.clientX - rect.left) * (600 / rect.width);
+    const sy = (evt.clientY - rect.top) * (600 / rect.height);
+    const x = Math.round((sx - 300)/25);
+    const y = Math.round((300 - sy)/25);
+    return [Math.max(-10,Math.min(10,x)), Math.max(-10,Math.min(10,y))];
+  }
+
+  board.addEventListener('pointerdown', (evt)=>{
+    const t = evt.target;
+    if(t && t.dataset && t.dataset.handle){
+      dragHandle = t.dataset.handle;
+      board.setPointerCapture(evt.pointerId);
+      evt.preventDefault();
+    }
+  });
+
+  board.addEventListener('pointermove', (evt)=>{
+    if(!dragHandle || solved) return;
+    const [x,y] = svgClientToCoord(evt);
+    if(dragHandle === 'trans-tail') uiState.translation.tail = [x,y];
+    if(dragHandle === 'trans-head') uiState.translation.head = [x,y];
+    if(dragHandle === 'refl-p1') uiState.reflection.p1 = [x,y];
+    if(dragHandle === 'refl-p2') uiState.reflection.p2 = [x,y];
+    if(dragHandle === 'rot-center') uiState.rotation.center = [x,y];
+    if(dragHandle === 'dil-center') uiState.dilation.center = [x,y];
+    syncFieldsFromUI();
+    attempt = null; displayAttempt = null; animToken++;
+    draw();
+  });
+
+  function endDrag(){
+    if(dragHandle){
+      dragHandle = null;
+      tell('Control updated.');
+    }
+  }
+  board.addEventListener('pointerup', endDrag);
+  board.addEventListener('pointercancel', endDrag);
+  board.addEventListener('lostpointercapture', endDrag);
+
+  $('#types').addEventListener('click', (e)=>{
+    const b = e.target.closest('[data-type]');
+    if(!b || solved) return;
+    selected = b.dataset.type;
+    document.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('active', x===b));
+    attempt = null;
+    displayAttempt = null;
+    animToken++;
+    renderFields();
+    draw();
+    tell('Drag the orange handles on the graph, or type values below.');
+  });
+
+  $('#hint').addEventListener('click', ()=>{
+    hints++;
+    if(hints===1){
+      const t = problem.type;
+      tell('💡 ' + (
+        t==='translation' ? 'Compare one vertex with its matching image. How far did it move horizontally and vertically?' :
+        t==='rotation' ? 'Look for a point that stays the same distance from corresponding vertices before and after the move.' :
+        t==='reflection' ? 'The mirror line lies halfway between each point and its image and is perpendicular to the connecting segment.' :
+        'Compare corresponding side lengths. What scale factor relates them?'
+      ));
+    } else if(hints===2){
+      tell('💡 One transformation that works is a ' + problem.type + '.');
+    } else {
+      const q = problem.q;
+      if(problem.type==='translation') tell(`💡 One valid solution: Δx = ${q.dx}, Δy = ${q.dy}`);
+      if(problem.type==='rotation') tell(`💡 One valid solution: center (${q.cx}, ${q.cy}), ${q.deg}° ${q.dir==='cw'?'clockwise':'counterclockwise'}`);
+      if(problem.type==='dilation') tell(`💡 One valid solution: center (${q.cx}, ${q.cy}), scale factor ${q.k}`);
+      if(problem.type==='reflection') tell(`💡 One valid solution: mirror line ${q.label}`);
+    }
+  });
+
+  function resetUIControls(){
+    uiState.translation = {tail:[0,0], head:[5,0]};
+    uiState.reflection = {p1:[0,0], p2:[1,0]};
+    uiState.rotation = {center:[0,0], deg:90, dir:'ccw'};
+    uiState.dilation = {center:[0,0], k:2};
+  }
+
+  function newRound(){
+    problem = makeProblem();
+    solved = false;
+    hints = 0;
+    selected = 'translation';
+    attempt = null;
+    displayAttempt = null;
+    animToken++;
+    dragHandle = null;
+    resetUIControls();
+    document.querySelectorAll('[data-type]').forEach(x=>x.classList.toggle('active', x.dataset.type==='translation'));
+    renderFields();
+    draw();
+    tell('Drag the orange handles on the graph, or type values below.');
+    $('#next').style.display = 'none';
+    $('#skip').style.display = 'block';
+    $('#hint').style.display = 'block';
+    $('#round').textContent = round;
+  }
+
+  $('#skip').addEventListener('click', ()=>{
+    streak = 0;
+    $('#streak').textContent = 0;
+    round++;
+    newRound();
+  });
+
+  $('#next').addEventListener('click', ()=>{
+    round++;
+    newRound();
+  });
+
+  problem = makeProblem();
+  renderFields();
+  draw();
+})();
+</script>
+</body>
+</html>

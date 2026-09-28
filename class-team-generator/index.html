@@ -1,0 +1,1061 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quick Team Generator</title>
+<meta name="theme-color" content="#2563eb" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%232563eb'/%3E%3Ccircle cx='22' cy='23' r='8' fill='white'/%3E%3Ccircle cx='42' cy='23' r='8' fill='white'/%3E%3Cpath d='M10 49c1-9 6-14 12-14s11 5 12 14M30 49c1-9 6-14 12-14s11 5 12 14' fill='none' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+<style>
+:root{
+  --bg:#f5f7fb; --panel:#ffffff; --panel2:#f8fafc; --text:#172033; --muted:#64748b;
+  --line:#dbe3ee; --accent:#2563eb; --accent2:#1d4ed8; --danger:#b91c1c;
+  --shadow:0 9px 30px rgba(28,39,57,.08); --member-size:1rem; --page-text:#172033; --page-muted:#64748b;
+}
+[data-theme="dark"]{
+  --bg:#0e1522; --panel:#151f2f; --panel2:#111a28; --text:#edf4ff; --muted:#9fb0c6;
+  --line:#2b3b52; --accent:#60a5fa; --accent2:#3b82f6; --danger:#fca5a5;
+  --shadow:0 9px 30px rgba(0,0,0,.22); --page-text:#edf4ff; --page-muted:#b8c6d9;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{margin:0;font-family:Aptos,"Segoe UI Variable","Segoe UI",Arial,sans-serif;background:var(--bg);color:var(--page-text);transition:background .18s,color .18s}
+button,input,textarea,select{font:inherit}
+button{cursor:pointer}
+.app{width:min(1440px,calc(100% - 28px));margin:0 auto;padding:22px 0 42px}
+.topbar{display:flex;align-items:center;gap:16px;justify-content:space-between;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:12px;min-width:260px}
+.logo{width:42px;height:42px;border-radius:12px;background:var(--accent);display:grid;place-items:center;color:#fff;font-weight:850;font-size:21px;box-shadow:0 6px 18px rgba(37,99,235,.24)}
+h1{font-size:clamp(1.4rem,2.3vw,1.95rem);margin:0;line-height:1.08;color:var(--page-text)}.subtitle{margin:4px 0 0;color:var(--page-muted);font-size:.92rem}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.btn{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:10px;padding:9px 12px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:7px;box-shadow:0 1px 2px rgba(0,0,0,.03)}
+.btn:hover{background:var(--panel2)}.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}.btn.primary:hover{background:var(--accent2)}
+.btn.compact{padding:8px 10px;min-width:40px}.btn svg{width:17px;height:17px}.btn:disabled{opacity:.5;cursor:not-allowed}
+.controls{color:var(--text);display:grid;grid-template-columns:minmax(220px,1fr) minmax(220px,.9fr) auto auto auto;gap:10px;align-items:end;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:12px 14px;box-shadow:var(--shadow);margin-bottom:14px}
+.field label{display:block;font-size:.78rem;color:var(--muted);font-weight:800;margin:0 0 5px}.field input,.field select{width:100%;border:1px solid var(--line);border-radius:9px;background:var(--panel2);color:var(--text);padding:9px 10px;outline:none}
+.field input:focus,.field select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+.class-field{min-width:230px}.saved-class-field{min-width:260px}.saved-class-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto auto;gap:6px}.saved-class-row .btn{padding:8px 9px}.number-field{width:115px}.font-tools{display:flex;gap:6px}.mode-tools{display:flex;gap:6px}.compact-check{display:inline-flex!important;align-items:center;gap:6px;height:36px;padding:0 8px;border:1px solid var(--line);background:var(--panel2);color:var(--text)!important;font-size:.78rem!important;font-weight:750!important;margin:0!important;cursor:pointer;white-space:nowrap}.compact-check input{width:15px!important;height:15px!important;accent-color:var(--accent)}.color-input{width:38px!important;height:34px!important;padding:2px!important;border:1px solid var(--line)!important;background:var(--panel2)!important;cursor:pointer}.bg-reset{padding:7px 9px!important}
+.status{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 2px 12px;color:var(--page-muted);font-size:.9rem}.status strong{color:var(--page-text)}
+.workspace{display:grid;grid-template-columns:minmax(0,1fr) 285px;gap:15px;align-items:start}.groups-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(205px,1fr));gap:13px}
+.card{color:var(--text);background:var(--panel);border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow);overflow:hidden;min-height:140px}.card.group-colored{background:var(--group-bg);border-color:var(--group-border)}.card.group-colored .card-head{background:var(--group-head);border-bottom-color:var(--group-border)}.card.group-colored li{border-bottom-color:var(--group-border)}.card.group-colored .group-name-input:hover,.card.group-colored .group-name-input:focus{background:color-mix(in srgb,var(--group-head) 76%,var(--panel))}.card.group-colored .group-shuffle{background:color-mix(in srgb,var(--group-head) 78%,var(--panel));border-color:var(--group-border)}.card-head{padding:8px 9px 8px 11px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:8px}.card-title{font-weight:850;font-size:calc(var(--member-size) * 1.02)}.group-name-input{min-width:0;flex:1;border:1px solid transparent;background:transparent;color:var(--text);font-weight:850;font-size:calc(var(--member-size) * 1.02);padding:4px 5px;margin:-1px 0;border-radius:3px;outline:none}.group-name-input:hover{background:var(--panel2);border-color:var(--line)}.group-name-input:focus{background:var(--panel2);border-color:var(--accent);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent) 15%,transparent)}.count{font-size:.76rem;color:var(--muted);background:var(--panel2);border:1px solid var(--line);border-radius:999px;padding:3px 7px}.card-head-tools{display:flex;align-items:center;gap:6px;flex:0 0 auto}.group-shuffle{width:27px;height:27px;padding:0;display:grid;place-items:center;border:1px solid var(--line);background:var(--panel2);color:var(--muted);font-size:15px;font-weight:800;cursor:pointer;border-radius:3px}.group-shuffle:hover{color:var(--text);background:var(--hover)}
+ol{margin:0;padding:8px 12px 12px 38px}li{padding:6px 5px;border-bottom:1px solid var(--line);line-height:1.26;font-size:var(--member-size)}li:last-child{border-bottom:0}.empty{padding:28px 16px;color:var(--muted);text-align:center}
+.picker{color:var(--text);position:sticky;top:12px;background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);overflow:hidden}.picker-head{padding:12px 14px;border-bottom:1px solid var(--line)}.picker-head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.picker-head-copy{min-width:0}.picker-head strong{font-size:1rem}.picker-head p{margin:4px 0 0;color:var(--muted);font-size:.8rem}.picker-head-actions{display:flex;gap:5px;flex:0 0 auto}.picker-head-actions .btn{padding:6px 8px;font-size:.74rem}.picker-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:11px 12px 7px}.picker-controls label{display:block;color:var(--muted);font-weight:800;font-size:.72rem;margin-bottom:4px}.picker-controls select{width:100%;padding:8px;border:1px solid var(--line);border-radius:8px;background:var(--panel2);color:var(--text)}.picker-effects{display:flex;align-items:center;gap:14px;padding:1px 12px 10px;color:var(--muted);font-size:.75rem;font-weight:750}.picker-effects label{display:inline-flex;align-items:center;gap:6px;cursor:pointer}.picker-effects input{width:15px;height:15px;accent-color:var(--accent)}
+.visual{height:205px;margin:4px 12px 10px;border:1px dashed var(--line);border-radius:12px;background:var(--panel2);position:relative;overflow:hidden;display:grid;place-items:center}.picker-result{text-align:center;padding:0 13px 10px;min-height:54px}.picker-result .big{font-size:1.28rem;font-weight:900;line-height:1.15}.picker-result .small{font-size:.79rem;color:var(--muted);margin-top:4px;line-height:1.35}.pick-btn{width:calc(100% - 24px);margin:0 12px 12px}.workspace.picker-hidden{grid-template-columns:minmax(0,1fr)}.workspace.picker-hidden .picker{display:none}
+body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fixed;inset:0;background:rgba(6,12,22,.66);backdrop-filter:blur(2px);z-index:490}.picker.huge{position:fixed;inset:18px;z-index:500;display:flex;flex-direction:column;max-width:none;width:auto;top:18px}.picker.huge .picker-head{padding:15px 18px}.picker.huge .picker-head strong{font-size:1.25rem}.picker.huge .picker-head p{font-size:.9rem}.picker.huge .picker-controls{padding:13px 18px 8px;grid-template-columns:minmax(180px,260px) minmax(180px,260px);justify-content:center}.picker.huge .picker-effects{justify-content:center;font-size:.85rem;padding-bottom:8px}.picker.huge .visual{height:auto;min-height:300px;flex:1;margin:6px 18px 12px}.picker.huge .picker-result{min-height:72px;padding:0 20px 12px}.picker.huge .picker-result .big{font-size:clamp(2rem,5vw,4rem)}.picker.huge .picker-result .small{font-size:clamp(.95rem,1.6vw,1.35rem)}.picker.huge .pick-btn{width:min(720px,calc(100% - 36px));margin:0 auto 18px;font-size:1.1rem;padding:12px 18px}.picker.huge .spinner-wrap,.picker.huge .ball-machine{transform:scale(1.75)}.picker.huge .robot{font-size:11rem}.picker.huge .robot-screen{font-size:1rem;bottom:30px}.confetti-layer{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:800}.confetti-piece{position:absolute;top:-24px;width:9px;height:15px;opacity:.95;animation:confettiFall var(--dur) cubic-bezier(.14,.7,.26,1) forwards}@keyframes confettiFall{0%{transform:translate3d(0,-20px,0) rotate(0deg)}100%{transform:translate3d(var(--drift),calc(100vh + 50px),0) rotate(var(--spin));opacity:.75}}
+.spinner-wrap{width:148px;height:148px;position:relative}.spinner-wheel{width:148px;height:148px;border-radius:50%;border:5px solid var(--panel);box-shadow:0 0 0 2px var(--line),0 7px 20px rgba(0,0,0,.12);background:conic-gradient(#60a5fa 0 45deg,#f59e0b 45deg 90deg,#34d399 90deg 135deg,#f472b6 135deg 180deg,#a78bfa 180deg 225deg,#fb7185 225deg 270deg,#22d3ee 270deg 315deg,#facc15 315deg 360deg);transition:transform 2.2s cubic-bezier(.12,.62,.18,1)}.spinner-wrap:before{content:"";position:absolute;left:50%;top:-8px;transform:translateX(-50%);z-index:2;border-left:10px solid transparent;border-right:10px solid transparent;border-top:20px solid var(--text)}.spinner-hub{position:absolute;inset:50% auto auto 50%;transform:translate(-50%,-50%);width:46px;height:46px;border-radius:50%;background:var(--panel);border:2px solid var(--line);display:grid;place-items:center;font-size:1.1rem;font-weight:900}
+.ball-machine{width:166px;height:166px;position:relative}.globe{position:absolute;left:17px;top:4px;width:132px;height:125px;border:4px solid var(--line);border-radius:50% 50% 45% 45%;background:color-mix(in srgb,var(--panel) 70%,transparent);overflow:hidden}.ball{position:absolute;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:.62rem;font-weight:900;color:#172033;background:#facc15;border:2px solid rgba(0,0,0,.12);box-shadow:0 3px 7px rgba(0,0,0,.16)}.ball:nth-child(1){left:17px;top:70px;background:#93c5fd}.ball:nth-child(2){left:53px;top:82px;background:#f9a8d4}.ball:nth-child(3){left:84px;top:55px;background:#86efac}.ball:nth-child(4){left:43px;top:42px;background:#fde68a}.ball:nth-child(5){left:86px;top:87px;background:#c4b5fd}.ball-machine.running .ball{animation:bounceBall .46s infinite alternate ease-in-out}.ball-machine.running .ball:nth-child(2){animation-delay:.08s}.ball-machine.running .ball:nth-child(3){animation-delay:.17s}.ball-machine.running .ball:nth-child(4){animation-delay:.24s}.ball-machine.running .ball:nth-child(5){animation-delay:.31s}@keyframes bounceBall{to{transform:translate(8px,-34px) rotate(65deg)}}.machine-base{position:absolute;left:48px;bottom:2px;width:70px;height:42px;border-radius:10px 10px 5px 5px;background:var(--accent);border:2px solid color-mix(in srgb,var(--accent) 75%,#000)}.machine-base:before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;left:23px;top:8px}
+.robot{font-size:6.4rem;line-height:1;filter:drop-shadow(0 7px 10px rgba(0,0,0,.12));transform-origin:center}.robot.running{animation:robotThink .35s infinite alternate}@keyframes robotThink{to{transform:rotate(5deg) translateY(-4px)}}.robot-screen{position:absolute;bottom:15px;background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:4px 9px;font-weight:850;font-size:.72rem;max-width:90%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hat-wrap{width:180px;height:170px;position:relative;display:grid;place-items:center;transform:translateY(22px)}.picker.huge .hat-wrap{transform:translateY(34px) scale(1.65)}.hat-crown{position:absolute;width:112px;height:92px;left:34px;top:35px;background:#1f2937;border:3px solid #0f172a;border-radius:3px 3px 9px 9px;box-shadow:inset 0 -13px 0 #111827,0 9px 18px rgba(0,0,0,.18);z-index:6}.hat-band{position:absolute;left:38px;top:38px;width:104px;height:18px;background:var(--accent);z-index:7}.hat-brim{position:absolute;width:166px;height:30px;left:7px;top:18px;background:#111827;border:3px solid #0f172a;border-radius:50%;box-shadow:0 7px 11px rgba(0,0,0,.2);z-index:2}.hat-opening{position:absolute;width:124px;height:17px;left:28px;top:24px;background:#080d17;border-radius:50%;z-index:3}.hat-paper{position:absolute;left:50%;top:34px;transform:translate(-50%,0) rotate(-4deg);width:94px;min-height:48px;padding:8px 7px;border-radius:3px;background:#fff7d6;color:#172033;border:1px solid #d9c982;display:grid;place-items:center;text-align:center;font-weight:900;font-size:.72rem;line-height:1.1;z-index:4;opacity:0}.hat-front-lip{position:absolute;width:166px;height:30px;left:7px;top:18px;background:#111827;border:3px solid #0f172a;border-radius:50%;clip-path:inset(50% 0 0 0);z-index:8;pointer-events:none}.hat-wrap.running .hat-paper{animation:hatDraw 1.45s cubic-bezier(.18,.82,.2,1) forwards}@keyframes hatDraw{0%{top:42px;transform:translate(-50%,0) rotate(-7deg);opacity:0}18%{opacity:0}34%{top:16px;transform:translate(-50%,0) rotate(4deg);opacity:1}72%{top:-14px;transform:translate(-50%,0) rotate(-3deg);opacity:1}100%{top:-22px;transform:translate(-50%,0) rotate(-2deg);opacity:1}}
+.member{position:relative;cursor:grab;padding-right:25px;user-select:none}.member:active{cursor:grabbing}.member.dragging{opacity:.35}.drag-handle{position:absolute;right:3px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.84em;letter-spacing:-2px}.team-list{min-height:54px}.card.drag-over{outline:3px solid color-mix(in srgb,var(--accent) 42%,transparent);outline-offset:-3px}.member.rule-violation{background:color-mix(in srgb,#ef4444 12%,transparent);border-radius:6px}#rulesBottom{display:none!important}.rule-status{display:none!important;margin:-3px 2px 12px;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--panel);font-size:.82rem;color:var(--muted);display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}.rule-status.ok strong{color:#15803d}.rule-status.warn{border-color:color-mix(in srgb,#ef4444 45%,var(--line));background:color-mix(in srgb,#ef4444 7%,var(--panel))}.rule-status.warn strong{color:var(--danger)}.rule-badge{display:inline-block;padding:2px 7px;margin-right:5px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);font-size:.75rem}.rules-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.rules-grid textarea{min-height:220px}.rules-note{padding:10px 12px;border-radius:9px;background:var(--panel2);border:1px solid var(--line);font-size:.82rem;color:var(--muted);line-height:1.4}.copyright{text-align:center;color:var(--page-muted);font-size:.78rem;margin-top:16px;padding-bottom:3px}
+.footerbar{display:flex;justify-content:center;gap:9px;flex-wrap:wrap;margin-top:18px}.share-menu{position:relative}.popover{position:absolute;right:0;top:calc(100% + 8px);width:220px;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:0 16px 38px rgba(0,0,0,.18);padding:6px;display:none;z-index:30}.popover.open{display:block}.popover button{width:100%;text-align:left;border:0;background:transparent;border-radius:8px;padding:9px 10px;color:var(--text)}.popover button:hover{background:var(--panel2)}
+.overlay{position:fixed;inset:0;background:rgba(10,18,30,.5);display:none;align-items:center;justify-content:center;padding:18px;z-index:60}.overlay.open{display:flex}.dialog{width:min(700px,100%);max-height:min(92vh,800px);overflow:auto;background:var(--panel);color:var(--text);border-radius:16px;box-shadow:0 24px 80px rgba(0,0,0,.28);border:1px solid var(--line)}.dialog.small{width:min(520px,100%)}.dialog-head{display:flex;justify-content:space-between;align-items:center;padding:17px 19px;border-bottom:1px solid var(--line)}.dialog-head h2{margin:0;font-size:1.17rem}.iconbtn{border:0;background:transparent;width:36px;height:36px;border-radius:9px;font-size:1.5rem;line-height:1;color:var(--muted)}.iconbtn:hover{background:var(--panel2)}.dialog-body{padding:18px 19px}.dialog-body>label{font-weight:800;display:block;margin-bottom:7px}.help{color:var(--muted);font-size:.84rem;margin:0 0 9px}textarea{width:100%;min-height:360px;resize:vertical;border:1px solid var(--line);border-radius:11px;padding:12px 13px;line-height:1.4;outline:none;background:var(--panel2);color:var(--text)}.dialog-foot{display:flex;justify-content:flex-end;gap:8px;padding:14px 19px;border-top:1px solid var(--line);flex-wrap:wrap}
+.export-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px 14px;margin:13px 0 14px;padding:12px;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}.export-check{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:700}.export-check input{width:17px;height:17px;accent-color:var(--accent)}.export-field label{display:block;font-size:.74rem;color:var(--muted);font-weight:800;margin-bottom:4px}.export-field input,.export-field select{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--panel);color:var(--text);padding:7px 8px}.export-span{grid-column:1/-1}.export-shape-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}.image-preview{max-height:390px;overflow:auto;background:#e5e7eb;border-radius:10px;padding:10px}.image-preview canvas{max-width:100%;height:auto;display:block;margin:auto;box-shadow:0 2px 12px rgba(0,0,0,.16)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;pointer-events:none;background:#172033;color:white;padding:10px 14px;border-radius:9px;font-size:.88rem;transition:.18s ease;z-index:100;box-shadow:0 8px 30px rgba(0,0,0,.24)}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Clean, professional geometry */
+.logo,.btn,.controls,.field input,.field select,.card,.count,.picker,.picker-controls select,.visual,
+.robot-screen,.member.rule-violation,.rule-status,.rule-badge,.popover,.popover button,.dialog,.iconbtn,textarea,
+.export-options,.export-field input,.export-field select,.image-preview,.toast,.rules-note{border-radius:3px}
+.hat-body{position:absolute;inset:0}
+@media(max-width:1100px){.controls{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 110px 110px}.controls>div:last-child{grid-column:1/-1;justify-self:end}}
+@media(max-width:980px){.controls{grid-template-columns:1fr 1fr 110px 110px}.workspace{grid-template-columns:1fr}.picker{position:relative;top:auto;max-width:520px;width:100%;justify-self:center}.visual{height:190px}}
+@media(max-width:700px){.rules-grid{grid-template-columns:1fr}.app{width:min(100% - 18px,1440px);padding-top:14px}.topbar{align-items:flex-start;flex-direction:column}.actions{width:100%;justify-content:stretch}.actions>.btn,.actions>.share-menu{flex:1}.share-menu>.btn{width:100%}.controls{grid-template-columns:1fr 1fr}.class-field,.saved-class-field{grid-column:1/-1}.font-tools,.mode-tools{align-self:end}.groups-grid{grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:9px}.status{align-items:flex-start;flex-direction:column;gap:3px}.card-head{padding:10px 11px}ol{padding-left:34px}}
+@media print{body{background:#fff;color:#111}.topbar .actions,.controls,.picker,.footerbar,.subtitle,.status{display:none!important}.app{width:100%;padding:0}.workspace{display:block}.groups-grid{grid-template-columns:repeat(3,1fr)}.card{box-shadow:none;break-inside:avoid;background:#fff;color:#111;border-color:#ccc}.card-head,li{border-color:#ddd}.count{background:#f4f4f4;color:#555}}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">↻</div>
+      <div><h1>Quick Team Generator</h1><p class="subtitle">Fast, simple, and distraction-free.</p></div>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="rerunTop" title="Randomize groups again">↻ Rerun</button>
+      <button class="btn" id="editBtn">✎ Edit names</button>
+      <button class="btn" id="rulesBtn">⚙ Grouping rules</button>
+      <div class="share-menu">
+        <button class="btn" id="shareBtn">↗ Share / Export</button>
+        <div class="popover" id="shareMenu">
+          <button id="copyLink">Copy share link</button>
+          <button id="copyTeams">Copy groups as text</button>
+          <button id="imageExport">Copy / save groups image</button>
+          <button id="exportCurrentData">Export current class data</button>
+          <button id="exportAllData">Export all class data</button>
+          <button id="importData">Import class data…</button>
+          <button id="nativeShare">Share…</button>
+          <button id="printBtn">Print</button>
+          <input id="importDataFile" type="file" accept="application/json,.json,.qtg" hidden>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <section class="controls" aria-label="Team settings">
+    <div class="field class-field"><label for="className">Class name</label><input id="className" type="text" maxlength="80" placeholder="e.g. Period 3 Statistics" /></div>
+    <div class="field saved-class-field"><label for="savedClassSelect">Saved classes</label><div class="saved-class-row"><select id="savedClassSelect"><option value="">Choose a saved class…</option></select><button class="btn compact" id="newClassBtn" title="Create a new class">New class</button><button class="btn compact" id="saveClassBtn" title="Save or update this class">Save</button><button class="btn compact" id="deleteClassBtn" title="Delete the selected saved class" disabled>Delete</button></div></div>
+    <div class="field number-field"><label for="groupsMain"># of groups</label><input id="groupsMain" type="number" min="1" max="100" step="1" /></div>
+    <div class="field number-field"><label for="sizeMain">Target size</label><input id="sizeMain" type="number" min="1" max="100" step="1" /></div>
+    <div style="display:flex;gap:8px;align-items:end;justify-content:flex-end;flex-wrap:wrap">
+      <div class="field"><label>Font size</label><div class="font-tools"><button class="btn compact" id="fontDown" title="Smaller group text">A−</button><button class="btn compact" id="fontUp" title="Larger group text">A+</button></div></div>
+      <div class="field"><label>Background</label><div class="mode-tools"><input class="color-input" id="bgColor" type="color" value="#f5f7fb" title="Choose page background color" aria-label="Page background color"><button class="btn compact bg-reset" id="bgReset" title="Use the default background">Reset</button></div></div>
+      <div class="field"><label>Groups</label><label class="compact-check"><input id="groupColorsToggle" type="checkbox" checked> Colors</label></div>
+      <div class="field"><label>View</label><div class="mode-tools"><button class="btn compact" id="themeBtn" title="Toggle light/dark mode">☾</button><button class="btn compact" id="fullBtn" title="Full screen">⛶</button><button class="btn compact" id="pickerToggleBtn" title="Hide random picker">Picker</button></div></div>
+    </div>
+  </section>
+
+  <div class="status"><div><strong id="itemCount">0</strong> names · <strong id="groupCount">0</strong> groups</div><div id="sizesText"></div></div>
+  <div class="rule-status ok" id="ruleStatus"><div><strong>No grouping rules</strong></div><button class="btn compact" id="rulesStatusBtn">Edit rules</button></div>
+
+  <div class="workspace">
+    <main class="groups-grid" id="teams" aria-live="polite"></main>
+    <aside class="picker" id="pickerPanel">
+      <div class="picker-head">
+        <div class="picker-head-row">
+          <div class="picker-head-copy"><strong>Random Picker</strong><p>Choose a student, a group, or the same member position from every group.</p></div>
+          <div class="picker-head-actions"><button class="btn compact" id="pickerHugeBtn" title="Make the picker dominate the screen">Huge</button><button class="btn compact" id="pickerHideBtn" title="Hide the picker">Hide</button></div>
+        </div>
+      </div>
+      <div class="picker-controls">
+        <div><label for="pickType">Pick</label><select id="pickType"><option value="student">Student</option><option value="group">Group</option><option value="member-position">Member from every group</option></select></div>
+        <div><label for="visualType">Visual</label><select id="visualType"><option value="spinner">Spinner</option><option value="balls">Ball machine</option><option value="robot">Robot</option><option value="hat">Name out of a hat</option></select></div>
+      </div>
+      <div class="picker-effects"><label><input type="checkbox" id="confettiToggle"> Confetti</label><label><input type="checkbox" id="soundToggle"> Sound</label></div>
+      <div class="visual" id="visual"></div>
+      <div class="picker-result" id="pickerResult"><div class="small">Ready when you are.</div></div>
+      <button class="btn primary pick-btn" id="pickBtn">Pick randomly</button>
+    </aside>
+  </div>
+
+  <div class="footerbar"><button class="btn primary" id="rerunBottom">↻ Rerun groups</button><button class="btn" id="editBottom">Edit names</button><button class="btn" id="rulesBottom">Grouping rules</button></div>
+  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.0 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a></span></div>
+</div>
+
+<div class="overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editTitle">
+  <div class="dialog">
+    <div class="dialog-head"><h2 id="editTitle">Edit Names</h2><button class="iconbtn" id="closeEdit" aria-label="Close">×</button></div>
+    <div class="dialog-body"><label for="itemsInput">Names / items</label><p class="help">Enter one name or item per line. Blank lines are ignored.</p><textarea id="itemsInput" spellcheck="false"></textarea><p class="help" id="splitPreview" style="margin-top:10px"></p></div>
+    <div class="dialog-foot"><button class="btn" id="cancelEdit">Cancel</button><button class="btn primary" id="applyEdit">Apply &amp; rerun</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="rulesOverlay" role="dialog" aria-modal="true" aria-labelledby="rulesTitle">
+  <div class="dialog">
+    <div class="dialog-head"><h2 id="rulesTitle">Grouping Rules</h2><button class="iconbtn" id="closeRules" aria-label="Close">×</button></div>
+    <div class="dialog-body">
+      <div class="rules-note" style="margin-bottom:14px">Put one rule on each line and separate names with a <strong>|</strong>. Names must match the class list. You may put more than two names on a line. For “should be together,” all names on that line stay together. For “can’t be together,” every name on that line is kept apart from the others.</div>
+      <div class="rules-grid">
+        <div><label for="togetherInput">Should be together</label><p class="help">Example: Avery | Jordan</p><textarea id="togetherInput" spellcheck="false" placeholder="Avery | Jordan
+Morgan | Riley | Cameron"></textarea></div>
+        <div><label for="apartInput">Can’t be together</label><p class="help">Example: Taylor | Casey</p><textarea id="apartInput" spellcheck="false" placeholder="Taylor | Casey
+Parker | Quinn"></textarea></div>
+      </div>
+      <div id="rulesFeedback" class="rules-note" style="margin-top:14px">No rules entered.</div>
+    </div>
+    <div class="dialog-foot"><button class="btn" id="clearRules">Clear rules</button><button class="btn" id="cancelRules">Cancel</button><button class="btn primary" id="applyRules">Apply &amp; rerun</button></div>
+  </div>
+</div>
+
+<div class="overlay" id="imageOverlay" role="dialog" aria-modal="true" aria-labelledby="imageTitle">
+  <div class="dialog small">
+    <div class="dialog-head"><h2 id="imageTitle">Compact Groups Image</h2><button class="iconbtn" id="closeImage" aria-label="Close">×</button></div>
+    <div class="dialog-body">
+      <p class="help">Designed to paste neatly onto a slide. Adjust the layout below; the exported image uses a clean light background.</p>
+      <div class="export-options">
+        <label class="export-check"><input id="exportTitle" type="checkbox" checked> Show class title</label>
+        <label class="export-check"><input id="exportBorders" type="checkbox" checked> Show group borders</label>
+        <label class="export-check"><input id="exportColors" type="checkbox" checked> Color-code groups</label>
+        <div class="export-field export-span"><label for="exportTitleText">Class title in image</label><input id="exportTitleText" type="text" maxlength="100" placeholder="Enter a class title"></div>
+        <label class="export-check"><input id="exportMembers" type="checkbox" checked> Show group members</label>
+        <label class="export-check"><input id="exportNumbers" type="checkbox" checked> Number group members</label>
+        <div class="export-field export-span">
+          <label for="exportColumns">Groups across</label>
+          <div class="export-shape-row">
+            <input id="exportColumns" type="range" min="1" max="6" value="2" step="1">
+            <select id="exportPreset" aria-label="Image shape preset"><option value="auto">Auto</option><option value="wide">Wider</option><option value="balanced">Balanced</option><option value="tall">Taller</option><option value="custom" disabled>Custom</option></select>
+          </div>
+          <p class="help" id="exportShapeText" style="margin:6px 0 0">2 groups across</p>
+        </div>
+        <div class="export-field"><label for="exportFont">Font size</label><input id="exportFont" type="range" min="11" max="24" value="14" step="1"></div>
+        <div class="export-field"><label for="exportGap">Spacing</label><input id="exportGap" type="range" min="6" max="28" value="14" step="1"></div>
+      </div>
+      <div class="image-preview"><canvas id="exportCanvas"></canvas></div>
+    </div>
+    <div class="dialog-foot"><button class="btn" id="copyPng">Copy PNG</button><button class="btn" id="downloadPng">Download PNG</button><button class="btn" id="downloadJpg">Download JPG</button></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+'use strict';
+const DEFAULT_ITEMS = [
+  'Avery','Jordan','Morgan','Riley','Cameron','Taylor','Casey','Skyler','Quinn','Parker',
+  'Rowan','Reese','Emerson','Finley','Hayden','Sage','Dakota','Jamie','Kendall','Alex',
+  'Logan','Charlie','Drew','Bailey'
+];
+const DEFAULT_GROUPS = 6;
+const $ = id => document.getElementById(id);
+const els = {
+  teams:$('teams'), itemCount:$('itemCount'), groupCount:$('groupCount'), sizesText:$('sizesText'),
+  className:$('className'), savedClassSelect:$('savedClassSelect'), newClassBtn:$('newClassBtn'), saveClassBtn:$('saveClassBtn'), deleteClassBtn:$('deleteClassBtn'), groupsMain:$('groupsMain'), sizeMain:$('sizeMain'), bgColor:$('bgColor'), bgReset:$('bgReset'), groupColorsToggle:$('groupColorsToggle'),
+  editOverlay:$('editOverlay'), itemsInput:$('itemsInput'), splitPreview:$('splitPreview'),
+  rulesOverlay:$('rulesOverlay'), togetherInput:$('togetherInput'), apartInput:$('apartInput'), rulesFeedback:$('rulesFeedback'), ruleStatus:$('ruleStatus'),
+  shareMenu:$('shareMenu'), toast:$('toast'), visual:$('visual'), pickerResult:$('pickerResult'),
+  pickerPanel:$('pickerPanel'), pickerToggleBtn:$('pickerToggleBtn'), pickerHugeBtn:$('pickerHugeBtn'), pickerHideBtn:$('pickerHideBtn'), confettiToggle:$('confettiToggle'), soundToggle:$('soundToggle'),
+  pickType:$('pickType'), visualType:$('visualType'), imageOverlay:$('imageOverlay'), exportCanvas:$('exportCanvas'),
+  exportTitle:$('exportTitle'), exportTitleText:$('exportTitleText'), exportBorders:$('exportBorders'), exportColors:$('exportColors'), exportMembers:$('exportMembers'), exportNumbers:$('exportNumbers'), exportColumns:$('exportColumns'), exportPreset:$('exportPreset'), exportFont:$('exportFont'), exportGap:$('exportGap'), exportShapeText:$('exportShapeText')
+};
+
+const SAVED_INDEX_KEY='qtg-saved-classes-v1';
+const SAVED_CLASS_PREFIX='qtg-class-v1-';
+const IMAGE_EXPORT_PREFS_KEY='qtg-image-export-prefs-v1';
+let activeSavedId='';
+
+function cookieGet(name){
+  try{
+    const prefix=encodeURIComponent(name)+'=';
+    const hit=document.cookie.split('; ').find(part=>part.startsWith(prefix));
+    return hit?decodeURIComponent(hit.slice(prefix.length)):'';
+  }catch(_){return '';}
+}
+function cookieSet(name,value,maxAge=31536000){
+  try{
+    document.cookie=`${encodeURIComponent(name)}=${encodeURIComponent(value)}; Max-Age=${maxAge}; Path=/; SameSite=Lax`;
+    return cookieGet(name)===value;
+  }catch(_){return false;}
+}
+function cookieDelete(name){try{document.cookie=`${encodeURIComponent(name)}=; Max-Age=0; Path=/; SameSite=Lax`;}catch(_){}}
+function persistentGet(key){
+  const fromCookie=cookieGet(key); if(fromCookie) return fromCookie;
+  try{return localStorage.getItem(key)||'';}catch(_){return '';}
+}
+function persistentSet(key,value){
+  const cookieOkay=value.length<3400 && cookieSet(key,value);
+  try{localStorage.setItem(key,value);}catch(_){}
+  return cookieOkay;
+}
+function persistentDelete(key){cookieDelete(key);try{localStorage.removeItem(key);}catch(_){} }
+function loadSavedIndex(){
+  try{
+    const parsed=JSON.parse(persistentGet(SAVED_INDEX_KEY)||'[]');
+    return Array.isArray(parsed)?parsed.filter(x=>x&&typeof x.id==='string'&&typeof x.name==='string'):[];
+  }catch(_){return [];}
+}
+function saveSavedIndex(index){persistentSet(SAVED_INDEX_KEY,JSON.stringify(index));}
+function readSavedClass(id){
+  if(!id)return null;
+  try{const x=JSON.parse(persistentGet(SAVED_CLASS_PREFIX+id)||'');return x&&Array.isArray(x.items)?x:null;}catch(_){return null;}
+}
+function currentClassSnapshot(){
+  return {name:state.className.trim(),items:state.items.slice(),groups:state.groups,groupNames:(state.groupNames||[]).slice(),togetherText:state.togetherText||'',apartText:state.apartText||'',targetSize:targetSize,lastSizingMode:lastSizingMode,savedAt:Date.now()};
+}
+function persistRulesForActiveClass(){
+  if(!activeSavedId)return;
+  const snap=readSavedClass(activeSavedId);
+  if(!snap)return;
+  snap.togetherText=state.togetherText||'';
+  snap.apartText=state.apartText||'';
+  snap.savedAt=Date.now();
+  persistentSet(SAVED_CLASS_PREFIX+activeSavedId,JSON.stringify(snap));
+}
+function imageExportPreferencesSnapshot(){
+  return {
+    showTitle:!!els.exportTitle.checked,
+    showBorders:!!els.exportBorders.checked,
+    colorGroups:!!els.exportColors.checked,
+    showMembers:!!els.exportMembers.checked,
+    numberMembers:!!els.exportNumbers.checked,
+    columns:clampInt(els.exportColumns.value,1,100,autoExportColumns()),
+    preset:els.exportPreset.value||'auto',
+    fontSize:clampInt(els.exportFont.value,11,24,14),
+    spacing:clampInt(els.exportGap.value,6,28,14)
+  };
+}
+function saveImageExportPreferences(){
+  persistentSet(IMAGE_EXPORT_PREFS_KEY,JSON.stringify(imageExportPreferencesSnapshot()));
+}
+function loadImageExportPreferences(){
+  let ex=null;
+  try{ex=JSON.parse(persistentGet(IMAGE_EXPORT_PREFS_KEY)||'null');}catch(_){ex=null;}
+  if(!ex||typeof ex!=='object')return;
+  if(typeof ex.showTitle==='boolean')els.exportTitle.checked=ex.showTitle;
+  if(typeof ex.showBorders==='boolean')els.exportBorders.checked=ex.showBorders;
+  if(typeof ex.colorGroups==='boolean')els.exportColors.checked=ex.colorGroups;
+  if(typeof ex.showMembers==='boolean')els.exportMembers.checked=ex.showMembers;
+  if(typeof ex.numberMembers==='boolean')els.exportNumbers.checked=ex.numberMembers;
+  if(Number.isFinite(Number(ex.columns))){els.exportColumns.value=clampInt(ex.columns,1,Math.max(1,state.groups),autoExportColumns());els.exportColumns.dataset.touched='1';}
+  if(['auto','wide','balanced','tall','custom'].includes(ex.preset))els.exportPreset.value=ex.preset;
+  if(Number.isFinite(Number(ex.fontSize)))els.exportFont.value=clampInt(ex.fontSize,11,24,14);
+  if(Number.isFinite(Number(ex.spacing)))els.exportGap.value=clampInt(ex.spacing,6,28,14);
+}
+function refreshSavedClasses(selectedId=activeSavedId){
+  const index=loadSavedIndex().sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
+  els.savedClassSelect.innerHTML='<option value="">Choose a saved class…</option>'+index.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(x.name)}</option>`).join('');
+  if(selectedId&&index.some(x=>x.id===selectedId)){els.savedClassSelect.value=selectedId;activeSavedId=selectedId;}else{els.savedClassSelect.value='';activeSavedId='';}
+  els.deleteClassBtn.disabled=!activeSavedId;
+}
+function saveCurrentClass(){
+  const name=state.className.trim();
+  if(!name){showToast('Enter a class name before saving');els.className.focus();return;}
+  let index=loadSavedIndex();
+  let id=activeSavedId;
+  if(!id){
+    const same=index.find(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase());
+    id=same?same.id:(Date.now().toString(36)+Math.random().toString(36).slice(2,8));
+  }
+  const snap=currentClassSnapshot();
+  persistentSet(SAVED_CLASS_PREFIX+id,JSON.stringify(snap));
+  const pos=index.findIndex(x=>x.id===id);
+  if(pos>=0)index[pos]={id,name};else index.push({id,name});
+  saveSavedIndex(index); activeSavedId=id; refreshSavedClasses(id); updateUrl(false); showToast(`Saved ${name}`);
+}
+function loadSavedClass(id){
+  const snap=readSavedClass(id); if(!snap){showToast('That saved class could not be loaded');refreshSavedClasses();return;}
+  activeSavedId=id;
+  state={items:snap.items.slice(),groups:Math.max(1,Math.min(snap.items.length||1,clampInt(snap.groups,1,100,DEFAULT_GROUPS))),className:String(snap.name||'').slice(0,80),groupNames:Array.isArray(snap.groupNames)?snap.groupNames.map(x=>String(x||'').slice(0,60)):[],togetherText:String(snap.togetherText||''),apartText:String(snap.apartText||'')};
+  lastSizingMode=snap.lastSizingMode==='size'?'size':'groups';
+  targetSize=clampInt(snap.targetSize,1,100,targetSizeFor(state.groups,state.items.length));
+  currentTeams=[]; render(); refreshSavedClasses(id); showToast(`Loaded ${state.className}`);
+}
+function deleteSavedClass(){
+  if(!activeSavedId)return;
+  const index=loadSavedIndex();
+  const found=index.find(x=>x.id===activeSavedId);
+  const label=found?.name||state.className.trim()||'this saved class';
+  if(!window.confirm(`Are you sure you want to delete “${label}”?
+
+This cannot be undone.`))return;
+  const oldId=activeSavedId;
+  persistentDelete(SAVED_CLASS_PREFIX+oldId);
+  saveSavedIndex(index.filter(x=>x.id!==oldId));
+  activeSavedId='';
+  refreshSavedClasses();
+  showToast(found?`Deleted ${found.name}`:'Saved class deleted');
+}
+function createNewClass(){
+  activeSavedId='';
+  state={items:DEFAULT_ITEMS.slice(),groups:Math.min(DEFAULT_GROUPS,DEFAULT_ITEMS.length),className:'',groupNames:[],togetherText:'',apartText:''};
+  lastSizingMode='groups';
+  targetSize=targetSizeFor(state.groups,state.items.length);
+  currentTeams=[];
+  render();
+  refreshSavedClasses();
+  updateUrl(false);
+  openEdit();
+  showToast('New class started — replace the sample names, then enter a class name and save');
+}
+function parseItems(raw){ return raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
+function clampInt(v,min,max,fallback){ const n=Number.parseInt(v,10); return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback; }
+function loadFromUrl(){
+  const p=new URLSearchParams(location.search);
+  let items=p.has('items')?parseItems(p.get('items')||''):DEFAULT_ITEMS.slice();
+  if(!items.length) items=DEFAULT_ITEMS.slice();
+  const groups=Math.min(items.length,clampInt(p.get('grp'),1,100,DEFAULT_GROUPS));
+  const groupNames=p.has('gnames')?(p.get('gnames')||'').split('\n').map(x=>x.slice(0,60)):[];
+  return {items,groups,className:(p.get('class')||'').slice(0,80),groupNames,togetherText:(p.get('together')||''),apartText:(p.get('apart')||'')};
+}
+let state=loadFromUrl();
+let currentTeams=[];
+let lastSizingMode='groups';
+let targetSize=Math.max(1,Math.ceil(state.items.length/Math.max(1,state.groups)));
+function storageGet(key){try{return localStorage.getItem(key);}catch(_){return null;}}
+function storageSet(key,val){try{localStorage.setItem(key,val);}catch(_){}}
+let memberScale=clampInt(storageGet('qtg-font-scale'),80,150,100);
+let groupColorsEnabled=storageGet('qtg-group-colors')!=='0';
+const GROUP_PALETTE_LIGHT=[
+  ['#eff6ff','#dbeafe','#93c5fd'],['#f0fdf4','#dcfce7','#86efac'],['#fff7ed','#ffedd5','#fdba74'],['#fdf4ff','#fae8ff','#d8b4fe'],
+  ['#fff1f2','#ffe4e6','#fda4af'],['#ecfeff','#cffafe','#67e8f9'],['#fefce8','#fef9c3','#fde047'],['#f5f3ff','#ede9fe','#c4b5fd']
+];
+const GROUP_PALETTE_DARK=[
+  ['#172554','#1e3a8a','#3b82f6'],['#052e16','#14532d','#22c55e'],['#431407','#7c2d12','#f97316'],['#3b0764','#581c87','#a855f7'],
+  ['#4c0519','#881337','#f43f5e'],['#083344','#164e63','#06b6d4'],['#422006','#713f12','#eab308'],['#1e1b4b','#312e81','#6366f1']
+];
+function groupPalette(index,dark=document.documentElement.dataset.theme==='dark'){const p=(dark?GROUP_PALETTE_DARK:GROUP_PALETTE_LIGHT)[index%GROUP_PALETTE_LIGHT.length];return {bg:p[0],head:p[1],border:p[2]};}
+function groupColorStyle(index){if(!groupColorsEnabled)return '';const c=groupPalette(index);return ` style="--group-bg:${c.bg};--group-head:${c.head};--group-border:${c.border}"`;}
+
+
+function randomInt(maxExclusive){
+  if(maxExclusive<=0) return 0;
+  if(window.crypto&&crypto.getRandomValues){
+    const maxUint=0x100000000,limit=maxUint-(maxUint%maxExclusive),buf=new Uint32Array(1);
+    do{crypto.getRandomValues(buf);}while(buf[0]>=limit);
+    return buf[0]%maxExclusive;
+  }
+  return Math.floor(Math.random()*maxExclusive);
+}
+function shuffle(input){ const a=input.slice(); for(let i=a.length-1;i>0;i--){const j=randomInt(i+1);[a[i],a[j]]=[a[j],a[i]];} return a; }
+function splitRuleLine(line){ return line.split(/\s*(?:\||;|\s\+\s)\s*/).map(s=>s.trim()).filter(Boolean); }
+function parseRuleText(text){ return text.split(/\r?\n/).map(s=>s.trim()).filter(Boolean).map(splitRuleLine).filter(a=>a.length>1); }
+function buildConstraintModel(items=state.items,togetherText=state.togetherText,apartText=state.apartText){
+  const canon=new Map(items.map(n=>[n.trim().toLocaleLowerCase(),n]));
+  const unknown=new Set();
+  const resolve=name=>{const v=canon.get(name.trim().toLocaleLowerCase());if(!v)unknown.add(name.trim());return v||null;};
+  const togetherRaw=parseRuleText(togetherText).map(line=>line.map(resolve).filter(Boolean)).filter(a=>a.length>1);
+  const apartRaw=parseRuleText(apartText).map(line=>line.map(resolve).filter(Boolean)).filter(a=>a.length>1);
+  const parent=new Map(items.map(n=>[n,n]));
+  const find=x=>{let r=x;while(parent.get(r)!==r)r=parent.get(r);while(parent.get(x)!==x){const p=parent.get(x);parent.set(x,r);x=p;}return r;};
+  const union=(a,b)=>{a=find(a);b=find(b);if(a!==b)parent.set(b,a);};
+  togetherRaw.forEach(line=>{for(let i=1;i<line.length;i++)union(line[0],line[i]);});
+  const byRoot=new Map();items.forEach(n=>{const r=find(n);if(!byRoot.has(r))byRoot.set(r,[]);byRoot.get(r).push(n);});
+  const bundles=[...byRoot.values()];const bundleOf=new Map();bundles.forEach((b,i)=>b.forEach(n=>bundleOf.set(n,i)));
+  const apartPairs=[]; const contradictions=[];
+  apartRaw.forEach(line=>{for(let i=0;i<line.length;i++)for(let j=i+1;j<line.length;j++){const a=line[i],b=line[j],ai=bundleOf.get(a),bi=bundleOf.get(b);apartPairs.push([a,b]);if(ai===bi)contradictions.push(`${a} and ${b} are both set to stay together and stay apart.`);}});
+  const adj=bundles.map(()=>new Set());apartPairs.forEach(([a,b])=>{const ai=bundleOf.get(a),bi=bundleOf.get(b);if(ai!==bi){adj[ai].add(bi);adj[bi].add(ai);}});
+  return {bundles,bundleOf,adj,apartPairs,togetherRaw,apartRaw,unknown:[...unknown],contradictions};
+}
+function constraintCounts(){const m=buildConstraintModel();return {together:m.togetherRaw.length,apart:m.apartRaw.length,model:m};}
+function splitIntoGroups(items,n){
+  const count=Math.max(1,Math.min(n,100,Math.max(1,items.length))), model=buildConstraintModel(items), bundleCount=model.bundles.length;
+  if(!model.togetherRaw.length&&!model.apartRaw.length){
+    const groups=Array.from({length:count},()=>[]);
+    shuffle(items).forEach((item,i)=>groups[i%count].push(item));
+    return {groups,model,forcedViolations:0};
+  }
+
+  const total=items.length, ideal=total/count, softCap=Math.ceil(ideal);
+  let best=null;
+  const attempts=Math.min(3000,Math.max(500,bundleCount*80));
+
+  function scoreAssignment(compGroups,sizes,where){
+    let violations=0;
+    for(let i=0;i<model.adj.length;i++) for(const j of model.adj[i]) if(j>i&&where[i]===where[j]) violations++;
+    const empties=bundleCount>=count?sizes.filter(x=>x===0).length:0;
+    const maxSize=Math.max(...sizes),minSize=Math.min(...sizes);
+    const imbalance=maxSize-minSize;
+    const dev2=sizes.reduce((sum,x)=>sum+Math.pow(x-ideal,2),0);
+    const over=sizes.reduce((sum,x)=>sum+Math.pow(Math.max(0,x-softCap),2),0);
+    // Rules come first. Among equally rule-valid arrangements, strongly prefer
+    // using every group and keeping sizes as even as the bundles allow.
+    return {violations,empties,imbalance,over,dev2,key:[violations,empties,imbalance,over,dev2]};
+  }
+  function better(a,b){
+    if(!b)return true;
+    for(let i=0;i<a.key.length;i++){if(a.key[i]!==b.key[i])return a.key[i]<b.key[i];}
+    return false;
+  }
+
+  for(let attempt=0;attempt<attempts;attempt++){
+    const order=model.bundles.map((b,i)=>({i,size:b.length,degree:model.adj[i].size,jitter:Math.random()}))
+      .sort((x,y)=>(y.degree-x.degree)||(y.size-x.size)||(x.jitter-y.jitter));
+    const compGroups=Array.from({length:count},()=>[]),sizes=Array(count).fill(0),where=Array(bundleCount).fill(-1);
+    let cursor=0;
+
+    // If there are enough independent bundles to populate every group, seed
+    // exactly one bundle into each group first. This prevents constraints from
+    // accidentally creating empty groups or a lone tiny group unnecessarily.
+    if(bundleCount>=count){
+      const seedGroups=shuffle(Array.from({length:count},(_,i)=>i));
+      for(let k=0;k<count;k++){
+        const comp=order[cursor++],g=seedGroups[k];
+        compGroups[g].push(comp.i);sizes[g]+=comp.size;where[comp.i]=g;
+      }
+    }
+
+    for(;cursor<order.length;cursor++){
+      const comp=order[cursor];
+      let minConf=Infinity,candidates=[];
+      for(let g=0;g<count;g++){
+        let conflicts=0;
+        for(const other of compGroups[g]) if(model.adj[comp.i].has(other)) conflicts++;
+        if(conflicts<minConf){minConf=conflicts;candidates=[g];}
+        else if(conflicts===minConf)candidates.push(g);
+      }
+
+      // Among placements with the fewest immediate rule conflicts, choose the
+      // one that best preserves the target group sizes. Add a tiny random term
+      // so repeated attempts explore different valid colorings.
+      let bestPenalty=Infinity,choices=[];
+      for(const g of candidates){
+        const projected=sizes[g]+comp.size;
+        const overflow=Math.max(0,projected-softCap);
+        const before=Math.pow(sizes[g]-ideal,2),after=Math.pow(projected-ideal,2);
+        const penalty=overflow*overflow*10000+(after-before)*100+sizes[g]*2+Math.random();
+        if(penalty<bestPenalty-1e-9){bestPenalty=penalty;choices=[g];}
+        else if(Math.abs(penalty-bestPenalty)<1e-9)choices.push(g);
+      }
+      const g=choices[randomInt(choices.length)];
+      compGroups[g].push(comp.i);sizes[g]+=comp.size;where[comp.i]=g;
+    }
+
+    // Local improvement: move whole bundles when that reduces imbalance
+    // without increasing rule violations. This is especially helpful after
+    // restrictive keep-apart rules.
+    for(let pass=0;pass<80;pass++){
+      const before=scoreAssignment(compGroups,sizes,where);
+      let improved=false;
+      const groupOrder=shuffle(Array.from({length:count},(_,i)=>i)).sort((a,b)=>sizes[b]-sizes[a]);
+      outer: for(const from of groupOrder){
+        const comps=shuffle(compGroups[from]);
+        for(const bi of comps){
+          if(compGroups[from].length===1&&bundleCount>=count)continue;
+          const bsize=model.bundles[bi].length;
+          for(const to of shuffle(Array.from({length:count},(_,i)=>i))){
+            if(to===from)continue;
+            let added=0;for(const other of compGroups[to])if(model.adj[bi].has(other))added++;
+            let removed=0;for(const other of compGroups[from])if(other!==bi&&model.adj[bi].has(other))removed++;
+            if(added>removed)continue;
+            const fi=compGroups[from].indexOf(bi);
+            compGroups[from].splice(fi,1);compGroups[to].push(bi);
+            sizes[from]-=bsize;sizes[to]+=bsize;where[bi]=to;
+            const after=scoreAssignment(compGroups,sizes,where);
+            if(better(after,before)) {improved=true;break outer;}
+            compGroups[to].pop();compGroups[from].splice(fi,0,bi);
+            sizes[from]+=bsize;sizes[to]-=bsize;where[bi]=from;
+          }
+        }
+      }
+      if(!improved)break;
+    }
+
+    const sc=scoreAssignment(compGroups,sizes,where);
+    if(!best||better(sc,best.sc)){
+      best={sc,compGroups:compGroups.map(g=>g.slice()),sizes:sizes.slice(),where:where.slice()};
+      if(sc.violations===0&&sc.empties===0&&sc.imbalance<=1&&!model.contradictions.length)break;
+    }
+  }
+
+  const groups=best.compGroups.map(comps=>shuffle(comps.flatMap(i=>model.bundles[i])));
+  return {groups,model,forcedViolations:best.sc.violations+model.contradictions.length};
+}
+function evaluateCurrentRules(){
+  const model=buildConstraintModel(), groupOf=new Map();currentTeams.forEach((team,g)=>team.forEach(n=>groupOf.set(n,g)));
+  const names=new Set(), messages=[];
+  for(const bundle of model.bundles){if(bundle.length<2)continue;const gs=[...new Set(bundle.map(n=>groupOf.get(n)))];if(gs.length>1){bundle.forEach(n=>names.add(n));messages.push(`${bundle.join(', ')} should be together.`);}}
+  for(const [a,b] of model.apartPairs){if(groupOf.get(a)===groupOf.get(b)&&groupOf.has(a)&&groupOf.has(b)){names.add(a);names.add(b);messages.push(`${a} and ${b} should be apart.`);}}
+  return {model,names,messages};
+}
+function escapeHtml(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+function groupLabel(index){ const custom=state.groupNames&&state.groupNames[index]?String(state.groupNames[index]).trim():''; return custom||`Group ${index+1}`; }
+function serializedGroupNames(){ const names=(state.groupNames||[]).slice(0,state.groups).map(x=>String(x||'').trim().slice(0,60)); while(names.length&&!names[names.length-1]) names.pop(); return names; }
+function targetSizeFor(groups,count=state.items.length){ return Math.max(1,Math.ceil(count/Math.max(1,groups))); }
+function groupsForTargetSize(size,count=state.items.length){ return Math.max(1,Math.min(100,Math.ceil(count/Math.max(1,size)))); }
+function applyFontScale(){ document.documentElement.style.setProperty('--member-size',(memberScale/100)+'rem'); storageSet('qtg-font-scale',String(memberScale)); }
+
+function render({rerandomize=true}={}){
+  if(rerandomize||!currentTeams.length){const made=splitIntoGroups(state.items,state.groups);currentTeams=made.groups;}
+  const ruleEval=evaluateCurrentRules();
+  els.teams.innerHTML=currentTeams.map((team,i)=>{const label=groupLabel(i);return `<section class="card${groupColorsEnabled?' group-colored':''}" data-group-index="${i}"${groupColorStyle(i)}><div class="card-head"><input class="group-name-input" type="text" maxlength="60" value="${escapeHtml(label)}" data-group-name-index="${i}" aria-label="Name for group ${i+1}" title="Click to rename this group"><div class="card-head-tools"><button class="group-shuffle" type="button" data-shuffle-group="${i}" title="Randomize order within ${escapeHtml(label)}" aria-label="Randomize order within ${escapeHtml(label)}">↻</button></div></div>${team.length?`<ol class="team-list" data-group-index="${i}">${team.map(n=>`<li class="member" draggable="true" data-name="${escapeHtml(n)}" data-group-index="${i}" title="Drag to another group">${escapeHtml(n)}<span class="drag-handle" aria-hidden="true">⋮⋮</span></li>`).join('')}</ol>`:`<ol class="team-list" data-group-index="${i}"><li class="empty" style="list-style:none">Drop a name here</li></ol>`}</section>`}).join('');
+  els.itemCount.textContent=state.items.length; els.groupCount.textContent=state.groups;
+  els.groupsMain.max=Math.max(1,Math.min(100,state.items.length)); els.groupsMain.value=state.groups; els.sizeMain.value=targetSize; els.className.value=state.className;
+  const sizes=currentTeams.map(t=>t.length),unique=[...new Set(sizes)].sort((a,b)=>b-a);
+  els.sizesText.textContent=unique.length===1?`${unique[0]} per group`:`Group sizes: ${unique.join(' or ')}`;
+  renderRuleStatus(ruleEval); renderVisual(); clearPicker(); updateUrl(false);
+}
+function renderRuleStatus(ruleEval=evaluateCurrentRules()){
+  const m=ruleEval.model,t=m.togetherRaw.length,a=m.apartRaw.length;
+  if(!t&&!a&&!m.unknown.length){els.ruleStatus.className='rule-status ok';els.ruleStatus.innerHTML='<div><strong>No grouping rules</strong></div><button class="btn compact" id="rulesStatusBtn">Edit rules</button>';bindRuleStatus();return;}
+  const issues=[...m.contradictions,...ruleEval.messages];
+  els.ruleStatus.className='rule-status '+(issues.length||m.unknown.length?'warn':'ok');
+  let text=`<span class="rule-badge">${t} together</span><span class="rule-badge">${a} apart</span>`;
+  if(m.unknown.length) text+=` <strong>${m.unknown.length} unmatched name${m.unknown.length===1?'':'s'}</strong>`;
+  else if(issues.length) text+=` <strong>${issues.length} rule conflict${issues.length===1?'':'s'} in current groups</strong>`;
+  else text+=' <strong>All grouping rules satisfied</strong>';
+  els.ruleStatus.innerHTML=`<div>${text}</div><button class="btn compact" id="rulesStatusBtn">Edit rules</button>`;bindRuleStatus();
+}
+function bindRuleStatus(){$('rulesStatusBtn')?.addEventListener('click',openRules);}
+function buildShareUrl(){
+  const u=new URL(location.href); u.search='';
+  u.searchParams.set('items',state.items.join('\n')); u.searchParams.set('grp',String(state.groups));
+  if(state.className.trim()) u.searchParams.set('class',state.className.trim());
+  const groupNames=serializedGroupNames(); if(groupNames.length) u.searchParams.set('gnames',groupNames.join('\n'));
+  if(state.togetherText.trim()) u.searchParams.set('together',state.togetherText.trim());
+  if(state.apartText.trim()) u.searchParams.set('apart',state.apartText.trim());
+  return u.href;
+}
+function updateUrl(push){ try{history[push?'pushState':'replaceState'](null,'',buildShareUrl());}catch(_){}}
+function teamsAsText(){ const heading=state.className.trim()?state.className.trim()+'\n\n':''; return heading+currentTeams.map((team,i)=>`${groupLabel(i)}\n${team.map((n,j)=>`${j+1}. ${n}`).join('\n')}`).join('\n\n'); }
+
+let toastTimer;
+function showToast(msg){ clearTimeout(toastTimer); els.toast.textContent=msg; els.toast.classList.add('show'); toastTimer=setTimeout(()=>els.toast.classList.remove('show'),1900); }
+async function copyText(text,message){
+  try{await navigator.clipboard.writeText(text);showToast(message);}catch(_){const ta=document.createElement('textarea');ta.value=text;ta.style.cssText='position:fixed;opacity:0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');showToast(message);}catch(e){showToast('Could not copy automatically');}ta.remove();}
+}
+
+function openRules(){els.togetherInput.value=state.togetherText||'';els.apartInput.value=state.apartText||'';updateRulesFeedback();els.rulesOverlay.classList.add('open');setTimeout(()=>els.togetherInput.focus(),0);}
+function closeRules(){els.rulesOverlay.classList.remove('open');}
+function updateRulesFeedback(){
+  const m=buildConstraintModel(state.items,els.togetherInput.value,els.apartInput.value);const t=m.togetherRaw.length,a=m.apartRaw.length;let parts=[`${t} together rule${t===1?'':'s'}`,`${a} apart rule${a===1?'':'s'}`];
+  if(m.unknown.length)parts.push(`Unmatched: ${m.unknown.join(', ')}`);if(m.contradictions.length)parts.push(`Conflict: ${m.contradictions[0]}`);
+  els.rulesFeedback.textContent=parts.join(' · ');
+}
+function applyRules(){state.togetherText=els.togetherInput.value.trim();state.apartText=els.apartInput.value.trim();persistRulesForActiveClass();closeRules();render();}
+function clearRules(){els.togetherInput.value='';els.apartInput.value='';updateRulesFeedback();}
+function openEdit(){ els.itemsInput.value=state.items.join('\n'); updatePreview(); els.editOverlay.classList.add('open'); setTimeout(()=>els.itemsInput.focus(),0); }
+function closeEdit(){ els.editOverlay.classList.remove('open'); }
+function updatePreview(){ const count=parseItems(els.itemsInput.value).length; const groups=lastSizingMode==='size'?groupsForTargetSize(clampInt(els.sizeMain.value,1,100,1),count):Math.max(1,state.groups); const size=Math.max(1,Math.ceil(count/groups)); els.splitPreview.textContent=`${count} name${count===1?'':'s'} → ${groups} group${groups===1?'':'s'} (about ${size} per group)`; }
+function applyEdit(){
+  const items=parseItems(els.itemsInput.value); if(!items.length){showToast('Add at least one name');return;}
+  state.items=items;
+  if(lastSizingMode==='size') state.groups=groupsForTargetSize(targetSize,items.length);
+  else { state.groups=Math.max(1,Math.min(state.groups,100,items.length)); targetSize=targetSizeFor(state.groups,items.length); }
+  closeEdit(); render();
+}
+function rerun(){ render(); }
+function syncFromGroups(){ if(!els.groupsMain.value) return; lastSizingMode='groups'; const g=clampInt(els.groupsMain.value,1,Math.max(1,Math.min(100,state.items.length)),state.groups); state.groups=g; targetSize=targetSizeFor(g); els.sizeMain.value=targetSize; render(); }
+function syncFromSize(){ if(!els.sizeMain.value) return; lastSizingMode='size'; const size=clampInt(els.sizeMain.value,1,100,targetSize); targetSize=size; state.groups=groupsForTargetSize(size); els.groupsMain.value=state.groups; render(); }
+
+function renderVisual(){
+  const kind=els.visualType.value;
+  if(kind==='spinner') els.visual.innerHTML='<div class="spinner-wrap"><div class="spinner-wheel" id="spinnerWheel"></div><div class="spinner-hub">?</div></div>';
+  else if(kind==='balls') els.visual.innerHTML='<div class="ball-machine" id="ballMachine"><div class="globe"><span class="ball">1</span><span class="ball">2</span><span class="ball">3</span><span class="ball">4</span><span class="ball">5</span></div><div class="machine-base"></div></div>';
+  else if(kind==='hat') els.visual.innerHTML='<div class="hat-wrap" id="hatWrap"><div class="hat-body"><div class="hat-crown"></div><div class="hat-band"></div><div class="hat-brim"></div><div class="hat-opening"></div></div><div class="hat-paper" id="hatPaper">?</div><div class="hat-front-lip"></div></div>';
+  else els.visual.innerHTML='<div class="robot" id="robot">🤖</div><div class="robot-screen" id="robotScreen">READY</div>';
+}
+function clearPicker(){ els.pickerResult.innerHTML='<div class="small">Ready when you are.</div>'; }
+function resultData(){
+  if(els.pickType.value==='group'){
+    if(!currentTeams.length) return null; const i=randomInt(currentTeams.length); return {label:groupLabel(i),detail:currentTeams[i].join(' · ')};
+  }
+  if(els.pickType.value==='member-position'){
+    const nonempty=currentTeams.filter(team=>team.length>0); if(!nonempty.length) return null;
+    const maxCommon=Math.min(...nonempty.map(team=>team.length)); if(maxCommon<1) return null;
+    const position=randomInt(maxCommon)+1;
+    const chosen=currentTeams.map((team,i)=>team[position-1]?`${groupLabel(i)}: ${team[position-1]}`:null).filter(Boolean);
+    return {label:`Group Member ${position}`,detail:chosen.join(' · ')};
+  }
+  if(!state.items.length) return null; const name=state.items[randomInt(state.items.length)]; return {label:name,detail:'Selected student'};
+}
+let audioCtx=null;
+function playPickSound(){
+  if(!els.soundToggle.checked) return;
+  try{
+    audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();
+    const now=audioCtx.currentTime;
+    [[523.25,0],[659.25,.1],[783.99,.2]].forEach(([freq,delay])=>{
+      const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+      osc.type='sine';osc.frequency.value=freq;
+      gain.gain.setValueAtTime(.0001,now+delay);gain.gain.exponentialRampToValueAtTime(.08,now+delay+.018);gain.gain.exponentialRampToValueAtTime(.0001,now+delay+.18);
+      osc.connect(gain);gain.connect(audioCtx.destination);osc.start(now+delay);osc.stop(now+delay+.2);
+    });
+  }catch(_){}
+}
+function launchConfetti(){
+  if(!els.confettiToggle.checked) return;
+  const layer=document.createElement('div');layer.className='confetti-layer';
+  const colors=['#2563eb','#f59e0b','#10b981','#ec4899','#8b5cf6','#ef4444','#06b6d4','#facc15'];
+  const count=84;
+  for(let i=0;i<count;i++){
+    const piece=document.createElement('span');piece.className='confetti-piece';
+    piece.style.left=(Math.random()*100)+'vw';piece.style.background=colors[i%colors.length];
+    piece.style.setProperty('--dur',(1.65+Math.random()*1.5)+'s');piece.style.setProperty('--drift',((-110+Math.random()*220))+'px');piece.style.setProperty('--spin',((360+Math.random()*900)*(Math.random()<.5?-1:1))+'deg');
+    piece.style.animationDelay=(Math.random()*.22)+'s';
+    if(i%3===0){piece.style.width='7px';piece.style.height='7px';piece.style.borderRadius='50%';}
+    layer.appendChild(piece);
+  }
+  document.body.appendChild(layer);setTimeout(()=>layer.remove(),3400);
+}
+let pickerHidden=false,pickerHuge=false;
+function setPickerHidden(hidden){
+  pickerHidden=!!hidden;
+  document.querySelector('.workspace')?.classList.toggle('picker-hidden',pickerHidden);
+  els.pickerToggleBtn.textContent=pickerHidden?'Show picker':'Picker';
+  els.pickerToggleBtn.title=pickerHidden?'Show random picker':'Hide random picker';
+  if(pickerHidden&&pickerHuge) setPickerHuge(false);
+}
+function setPickerHuge(huge){
+  if(huge&&pickerHidden) setPickerHidden(false);
+  pickerHuge=!!huge;
+  els.pickerPanel.classList.toggle('huge',pickerHuge);
+  document.body.classList.toggle('picker-huge',pickerHuge);
+  els.pickerHugeBtn.textContent=pickerHuge?'Normal':'Huge';
+  els.pickerHugeBtn.title=pickerHuge?'Return picker to normal size':'Make the picker dominate the screen';
+}
+let picking=false;
+function runPicker(){
+  if(picking) return; const result=resultData(); if(!result) return;
+  if(els.soundToggle.checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume?.();}catch(_){}}
+  picking=true; $('pickBtn').disabled=true; els.pickerResult.innerHTML='<div class="small">Choosing…</div>';
+  const kind=els.visualType.value;
+  if(kind==='spinner'){
+    const wheel=$('spinnerWheel'); const turns=5+randomInt(4),deg=turns*360+randomInt(360); wheel.style.transform=`rotate(${deg}deg)`;
+  }else if(kind==='balls') $('ballMachine')?.classList.add('running');
+  else if(kind==='hat'){const h=$('hatWrap');const paper=$('hatPaper');if(paper)paper.textContent=result.label;h?.classList.remove('running');void h?.offsetWidth;h?.classList.add('running');}
+  else { $('robot')?.classList.add('running'); const screen=$('robotScreen'); if(screen) screen.textContent='THINKING…'; }
+  setTimeout(()=>{
+    if(kind==='balls') $('ballMachine')?.classList.remove('running');
+    if(kind==='hat') $('hatWrap')?.classList.remove('running');
+    if(kind==='robot'){ $('robot')?.classList.remove('running'); const screen=$('robotScreen'); if(screen) screen.textContent=result.label.toUpperCase(); }
+    els.pickerResult.innerHTML=`<div class="big">${escapeHtml(result.label)}</div><div class="small">${escapeHtml(result.detail)}</div>`;
+    playPickSound(); launchConfetti();
+    picking=false; $('pickBtn').disabled=false;
+  },kind==='spinner'?2200:kind==='hat'?1500:1500);
+}
+
+let dragData=null;
+function moveName(name,from,to){if(from===to||!currentTeams[from]||!currentTeams[to])return;const i=currentTeams[from].indexOf(name);if(i<0)return;currentTeams[from].splice(i,1);currentTeams[to].push(name);render({rerandomize:false});showToast(`${name} moved to ${groupLabel(to)}`);}
+function shuffleWithinGroup(index){if(!currentTeams[index]||currentTeams[index].length<2)return;currentTeams[index]=shuffle(currentTeams[index]);render({rerandomize:false});showToast(`${groupLabel(index)} order randomized`);}
+els.teams.addEventListener('click',e=>{const b=e.target.closest('[data-shuffle-group]');if(!b)return;shuffleWithinGroup(Number(b.dataset.shuffleGroup));});
+els.teams.addEventListener('input',e=>{const input=e.target.closest('[data-group-name-index]');if(!input)return;const i=Number(input.dataset.groupNameIndex);state.groupNames=state.groupNames||[];const typed=input.value.slice(0,60);state.groupNames[i]=(typed.trim()===`Group ${i+1}`?'':typed);updateUrl(false);if(els.imageOverlay.classList.contains('open'))makeExportCanvas();});
+els.teams.addEventListener('blur',e=>{const input=e.target.closest('[data-group-name-index]');if(!input)return;const i=Number(input.dataset.groupNameIndex);const cleaned=input.value.trim().slice(0,60);state.groupNames=state.groupNames||[];state.groupNames[i]=(cleaned&&cleaned!==`Group ${i+1}`)?cleaned:'';input.value=groupLabel(i);updateUrl(false);},true);
+els.teams.addEventListener('dragstart',e=>{const li=e.target.closest('.member');if(!li)return;dragData={name:li.dataset.name,from:Number(li.dataset.groupIndex)};li.classList.add('dragging');if(e.dataTransfer){e.dataTransfer.effectAllowed='move';e.dataTransfer.setData('text/plain',li.dataset.name);}});
+els.teams.addEventListener('dragend',e=>{e.target.closest('.member')?.classList.remove('dragging');document.querySelectorAll('.card.drag-over').forEach(c=>c.classList.remove('drag-over'));dragData=null;});
+els.teams.addEventListener('dragover',e=>{const card=e.target.closest('.card');if(!card||!dragData)return;e.preventDefault();document.querySelectorAll('.card.drag-over').forEach(c=>c!==card&&c.classList.remove('drag-over'));card.classList.add('drag-over');if(e.dataTransfer)e.dataTransfer.dropEffect='move';});
+els.teams.addEventListener('dragleave',e=>{const card=e.target.closest('.card');if(card&&!card.contains(e.relatedTarget))card.classList.remove('drag-over');});
+els.teams.addEventListener('drop',e=>{const card=e.target.closest('.card');if(!card||!dragData)return;e.preventDefault();card.classList.remove('drag-over');moveName(dragData.name,dragData.from,Number(card.dataset.groupIndex));});
+
+function defaultBackgroundForTheme(theme){return theme==='dark'?'#0e1522':'#f5f7fb';}
+function normalizeHexColor(value){
+  const v=String(value||'').trim();
+  return /^#[0-9a-f]{6}$/i.test(v)?v.toLowerCase():'';
+}
+function colorLuminance(hex){
+  const h=normalizeHexColor(hex)||'#ffffff';
+  const rgb=[1,3,5].map(i=>parseInt(h.slice(i,i+2),16)/255).map(c=>c<=.04045?c/12.92:Math.pow((c+.055)/1.055,2.4));
+  return .2126*rgb[0]+.7152*rgb[1]+.0722*rgb[2];
+}
+function contrastRatio(l1,l2){const hi=Math.max(l1,l2),lo=Math.min(l1,l2);return (hi+.05)/(lo+.05);}
+function updatePageContrast(background){
+  const bg=normalizeHexColor(background)||defaultBackgroundForTheme(document.documentElement.dataset.theme||'light');
+  const lum=colorLuminance(bg), dark='#172033', light='#f8fafc';
+  const darkLum=colorLuminance(dark), lightLum=colorLuminance(light);
+  const useLight=contrastRatio(lum,lightLum)>contrastRatio(lum,darkLum);
+  document.documentElement.style.setProperty('--page-text',useLight?light:dark);
+  document.documentElement.style.setProperty('--page-muted',useLight?'#d5deea':'#526176');
+}
+function applyBackgroundColor(color,{save=true}={}){
+  const normalized=normalizeHexColor(color);
+  const theme=document.documentElement.dataset.theme||'light';
+  if(normalized){
+    document.documentElement.style.setProperty('--bg',normalized);
+    els.bgColor.value=normalized;
+    updatePageContrast(normalized);
+    if(save)storageSet('qtg-bg-color',normalized);
+  }else{
+    document.documentElement.style.removeProperty('--bg');
+    const fallback=defaultBackgroundForTheme(theme);
+    els.bgColor.value=fallback;
+    updatePageContrast(fallback);
+    if(save)storageSet('qtg-bg-color','');
+  }
+}
+function resetBackgroundColor(){applyBackgroundColor('',{save:true});showToast('Background reset');}
+function applyTheme(theme){
+  theme=theme==='dark'?'dark':'light';
+  document.documentElement.dataset.theme=theme;
+  document.documentElement.style.colorScheme=theme;
+  storageSet('qtg-theme',theme);
+  $('themeBtn').textContent=theme==='dark'?'☀':'☾';
+  $('themeBtn').title=theme==='dark'?'Switch to light mode':'Switch to dark mode';
+  const custom=normalizeHexColor(storageGet('qtg-bg-color'));
+  applyBackgroundColor(custom,{save:false});
+}
+function toggleTheme(){ applyTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'); }
+async function toggleFullscreen(){
+  try{ if(!document.fullscreenElement) await document.documentElement.requestFullscreen(); else await document.exitFullscreen(); }catch(_){showToast('Full screen is not available here');}
+}
+
+function autoExportColumns(){
+  const n=Math.max(1,currentTeams.length);
+  if(n<=3) return n;
+  if(n<=6) return 3;
+  if(n<=10) return 4;
+  return Math.ceil(Math.sqrt(n));
+}
+function setExportColumns(cols){
+  const max=Math.max(1,currentTeams.length);
+  cols=Math.max(1,Math.min(max,Number(cols)||1));
+  els.exportColumns.max=max; els.exportColumns.value=cols;
+  const rows=Math.ceil(max/cols);
+  els.exportShapeText.textContent=`${cols} group${cols===1?'':'s'} across · ${rows} row${rows===1?'':'s'}`;
+}
+function applyExportPreset(){
+  const n=Math.max(1,currentTeams.length),preset=els.exportPreset.value;
+  let cols=autoExportColumns();
+  if(preset==='wide') cols=Math.min(n,Math.max(cols,Math.ceil(n/2)));
+  else if(preset==='balanced') cols=Math.min(n,Math.max(1,Math.ceil(Math.sqrt(n))));
+  else if(preset==='tall') cols=Math.max(1,Math.min(n,Math.ceil(Math.sqrt(n)/1.7)));
+  setExportColumns(cols); makeExportCanvas();
+}
+function makeExportCanvas(){
+  const canvas=els.exportCanvas,ctx=canvas.getContext('2d');
+  const n=Math.max(1,currentTeams.length);
+  els.exportColumns.max=n;
+  let cols=Math.max(1,Math.min(n,Number(els.exportColumns.value)||autoExportColumns()));
+  setExportColumns(cols);
+  const classTitle=(els.exportTitleText.value||state.className||'').trim();
+  const showTitle=els.exportTitle.checked&&!!classTitle;
+  const showBorders=els.exportBorders.checked;
+  const colorGroups=els.exportColors.checked;
+  const showMembers=els.exportMembers.checked;
+  const showNumbers=els.exportNumbers.checked;
+  const fontSize=Number(els.exportFont.value)||14;
+  const gap=Number(els.exportGap.value)||14;
+  const pad=Math.max(12,gap+4);
+  const hasBox=showBorders||colorGroups;
+  const boxPadX=hasBox?12:4;
+  const headFontSize=fontSize+2;
+  const titleFontSize=Math.max(22,fontSize+8);
+  const headH=Math.max(28,Math.round(fontSize*2));
+  const lineH=Math.max(18,Math.round(fontSize*1.55));
+  const titleH=showTitle?titleFontSize+12:0;
+  const fontFamily='Aptos, "Segoe UI", Arial, sans-serif';
+  const rows=[];for(let i=0;i<currentTeams.length;i+=cols)rows.push(currentTeams.slice(i,i+cols));
+
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.textBaseline='top';
+
+  function teamTextWidth(team,index){
+    let widest=0;
+    ctx.font=`700 ${headFontSize}px ${fontFamily}`;
+    widest=Math.max(widest,ctx.measureText(groupLabel(index)).width);
+    if(showMembers){
+      ctx.font=`600 ${fontSize}px ${fontFamily}`;
+      team.forEach((name,j)=>{
+        const prefix=showNumbers?`${j+1}. `:'';
+        widest=Math.max(widest,ctx.measureText(prefix+name).width);
+      });
+    }
+    return Math.ceil(widest)+(hasBox?boxPadX*2+6:10);
+  }
+
+  const teamWidths=currentTeams.map((team,i)=>Math.max(106,Math.min(420,teamTextWidth(team,i))));
+  const colWidths=Array.from({length:cols},(_,c)=>{
+    let maxW=0;
+    for(let r=0;r<rows.length;r++){
+      const idx=r*cols+c;
+      if(currentTeams[idx]) maxW=Math.max(maxW,teamWidths[idx]);
+    }
+    return maxW||120;
+  });
+  ctx.font=`700 ${titleFontSize}px ${fontFamily}`;
+  const titleWidth=showTitle?Math.ceil(ctx.measureText(classTitle).width):0;
+
+  const rowHeights=rows.map(row=>Math.max(...row.map(team=>headH+(showMembers?(team.length*lineH+8):2)+(hasBox?10:2))));
+  const contentWidth=colWidths.reduce((a,b)=>a+b,0)+Math.max(0,cols-1)*gap;
+  const width=Math.max(pad*2+contentWidth,pad*2+titleWidth);
+  const height=pad*2+titleH+rowHeights.reduce((a,b)=>a+b,0)+Math.max(0,rows.length-1)*gap;
+  const dpr=Math.max(2,Math.min(4,window.devicePixelRatio||1));
+  canvas.width=Math.ceil(width*dpr);
+  canvas.height=Math.ceil(height*dpr);
+  canvas.style.width=width+'px';
+  canvas.style.height=height+'px';
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  ctx.textBaseline='top';
+  ctx.fillStyle='#ffffff';
+  ctx.fillRect(0,0,width,height);
+  ctx.imageSmoothingEnabled=true;
+
+  let y=pad;
+  if(showTitle){
+    ctx.fillStyle='#0f172a';
+    ctx.font=`700 ${titleFontSize}px ${fontFamily}`;
+    ctx.fillText(classTitle,pad,y);
+    y+=titleH;
+  }
+
+  let teamIndex=0;
+  rows.forEach((row,r)=>{
+    const rh=rowHeights[r];
+    let x=pad;
+    row.forEach((team,c)=>{
+      const w=colWidths[c];
+      if(hasBox){
+        const gc=groupPalette(teamIndex,false);
+        ctx.fillStyle=colorGroups?gc.bg:'#f8fafc';
+        roundRect(ctx,x,y,w,rh,3);
+        ctx.fill();
+        if(showBorders){
+          ctx.strokeStyle=colorGroups?gc.border:'#cbd5e1';
+          ctx.lineWidth=1;
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle='#111827';
+      ctx.font=`700 ${headFontSize}px ${fontFamily}`;
+      ctx.fillText(groupLabel(teamIndex),x+boxPadX,y+8);
+      if(showMembers){
+        ctx.font=`600 ${fontSize}px ${fontFamily}`;
+        team.forEach((name,j)=>{
+          const prefix=showNumbers?`${j+1}. `:'';
+          ctx.fillText(prefix+name,x+boxPadX,y+headH+j*lineH+4);
+        });
+      }
+      x+=w+gap;
+      teamIndex++;
+    });
+    y+=rh+gap;
+  });
+  return canvas;
+}
+function roundRect(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function openImage(){ els.exportTitleText.value=state.className.trim(); if(!els.exportColumns.dataset.touched){els.exportPreset.value='auto';setExportColumns(autoExportColumns());} makeExportCanvas(); els.imageOverlay.classList.add('open'); }
+function closeImage(){ els.imageOverlay.classList.remove('open'); }
+function canvasBlob(type='image/png',quality=.94){ return new Promise(resolve=>makeExportCanvas().toBlob(resolve,type,quality)); }
+async function copyPng(){
+  const blob=await canvasBlob('image/png'); if(!blob){showToast('Could not create image');return;}
+  try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);showToast('PNG copied — paste it into your slide');}
+  catch(_){showToast('Clipboard image copy is blocked here; use Download PNG');}
+}
+async function downloadImage(type){
+  const mime=type==='jpg'?'image/jpeg':'image/png',blob=await canvasBlob(mime,.94); if(!blob)return;
+  const a=document.createElement('a'),url=URL.createObjectURL(blob); const base=(state.className.trim()||'groups').replace(/[^a-z0-9-_]+/gi,'-').replace(/^-|-$/g,'')||'groups';
+  a.href=url;a.download=`${base}-groups.${type}`;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+
+function currentAppPreferences(){
+  return {
+    theme:document.documentElement.dataset.theme==='dark'?'dark':'light',
+    backgroundColor:normalizeHexColor(storageGet('qtg-bg-color'))||'',
+    memberScale,
+    groupColorsEnabled:!!groupColorsEnabled,
+    picker:{
+      hidden:!!pickerHidden,
+      pickType:els.pickType.value,
+      visualType:els.visualType.value,
+      confetti:!!els.confettiToggle.checked,
+      sound:!!els.soundToggle.checked
+    },
+    imageExport:imageExportPreferencesSnapshot()
+  };
+}
+function applyAppPreferences(pref){
+  if(!pref||typeof pref!=='object')return;
+  if(pref.theme==='dark'||pref.theme==='light')applyTheme(pref.theme);
+  if(typeof pref.backgroundColor==='string')applyBackgroundColor(pref.backgroundColor,{save:true});
+  if(Number.isFinite(Number(pref.memberScale))){memberScale=clampInt(pref.memberScale,80,150,100);applyFontScale();}
+  if(typeof pref.groupColorsEnabled==='boolean'){groupColorsEnabled=pref.groupColorsEnabled;els.groupColorsToggle.checked=groupColorsEnabled;storageSet('qtg-group-colors',groupColorsEnabled?'1':'0');}
+  const pk=pref.picker||{};
+  if(['student','group','member-position'].includes(pk.pickType))els.pickType.value=pk.pickType;
+  if(['spinner','balls','robot','hat'].includes(pk.visualType))els.visualType.value=pk.visualType;
+  if(typeof pk.confetti==='boolean')els.confettiToggle.checked=pk.confetti;
+  if(typeof pk.sound==='boolean')els.soundToggle.checked=pk.sound;
+  if(typeof pk.hidden==='boolean')setPickerHidden(pk.hidden);
+  const ex=pref.imageExport||{};
+  if(typeof ex.showTitle==='boolean')els.exportTitle.checked=ex.showTitle;
+  if(typeof ex.showBorders==='boolean')els.exportBorders.checked=ex.showBorders;
+  if(typeof ex.colorGroups==='boolean')els.exportColors.checked=ex.colorGroups;
+  if(typeof ex.showMembers==='boolean')els.exportMembers.checked=ex.showMembers;
+  if(typeof ex.numberMembers==='boolean')els.exportNumbers.checked=ex.numberMembers;
+  if(Number.isFinite(Number(ex.columns)))els.exportColumns.value=clampInt(ex.columns,1,Math.max(1,state.groups),autoExportColumns());
+  if(['auto','wide','balanced','tall','custom'].includes(ex.preset))els.exportPreset.value=ex.preset;
+  if(Number.isFinite(Number(ex.fontSize)))els.exportFont.value=clampInt(ex.fontSize,11,24,14);
+  if(Number.isFinite(Number(ex.spacing)))els.exportGap.value=clampInt(ex.spacing,6,28,14);
+  saveImageExportPreferences();
+  renderVisual();
+}
+function safeFileBase(name,fallback='quick-team-generator'){
+  const x=String(name||'').trim().replace(/[^a-z0-9-_]+/gi,'-').replace(/^-+|-+$/g,'');
+  return x||fallback;
+}
+function downloadJsonFile(data,filename){
+  const blob=new Blob([JSON.stringify(data,null,2)+'\n'],{type:'application/json'});
+  const url=URL.createObjectURL(blob),a=document.createElement('a');
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1500);
+}
+function classRecordFromSnapshot(id,snapshot){
+  return {id:id||'',name:String(snapshot?.name||''),snapshot:{...snapshot,items:Array.isArray(snapshot?.items)?snapshot.items.slice():[]}};
+}
+function makeCurrentDataExport(){
+  const snap=currentClassSnapshot();
+  return {
+    format:'Quick Team Generator',schemaVersion:1,exportType:'current-class',exportedAt:new Date().toISOString(),
+    appPreferences:currentAppPreferences(),
+    currentClass:classRecordFromSnapshot(activeSavedId,snap),
+    currentGroups:currentTeams.map(team=>team.slice()),
+    shareUrl:buildShareUrl()
+  };
+}
+function makeAllDataExport(){
+  const index=loadSavedIndex();
+  const classes=[];
+  index.forEach(entry=>{const snap=readSavedClass(entry.id);if(snap)classes.push(classRecordFromSnapshot(entry.id,snap));});
+  return {
+    format:'Quick Team Generator',schemaVersion:1,exportType:'all-classes',exportedAt:new Date().toISOString(),
+    appPreferences:currentAppPreferences(),classes,
+    currentWorkspace:classRecordFromSnapshot(activeSavedId,currentClassSnapshot()),
+    currentGroups:currentTeams.map(team=>team.slice()),
+    shareUrl:buildShareUrl()
+  };
+}
+function exportCurrentData(){
+  const data=makeCurrentDataExport();
+  downloadJsonFile(data,`${safeFileBase(state.className,'class')}-team-generator.json`);
+  showToast('Current class data exported');
+}
+function exportAllData(){
+  const data=makeAllDataExport();
+  downloadJsonFile(data,'quick-team-generator-all-classes.json');
+  showToast(`Exported ${data.classes.length} saved class${data.classes.length===1?'':'es'}`);
+}
+function normalizeImportedSnapshot(snap){
+  if(!snap||!Array.isArray(snap.items)||!snap.items.length)return null;
+  const items=snap.items.map(x=>String(x||'').trim()).filter(Boolean);
+  if(!items.length)return null;
+  const groups=Math.max(1,Math.min(items.length,clampInt(snap.groups,1,100,DEFAULT_GROUPS)));
+  return {
+    name:String(snap.name||'').slice(0,80),items,groups,
+    groupNames:Array.isArray(snap.groupNames)?snap.groupNames.map(x=>String(x||'').slice(0,60)):[],
+    togetherText:String(snap.togetherText||''),apartText:String(snap.apartText||''),
+    targetSize:clampInt(snap.targetSize,1,100,targetSizeFor(groups,items.length)),
+    lastSizingMode:snap.lastSizingMode==='size'?'size':'groups',savedAt:Number(snap.savedAt)||Date.now()
+  };
+}
+function storeImportedClass(record,index){
+  const snap=normalizeImportedSnapshot(record?.snapshot);if(!snap)return null;
+  const name=snap.name.trim()||'Imported class';snap.name=name;
+  const sameName=index.find(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase());
+  let id=sameName?.id||String(record?.id||'').replace(/[^a-z0-9_-]/gi,'').slice(0,80);
+  if(!id||index.some(x=>x.id===id&&!sameName))id=Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+  persistentSet(SAVED_CLASS_PREFIX+id,JSON.stringify(snap));
+  const pos=index.findIndex(x=>x.id===id);if(pos>=0)index[pos]={id,name};else index.push({id,name});
+  return {id,snap};
+}
+async function importDataFile(file){
+  let data;try{data=JSON.parse(await file.text());}catch(_){showToast('That file is not valid JSON');return;}
+  if(!data||data.format!=='Quick Team Generator'||Number(data.schemaVersion)!==1){showToast('That is not a compatible Quick Team Generator data file');return;}
+  let index=loadSavedIndex(),imported=0,last=null;
+  const records=data.exportType==='all-classes'&&Array.isArray(data.classes)?data.classes:(data.currentClass?[data.currentClass]:[]);
+  records.forEach(record=>{const result=storeImportedClass(record,index);if(result){imported++;last=result;}});
+  saveSavedIndex(index);
+  if(data.appPreferences)applyAppPreferences(data.appPreferences);
+  const workspace=data.exportType==='all-classes'&&data.currentWorkspace?data.currentWorkspace:null;
+  if(workspace){
+    const snap=normalizeImportedSnapshot(workspace.snapshot);
+    if(snap){state={items:snap.items.slice(),groups:snap.groups,className:snap.name,groupNames:snap.groupNames.slice(),togetherText:snap.togetherText,apartText:snap.apartText};lastSizingMode=snap.lastSizingMode;targetSize=snap.targetSize;activeSavedId=index.find(x=>x.name.toLocaleLowerCase()===snap.name.toLocaleLowerCase())?.id||'';currentTeams=[];render();}
+  }else if(last){loadSavedClass(last.id);}
+  refreshSavedClasses(activeSavedId);
+  updateUrl(false);
+  showToast(`Imported ${imported} class${imported===1?'':'es'}`);
+}
+
+$('rerunTop').addEventListener('click',rerun);$('rerunBottom').addEventListener('click',rerun);$('editBtn').addEventListener('click',openEdit);$('editBottom').addEventListener('click',openEdit);$('rulesBtn').addEventListener('click',openRules);$('rulesBottom').addEventListener('click',openRules);
+$('closeEdit').addEventListener('click',closeEdit);$('cancelEdit').addEventListener('click',closeEdit);$('applyEdit').addEventListener('click',applyEdit);els.itemsInput.addEventListener('input',updatePreview);
+$('closeRules').addEventListener('click',closeRules);$('cancelRules').addEventListener('click',closeRules);$('applyRules').addEventListener('click',applyRules);$('clearRules').addEventListener('click',clearRules);els.togetherInput.addEventListener('input',updateRulesFeedback);els.apartInput.addEventListener('input',updateRulesFeedback);
+els.groupsMain.addEventListener('input',syncFromGroups);els.sizeMain.addEventListener('input',syncFromSize);
+els.savedClassSelect.addEventListener('change',()=>{const id=els.savedClassSelect.value;if(id)loadSavedClass(id);else{activeSavedId='';els.deleteClassBtn.disabled=true;}});els.newClassBtn.addEventListener('click',createNewClass);els.saveClassBtn.addEventListener('click',saveCurrentClass);els.deleteClassBtn.addEventListener('click',deleteSavedClass);
+els.className.addEventListener('input',()=>{state.className=els.className.value.slice(0,80);updateUrl(false);if(els.imageOverlay.classList.contains('open')){els.exportTitleText.value=state.className.trim();makeExportCanvas();}});
+$('fontDown').addEventListener('click',()=>{memberScale=Math.max(80,memberScale-10);applyFontScale();});$('fontUp').addEventListener('click',()=>{memberScale=Math.min(150,memberScale+10);applyFontScale();});
+els.bgColor.addEventListener('input',()=>applyBackgroundColor(els.bgColor.value));els.bgReset.addEventListener('click',resetBackgroundColor);els.groupColorsToggle.addEventListener('change',()=>{groupColorsEnabled=els.groupColorsToggle.checked;storageSet('qtg-group-colors',groupColorsEnabled?'1':'0');render({rerandomize:false});});$('themeBtn').addEventListener('click',toggleTheme);$('fullBtn').addEventListener('click',toggleFullscreen);
+els.visualType.addEventListener('change',()=>{renderVisual();clearPicker();});els.pickType.addEventListener('change',clearPicker);$('pickBtn').addEventListener('click',runPicker);
+els.pickerHideBtn.addEventListener('click',()=>setPickerHidden(true));els.pickerToggleBtn.addEventListener('click',()=>setPickerHidden(!pickerHidden));els.pickerHugeBtn.addEventListener('click',()=>setPickerHuge(!pickerHuge));
+
+$('shareBtn').addEventListener('click',e=>{e.stopPropagation();els.shareMenu.classList.toggle('open');});document.addEventListener('click',()=>els.shareMenu.classList.remove('open'));els.shareMenu.addEventListener('click',e=>e.stopPropagation());
+$('copyLink').addEventListener('click',()=>{copyText(buildShareUrl(),'Share link copied');els.shareMenu.classList.remove('open');});$('copyTeams').addEventListener('click',()=>{copyText(teamsAsText(),'Groups copied');els.shareMenu.classList.remove('open');});
+$('imageExport').addEventListener('click',()=>{els.shareMenu.classList.remove('open');openImage();});$('exportCurrentData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportCurrentData();});$('exportAllData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportAllData();});$('importData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');$('importDataFile').click();});$('importDataFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(file)await importDataFile(file);e.target.value='';});$('printBtn').addEventListener('click',()=>{els.shareMenu.classList.remove('open');window.print();});
+$('nativeShare').addEventListener('click',async()=>{els.shareMenu.classList.remove('open');if(navigator.share){try{await navigator.share({title:state.className.trim()||'Team Generator',text:'Random team generator',url:buildShareUrl()});}catch(_){}}else copyText(buildShareUrl(),'Share link copied');});
+$('closeImage').addEventListener('click',closeImage);$('copyPng').addEventListener('click',copyPng);$('downloadPng').addEventListener('click',()=>downloadImage('png'));$('downloadJpg').addEventListener('click',()=>downloadImage('jpg'));
+[els.exportTitle,els.exportBorders,els.exportColors,els.exportMembers,els.exportNumbers,els.exportFont,els.exportGap].forEach(el=>{
+  const update=()=>{saveImageExportPreferences();makeExportCanvas();};
+  el.addEventListener('input',update);el.addEventListener('change',update);
+});
+els.exportTitleText.addEventListener('input',makeExportCanvas);els.exportTitleText.addEventListener('change',makeExportCanvas);
+els.exportColumns.addEventListener('input',()=>{els.exportColumns.dataset.touched='1';els.exportPreset.value='custom';setExportColumns(els.exportColumns.value);saveImageExportPreferences();makeExportCanvas();});
+els.exportPreset.addEventListener('change',()=>{els.exportColumns.dataset.touched='1';applyExportPreset();saveImageExportPreferences();});
+els.editOverlay.addEventListener('click',e=>{if(e.target===els.editOverlay)closeEdit();});els.rulesOverlay.addEventListener('click',e=>{if(e.target===els.rulesOverlay)closeRules();});els.imageOverlay.addEventListener('click',e=>{if(e.target===els.imageOverlay)closeImage();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(pickerHuge)setPickerHuge(false);closeEdit();closeRules();closeImage();els.shareMenu.classList.remove('open');}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&els.editOverlay.classList.contains('open'))applyEdit();});
+window.addEventListener('popstate',()=>{state=loadFromUrl();activeSavedId='';lastSizingMode='groups';targetSize=targetSizeFor(state.groups);render();refreshSavedClasses();});
+
+autoInit();
+function autoInit(){
+  applyFontScale();
+  const savedTheme=storageGet('qtg-theme'); const systemDark=window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches; applyTheme(savedTheme==='dark'||savedTheme==='light'?savedTheme:(systemDark?'dark':'light'));
+  els.groupColorsToggle.checked=groupColorsEnabled;
+  loadImageExportPreferences();
+  render();
+  refreshSavedClasses();
+}
+})();
+</script>
+</body>
+</html>

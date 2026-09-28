@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>TNB Curve Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307111f'/%3E%3Cpath d='M13 43 C22 19 38 19 51 37' fill='none' stroke='%23dbeafe' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M31 32 L49 29' stroke='%23ef4444' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M31 32 L20 17' stroke='%2322c55e' stroke-width='4' stroke-linecap='round'/%3E%3Cpath d='M31 32 L35 49' stroke='%233b82f6' stroke-width='4' stroke-linecap='round'/%3E%3Ccircle cx='31' cy='32' r='3.5' fill='white'/%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#07111f;
+    --panel:#0d1b2a;
+    --panel2:#102337;
+    --text:#e8eef7;
+    --muted:#8ea3b8;
+    --border:#22384f;
+    --accent:#6ee7f9;
+    --curve:#e5edf6;
+    --curve2:#facc15;
+    --T:#ef4444;
+    --N:#22c55e;
+    --B:#3b82f6;
+    --osc:#a855f7;
+    --normal:#f97316;
+    --binormal:#14b8a6;
+    --circle:#ec4899;
+    --accel:#fbbf24;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%;margin:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;background:var(--bg);color:var(--text)}
+  body{overflow:hidden}
+  #app{height:100%;display:grid;grid-template-columns:390px 1fr;transition:grid-template-columns .22s ease}
+  #app.sidebar-collapsed{grid-template-columns:0 1fr}
+  #app.sidebar-collapsed aside{visibility:hidden;overflow:hidden;padding-left:0;padding-right:0;border-right:0}
+  aside{background:linear-gradient(180deg,var(--panel),#091624 78%);border-right:1px solid var(--border);overflow:auto;padding:18px 18px 28px;scrollbar-width:thin}
+  main{position:relative;min-width:0}
+  #viewport{position:absolute;inset:0}
+  h1{font-size:22px;margin:0 0 4px;letter-spacing:.2px}
+  .subtitle{color:var(--muted);font-size:12px;margin-bottom:14px;line-height:1.4}
+  .section{position:relative;border:1px solid var(--border);background:rgba(15,34,53,.82);border-radius:14px;padding:13px;margin-bottom:12px;box-shadow:0 10px 35px rgba(0,0,0,.12)}
+  .section h2{font-size:13px;margin:0;min-height:28px;padding-right:68px;text-transform:uppercase;letter-spacing:.09em;color:#b9c8d7;display:flex;align-items:center;gap:8px;cursor:default;user-select:none;line-height:1.25}
+  .sectionBody{margin-top:10px}
+  .section.collapsed .sectionBody{display:none}
+  .panelHeaderActions{position:absolute;top:10px;right:10px;display:flex;gap:5px;z-index:3}
+  .headerIconBtn{position:relative;width:28px;height:28px;min-width:28px;padding:0;border-radius:7px;display:grid;place-items:center;background:#142c43;color:#cfe0ee;border:1px solid #29455e;box-shadow:none;outline:none}
+  .headerIconBtn:hover{transform:none;background:#1b3a57}
+  .headerIconBtn:focus-visible{box-shadow:0 0 0 2px rgba(110,231,249,.35)}
+  .headerIconBtn svg{width:15px;height:15px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+  .headerIconBtn.visibilityBtn.visible{background:#214c67;color:#f2fbff;border-color:#3a708b;box-shadow:0 0 0 1px rgba(110,231,249,.12) inset}
+  .headerIconBtn[data-tooltip]::after{content:attr(data-tooltip);position:absolute;right:0;top:calc(100% + 7px);padding:5px 7px;border-radius:6px;background:#020812;color:#eef6ff;border:1px solid #294159;font-size:10px;font-weight:600;letter-spacing:0;text-transform:none;white-space:nowrap;opacity:0;pointer-events:none;transform:translateY(-2px);transition:opacity .13s ease,transform .13s ease;z-index:50;box-shadow:0 5px 18px rgba(0,0,0,.28)}
+  .headerIconBtn[data-tooltip]:hover::after,.headerIconBtn[data-tooltip]:focus-visible::after{opacity:1;transform:translateY(0)}
+  body[data-theme="light"] .headerIconBtn{background:#eef4f8;color:#435d72;border-color:#c4d3de}
+  body[data-theme="light"] .headerIconBtn:hover{background:#e1edf4}
+  body[data-theme="light"] .headerIconBtn.visibilityBtn.visible{background:#d7eaf2;color:#173b4b;border-color:#9fc5d3}
+  body[data-theme="light"] .headerIconBtn[data-tooltip]::after{background:#172433;color:white;border-color:#435d72}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px}
+  label{font-size:11px;color:#a9b9ca;display:block;margin:0 0 4px}
+  input[type=text],input[type=number],select{width:100%;background:#081522;border:1px solid #294159;color:var(--text);border-radius:9px;padding:8px 9px;font-size:12px;outline:none}
+  input[type=text]:focus,input[type=number]:focus,select:focus{border-color:#5ccde0;box-shadow:0 0 0 2px rgba(110,231,249,.1)}
+  input[type=range]{width:100%}
+  #tSlider{cursor:ew-resize;touch-action:none;accent-color:#2389e8}
+  #tSlider:active{cursor:grabbing}
+  button{border:0;border-radius:9px;background:#17324d;color:#eef6ff;padding:8px 10px;font-weight:650;cursor:pointer;font-size:12px;transition:.16s ease}
+  button:hover{transform:translateY(-1px);background:#1d3f60}
+  button.primary{background:linear-gradient(135deg,#1f7ea0,#2657c8)}
+  button.primary:hover{background:linear-gradient(135deg,#258aac,#2c63d8)}
+  button.ghost{background:#0a1826;border:1px solid #284157;color:#bfd0df}
+  button.active{outline:2px solid rgba(255,255,255,.18);box-shadow:0 0 0 2px rgba(110,231,249,.16) inset}
+  .buttonrow{display:flex;gap:7px;flex-wrap:wrap}
+  .seg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;background:#07131f;padding:4px;border-radius:11px;border:1px solid #20374d}
+  .seg button{padding:7px 6px;background:transparent;color:#8fa7bb}
+  .seg button.active{background:#17314a;color:white;outline:none;box-shadow:none}
+  .objgrid{display:grid;grid-template-columns:1fr auto auto;align-items:center;gap:7px 8px;font-size:12px}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:7px;vertical-align:-1px}
+  .showbtn{min-width:58px;padding:6px 8px}
+  .checkwrap{display:flex;align-items:center;gap:4px;color:#9fb2c4;font-size:11px;white-space:nowrap}
+  .checkwrap input{accent-color:#5dd3e6}
+  .tiny{font-size:10px;color:#8196aa;line-height:1.45}
+  .formula{background:#07131f;border:1px solid #21394f;border-radius:10px;padding:8px 9px;color:#d5e3ef;font-family:"Cambria Math",Cambria,serif;font-size:13px;line-height:1.4;margin-bottom:9px}
+  .inlineChecks{display:flex;gap:12px;flex-wrap:wrap}
+  .stats{position:absolute;top:14px;right:14px;display:grid;grid-template-columns:repeat(5,minmax(88px,auto));gap:8px;z-index:5;pointer-events:none}
+  .stat{background:rgba(7,17,31,.78);backdrop-filter:blur(9px);border:1px solid rgba(121,153,182,.22);border-radius:11px;padding:8px 10px;box-shadow:0 8px 30px rgba(0,0,0,.18)}
+  .stat .k{font-size:9px;color:#8da1b4;text-transform:uppercase;letter-spacing:.09em}
+  .stat .v{font-size:12px;color:#edf6ff;margin-top:2px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .viewerbar{position:absolute;left:14px;top:14px;display:flex;gap:7px;z-index:6;flex-wrap:wrap;max-width:calc(100% - 28px)}
+  .viewerbar button{background:rgba(7,17,31,.82);border:1px solid rgba(121,153,182,.28);backdrop-filter:blur(8px)}
+  .timeline{position:absolute;left:18px;right:18px;bottom:34px;z-index:6;background:rgba(7,17,31,.82);backdrop-filter:blur(9px);border:1px solid rgba(121,153,182,.25);border-radius:14px;padding:10px 12px 11px;display:grid;grid-template-columns:auto 1fr 110px auto auto auto;gap:10px;align-items:center}
+  .tentry{display:flex;align-items:center;gap:5px}
+  .tentry label{margin:0;font-size:10px;white-space:nowrap}
+  .tentry input{padding:6px 7px;font-size:11px}
+  .timeline button{padding:7px 10px}
+  .timeline .speed{width:120px}
+  .navhelp{position:absolute;left:18px;right:18px;bottom:10px;text-align:center;color:#6f8497;font-size:10px;z-index:5;pointer-events:none}
+  .warning{position:absolute;left:50%;top:18px;transform:translateX(-50%);z-index:10;background:#3a1d13;border:1px solid #8b4a30;color:#ffd8c9;border-radius:10px;padding:8px 11px;font-size:11px;display:none;max-width:520px;text-align:center}
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 7px;border:1px solid #2a4359;border-radius:999px;background:#0a1724;color:#a9bdce;font-size:10px}
+  .helpbox{display:none;margin-top:8px;border-top:1px dashed #294056;padding-top:8px}
+  .calcbox{display:none;margin-top:10px;background:#07131f;border:1px solid #294159;border-radius:11px;padding:10px}
+  .calcformula{font-family:"Cambria Math",Cambria,serif;font-size:14px;color:#eef7ff;margin-bottom:8px}
+  .calcgrid{display:grid;grid-template-columns:auto 1fr;gap:5px 9px;align-items:start;font-size:11px}
+  .calcgrid .ck{color:#8fa4b8;white-space:nowrap}
+  .calcgrid .cv{color:#e3edf7;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;word-break:break-word}
+  .calcresult{margin-top:8px;padding-top:8px;border-top:1px dashed #294056;font-family:"Cambria Math",Cambria,serif;font-size:13px;color:#f8fbff;line-height:1.55}
+
+  /* Light theme */
+  body[data-theme="light"]{
+    --bg:#eef4f8; --panel:#ffffff; --panel2:#f5f8fb; --text:#172433; --muted:#64788b; --border:#ccd9e4; --accent:#147f99; --curve:#182431; --curve2:#a86f00;
+  }
+  body[data-theme="light"] aside{background:linear-gradient(180deg,#ffffff,#f2f6f9 82%)}
+  body[data-theme="light"] .section{background:rgba(255,255,255,.9);box-shadow:0 10px 30px rgba(45,70,90,.08)}
+  body[data-theme="light"] .section h2{color:#496074}
+  body[data-theme="light"] label{color:#5e7387}
+  body[data-theme="light"] input[type=text],body[data-theme="light"] input[type=number],body[data-theme="light"] select{background:#f8fbfd;border-color:#c5d4df;color:#172433}
+  body[data-theme="light"] input[type=text]:focus,body[data-theme="light"] input[type=number]:focus,body[data-theme="light"] select:focus{border-color:#2b9bb4;box-shadow:0 0 0 2px rgba(43,155,180,.12)}
+  body[data-theme="light"] button{background:#e5eef5;color:#21384b}
+  body[data-theme="light"] button:hover{background:#d8e7f1}
+  body[data-theme="light"] button.primary{background:linear-gradient(135deg,#1b8fa7,#356bd5);color:white}
+  body[data-theme="light"] button.ghost{background:#f8fbfd;border-color:#c6d6e1;color:#40586c}
+  body[data-theme="light"] .seg{background:#edf3f7;border-color:#ccd9e4}
+  body[data-theme="light"] .seg button{color:#697e91}
+  body[data-theme="light"] .seg button.active{background:#d9e7f1;color:#172433}
+  body[data-theme="light"] .checkwrap{color:#5f7488}
+  body[data-theme="light"] .tiny{color:#6e8294}
+  body[data-theme="light"] .formula,body[data-theme="light"] .calcbox{background:#f7fafc;border-color:#ccd9e4;color:#263d51}
+  body[data-theme="light"] .calcformula,body[data-theme="light"] .calcresult{color:#172433}
+  body[data-theme="light"] .calcgrid .ck{color:#65798c}
+  body[data-theme="light"] .calcgrid .cv{color:#203548}
+  body[data-theme="light"] .pill{background:#f5f9fb;border-color:#cbd9e3;color:#526b7f}
+  body[data-theme="light"] .stat,body[data-theme="light"] .timeline,body[data-theme="light"] .viewerbar button{background:rgba(255,255,255,.86);border-color:rgba(110,135,155,.32);color:#21384b;box-shadow:0 7px 24px rgba(50,75,95,.09)}
+  body[data-theme="light"] .stat .k{color:#718496}
+  body[data-theme="light"] .stat .v{color:#172433}
+  body[data-theme="light"] .navhelp{color:#6f8191}
+
+  .windowGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .windowPair{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+  .sliderline{display:grid;grid-template-columns:1fr 70px;gap:8px;align-items:end;margin-bottom:8px}
+  .sidebar-note{font-size:10px;color:var(--muted);line-height:1.4}
+  .shareBackdrop{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:1000;padding:20px}
+  .shareBackdrop.open{display:flex}
+  .shareCard{width:min(620px,96vw);background:var(--panel);color:var(--text);border:1px solid var(--border);border-radius:17px;padding:17px;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+  .shareCard h3{margin:0 0 5px;font-size:17px}
+  .shareCard p{margin:0 0 11px;color:var(--muted);font-size:11px;line-height:1.45}
+  .shareCard input{width:100%;background:#081522;border:1px solid #294159;color:var(--text);border-radius:9px;padding:9px;font-size:11px}
+  body[data-theme="light"] .shareCard input{background:#f8fbfd;border-color:#c5d4df;color:#172433}
+  .shareActions{display:flex;justify-content:flex-end;gap:8px;margin-top:11px;flex-wrap:wrap}
+  .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(12px);background:rgba(8,20,32,.94);color:#eef7ff;border:1px solid rgba(140,170,195,.28);border-radius:999px;padding:8px 13px;font-size:11px;z-index:1200;opacity:0;pointer-events:none;transition:.2s ease}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  body[data-theme="light"] .toast{background:rgba(255,255,255,.96);color:#203548;border-color:#c7d5df;box-shadow:0 7px 25px rgba(50,75,95,.14)}
+  @media (max-width: 980px){
+    #app{grid-template-columns:330px 1fr}
+    .stats{grid-template-columns:repeat(3,minmax(82px,auto))}
+  }
+  @media (max-width: 760px){
+    body{overflow:auto}
+    #app{display:block;height:auto}
+    #app.sidebar-collapsed aside{display:none}
+    aside{height:auto;max-height:none;border-right:0;border-bottom:1px solid var(--border)}
+    main{height:72vh}
+    .stats{display:none}
+    .timeline{grid-template-columns:auto 1fr 95px;bottom:38px}
+    .timeline .speed,.timeline .modeSel{display:none}
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <aside>
+    <h1>TNB Curve Lab</h1>
+    <div class="subtitle">Use a space curve as a moving coordinate system. Explore the Frenet frame, its three fundamental planes, and a second curve built directly from <b>T</b>, <b>N</b>, and <b>B</b>.</div>
+
+    <div class="section">
+      <h2>1 · Base curve</h2>
+      <div class="row3">
+        <div><label>x(t)</label><input id="fx" type="text" value="3*cos(t)"></div>
+        <div><label>y(t)</label><input id="fy" type="text" value="3*sin(t)"></div>
+        <div><label>z(t)</label><input id="fz" type="text" value="t"></div>
+      </div>
+      <div class="row">
+        <div><label>min t</label><input id="tmin" type="number" value="0" step="0.1"></div>
+        <div><label>max t</label><input id="tmax" type="number" value="12.5663706144" step="0.1"></div>
+      </div>
+      <div class="row">
+        <div><label>Preset</label>
+          <select id="preset">
+            <option value="helix">Helix</option>
+            <option value="circle">Circle</option>
+            <option value="line">Line (constant speed)</option>
+            <option value="accelLine">Line (accelerating)</option>
+            <option value="twisted">Twisted cubic</option>
+            <option value="lissajous">3D Lissajous</option>
+            <option value="trefoil">Trefoil knot</option>
+            <option value="conical">Conical helix</option>
+            <option value="spherical">Spherical spiral</option>
+            <option value="figure8">Figure-eight knot</option>
+            <option value="torus25">Torus knot (2,5)</option>
+            <option value="viviani">Viviani curve</option>
+          </select>
+        </div>
+        <div><label>Curve samples</label><input id="samples" type="number" min="150" max="2500" step="50" value="900"></div>
+      </div>
+      <div class="buttonrow">
+        <button class="primary" id="plotBtn">Plot / Update</button>
+        <button class="ghost" id="fitBtn">Fit Camera</button>
+        <button class="ghost" id="exprHelpBtn">Expression Help</button>
+      </div>
+      <div id="exprHelp" class="helpbox tiny">
+        Use <span class="pill">sin cos tan</span> <span class="pill">sqrt abs exp log</span> <span class="pill">sinh cosh tanh</span> and constants <span class="pill">pi</span>, <span class="pill">e</span>. Powers may use <span class="pill">^</span>. Example: <b>2*cos(3*t)</b>.
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>2 · Moving Frenet frame</h2>
+      <div class="objgrid">
+        <div><span class="dot" style="background:var(--T)"></span>Tangent T</div><button id="togT" class="showbtn active">Shown</button><label class="checkwrap"><input id="labT" type="checkbox">label</label>
+        <div><span class="dot" style="background:var(--N)"></span>Normal N</div><button id="togN" class="showbtn active">Shown</button><label class="checkwrap"><input id="labN" type="checkbox">label</label>
+        <div><span class="dot" style="background:var(--B)"></span>Binormal B</div><button id="togB" class="showbtn active">Shown</button><label class="checkwrap"><input id="labB" type="checkbox">label</label>
+      </div>
+      <div style="margin-top:10px"><label>Vector length <span id="vecLenOut">1.50</span></label><input id="vecLen" type="range" min="0.25" max="4" step="0.05" value="1.5"></div>
+    </div>
+
+    <div class="section">
+      <h2>3 · Fundamental planes</h2>
+      <div class="objgrid">
+        <div><span class="dot" style="background:var(--osc)"></span>Osculating plane</div><button id="togOsc" class="showbtn">Hidden</button><label class="checkwrap"><input id="labOsc" type="checkbox">label</label>
+        <div><span class="dot" style="background:var(--normal)"></span>Normal plane</div><button id="togNorm" class="showbtn">Hidden</button><label class="checkwrap"><input id="labNorm" type="checkbox">label</label>
+        <div><span class="dot" style="background:var(--binormal)"></span>Rectifying plane</div><button id="togBin" class="showbtn">Hidden</button><label class="checkwrap"><input id="labBin" type="checkbox">label</label>
+      </div>
+      <div style="margin-top:10px"><label>Plane style</label>
+        <div class="seg" id="planeSeg">
+          <button data-mode="full">Full plane</button>
+          <button data-mode="unit" class="active">1×1 from P</button>
+          <button data-mode="centered">2×2 centered</button>
+        </div>
+      </div>
+      <div style="margin-top:9px"><label>Plane opacity <span id="planeOpOut">0.28</span></label><input id="planeOpacity" type="range" min="0.05" max="0.7" step="0.01" value="0.28"></div>
+    </div>
+
+    <div class="section">
+      <h2>4 · Curvature & osculating circle</h2>
+      <div class="objgrid">
+        <div><span class="dot" style="background:var(--circle)"></span>Osculating circle</div><button id="togCircle" class="showbtn">Hidden</button><label class="checkwrap"><input id="labCircle" type="checkbox">label</label>
+        <div>Curvature calculation</div><button id="togCalc" class="showbtn">Hidden</button><span></span>
+      </div>
+      <div class="inlineChecks" style="margin-top:9px">
+        <label class="checkwrap"><input id="showCircleCenter" type="checkbox" checked>show center</label>
+        <label class="checkwrap"><input id="showRadius" type="checkbox" checked>show radius</label>
+      </div>
+      <div id="curvatureCalc" class="calcbox">
+        <div class="calcformula">κ = |r′ × r″| / |r′|³ &nbsp;&nbsp; and &nbsp;&nbsp; ρ = 1/κ</div>
+        <div class="calcgrid">
+          <div class="ck">r′(t)</div><div class="cv" id="calcD1">—</div>
+          <div class="ck">r″(t)</div><div class="cv" id="calcD2">—</div>
+          <div class="ck">r′ × r″</div><div class="cv" id="calcCross">—</div>
+          <div class="ck">|r′|</div><div class="cv" id="calcSpeed">—</div>
+          <div class="ck">|r′ × r″|</div><div class="cv" id="calcCrossMag">—</div>
+        </div>
+        <div class="calcresult" id="calcResult">κ = —<br>ρ = —</div>
+        <div class="tiny" style="margin-top:6px">The center of curvature is <b>C = r + ρN</b>. The osculating circle lies in the osculating plane and has second-order contact with the curve at the current point.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>5 · Acceleration components</h2>
+      <label class="checkwrap" style="margin-bottom:9px"><input id="showAccel" type="checkbox">Show tangential / normal acceleration decomposition</label>
+      <div class="formula">a = r″(t) = a<sub>T</sub>T + a<sub>N</sub>N</div>
+      <div class="inlineChecks">
+        <label class="checkwrap"><input id="showTotalAccel" type="checkbox" checked>show total acceleration a</label>
+        <label class="checkwrap"><input id="accelLabels" type="checkbox">labels</label>
+      </div>
+      <div style="margin-top:9px"><label>Acceleration vector scale <span id="accelScaleOut">0.35</span></label><input id="accelScale" type="range" min="0.05" max="2" step="0.05" value="0.35"></div>
+      <div id="accelCalc" class="calcbox">
+        <div class="calcformula">a<sub>T</sub> = d|v|/dt = (r′ · r″)/|r′| &nbsp;&nbsp;&nbsp; a<sub>N</sub> = κ|v|² = |r′ × r″|/|r′|</div>
+        <div class="calcgrid">
+          <div class="ck">velocity r′(t)</div><div class="cv" id="accD1">—</div>
+          <div class="ck">acceleration r″(t)</div><div class="cv" id="accD2">—</div>
+          <div class="ck">speed |r′|</div><div class="cv" id="accSpeed">—</div>
+          <div class="ck"><span class="dot" style="background:var(--T)"></span>a<sub>T</sub></div><div class="cv" id="accAT">—</div>
+          <div class="ck"><span class="dot" style="background:var(--N)"></span>a<sub>N</sub></div><div class="cv" id="accAN">—</div>
+        </div>
+        <div class="calcresult" id="accResult">a = —</div>
+        <div class="tiny" style="margin-top:7px">Try <b>Circle</b>: its parameterization has constant speed, so a<sub>T</sub> = 0 and the acceleration is entirely normal. Try <b>Line (accelerating)</b>: a<sub>N</sub> = 0 and the acceleration is entirely tangential. On the constant-speed line, both components are 0.</div>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>6 · Second curve in the moving TNB frame</h2>
+      <div class="formula">q(t) = r(t) + a(t)T(t) + b(t)N(t) + c(t)B(t)</div>
+      <label class="checkwrap" style="margin-bottom:8px"><input id="showSecond" type="checkbox">Show second curve</label>
+      <div class="row3">
+        <div><label>a(t) · T</label><input id="fa" type="text" value="0"></div>
+        <div><label>b(t) · N</label><input id="fb" type="text" value="0.55*cos(6*t)"></div>
+        <div><label>c(t) · B</label><input id="fc" type="text" value="0.55*sin(6*t)"></div>
+      </div>
+      <div class="inlineChecks">
+        <label class="checkwrap"><input id="showSpoke" type="checkbox">show offset spoke</label>
+        <label class="checkwrap"><input id="secondPoint" type="checkbox">show moving point</label>
+      </div>
+      <div class="tiny" style="margin-top:8px">The coefficient formulas can use <b>t</b> and <b>s</b>, where <b>s</b> is approximate arc length measured from min t. This makes uniform-distance spirals possible, e.g. <b>0.5*cos(4*s)</b>.</div>
+      <div class="buttonrow" style="margin-top:9px">
+        <button id="spiralPreset">TNB Spiral</button>
+        <button id="wobblePreset">T/N/B Wobble</button>
+        <button id="arcPreset">Arc-length Spiral</button>
+      </div>
+    </div>
+
+    <div class="section">
+      <h2>7 · Appearance & thickness</h2>
+      <div class="sliderline"><div><label>Base curve thickness <span id="baseThickOut">0.055</span></label><input id="baseThick" type="range" min="0.01" max="0.20" step="0.005" value="0.055"></div><div></div></div>
+      <div class="sliderline"><div><label>Second curve thickness <span id="secondThickOut">0.045</span></label><input id="secondThick" type="range" min="0.01" max="0.20" step="0.005" value="0.045"></div><div></div></div>
+      <div class="sliderline"><div><label>T / N / B vector thickness <span id="vecThickOut">0.045</span></label><input id="vecThick" type="range" min="0.01" max="0.12" step="0.005" value="0.045"></div><div></div></div>
+      <div class="sliderline"><div><label>Acceleration vector thickness <span id="accelThickOut">0.060</span></label><input id="accelThick" type="range" min="0.01" max="0.14" step="0.005" value="0.060"></div><div></div></div>
+      <div class="sliderline"><div><label>Osculating-circle thickness <span id="circleThickOut">0.035</span></label><input id="circleThick" type="range" min="0.008" max="0.15" step="0.004" value="0.035"></div><div></div></div>
+      <div class="sliderline"><div><label>Trail thickness <span id="trailThickOut">0.025</span></label><input id="trailThick" type="range" min="0.006" max="0.10" step="0.003" value="0.025"></div><div></div></div>
+      <div class="sidebar-note">Thickness is rendered as actual 3D geometry, so it remains visible consistently across browsers and projectors.</div>
+    </div>
+
+    <div class="section">
+      <h2>8 · View, window & projection</h2>
+      <div class="row">
+        <div><label>Projection</label><select id="projection"><option value="ortho" selected>Orthographic</option><option value="persp">Perspective</option></select></div>
+        <div><label>Orthographic zoom</label><input id="orthoZoom" type="number" value="1" min="0.1" max="20" step="0.1"></div>
+      </div>
+      <div class="windowGrid">
+        <div><label>x window</label><div class="windowPair"><input id="xmin" type="number" value="-5" step="0.5"><input id="xmax" type="number" value="5" step="0.5"></div></div>
+        <div><label>y window</label><div class="windowPair"><input id="ymin" type="number" value="-5" step="0.5"><input id="ymax" type="number" value="5" step="0.5"></div></div>
+        <div><label>z window</label><div class="windowPair"><input id="zmin" type="number" value="-2" step="0.5"><input id="zmax" type="number" value="14" step="0.5"></div></div>
+      </div>
+      <div class="buttonrow" style="margin-top:9px">
+        <button id="applyWindow">Apply / Fit Window</button>
+        <button class="ghost" id="windowFromCurve">Window from Curve</button>
+      </div>
+      <div class="inlineChecks" style="margin-top:9px">
+        <label class="checkwrap"><input id="clipWindow" type="checkbox">clip objects to window</label>
+        <label class="checkwrap"><input id="showWindowBox" type="checkbox">show window box</label>
+      </div>
+      <div class="inlineChecks" style="margin-top:9px">
+        <label class="checkwrap"><input id="showAxes" type="checkbox" checked>axes</label>
+        <label class="checkwrap"><input id="showGrid" type="checkbox" checked>ground grid</label>
+        <label class="checkwrap"><input id="followPoint" type="checkbox">follow moving point</label>
+        <label class="checkwrap"><input id="showTrail" type="checkbox">frame-point trail</label>
+      </div>
+      <div class="tiny" style="margin-top:7px"><b>Ride Curve</b> switches to an elevated first-person perspective attached to the Frenet frame: forward = T and up = B. Drag to look around without changing your riding position; scroll in for a closer first-person view or scroll out to pull behind the moving TNB frame for a chase view. Frenet vectors become undefined where r′ is zero or where curvature vanishes; the app flags those points rather than inventing a frame.</div>
+    </div>
+    <div class="tiny" style="text-align:center;margin-top:8px;color:#61778b">© 2026 John Chase · Made with help from ChatGPT<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.0 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a></span></div>
+  </aside>
+
+  <main>
+    <div id="viewport"></div>
+    <div class="warning" id="warning"></div>
+
+    <div class="viewerbar">
+      <button id="panelToggle" title="Collapse the controls panel">◀ Hide Panel</button>
+      <button id="resetCam">Reset View</button>
+      <button id="fitCam2">Fit Curve</button>
+      <button id="rideBtn" title="Ride the curve looking forward along T">🎢 Ride Curve</button>
+      <button id="themeBtn" title="Switch light / dark mode">☀ Light</button>
+      <button id="fullBtn" title="Enter full screen">⛶ Full Screen</button>
+      <button id="shareBtn" title="Share this exact construction">↗ Share Link</button>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="k">t</div><div class="v" id="statT">0.000</div></div>
+      <div class="stat"><div class="k">r(t)</div><div class="v" id="statP">(—)</div></div>
+      <div class="stat"><div class="k">speed |r′|</div><div class="v" id="statSpeed">—</div></div>
+      <div class="stat"><div class="k">curvature κ</div><div class="v" id="statK">—</div></div>
+      <div class="stat"><div class="k">torsion τ</div><div class="v" id="statTau">—</div></div>
+    </div>
+
+    <div class="timeline">
+      <button id="playBtn">▶ Play</button>
+      <input id="tSlider" type="range" min="0" max="12.5663706144" step="0.001" value="0">
+      <div class="tentry"><label>t =</label><input id="tInput" type="number" value="0" step="0.001"></div>
+      <select id="animMode" class="modeSel">
+        <option value="inc" selected>Increase</option>
+        <option value="dec">Decrease</option>
+        <option value="osc">Oscillate</option>
+      </select>
+      <div class="speed"><label style="margin:0 0 2px">Speed <span id="speedOut">1.0×</span></label><input id="animSpeed" type="range" min="0.1" max="4" step="0.1" value="1"></div>
+      <button id="jumpMid">Midpoint</button>
+    </div>
+    <div class="navhelp" id="navHelp">Drag to orbit · Shift + drag / right-drag to pan · Scroll or pinch to zoom · Base curve: Plot / Update · Second curve updates automatically</div>
+  </main>
+</div>
+
+<div class="shareBackdrop" id="shareBackdrop" aria-hidden="true">
+  <div class="shareCard" role="dialog" aria-modal="true" aria-labelledby="shareTitle">
+    <h3 id="shareTitle">Share this construction</h3>
+    <p id="shareNote">This link stores the curve, TNB construction settings, acceleration decomposition, thicknesses, custom window/projection, second curve, current t-value, theme, and camera view.</p>
+    <input id="shareUrl" type="text" readonly aria-label="Shareable link">
+    <div class="shareActions">
+      <button class="ghost" id="closeShare">Close</button>
+      <button id="nativeShare" style="display:none">Share…</button>
+      <button class="primary" id="copyShare">Copy Link</button>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast">Copied</div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const COLORS = {
+    T:0xef4444, N:0x22c55e, B:0x3b82f6,
+    osc:0xa855f7, normal:0xf97316, binormal:0x14b8a6, circle:0xec4899, accel:0xfbbf24,
+    curve:0xe5edf6, curve2:0xfacc15, point:0xffffff
+  };
+  const THEME3D = {
+    dark:{bg:0x06101c,curve:0xe5edf6,curve2:0xfacc15,point:0xffffff,grid1:0x38506a,grid2:0x1d3043,hemiSky:0xe8f5ff,hemiGround:0x152132,dir:0xffffff},
+    light:{bg:0xf1f6fa,curve:0x182431,curve2:0xa86f00,point:0x111827,grid1:0x879bad,grid2:0xd1dde6,hemiSky:0xffffff,hemiGround:0xc8d3dc,dir:0xffffff}
+  };
+  let currentTheme = localStorage.getItem('tnb-curve-lab-theme') === 'light' ? 'light' : 'dark';
+  document.body.dataset.theme=currentTheme;
+  const state = {
+    showBase:true,
+    showT:true, showN:true, showB:true,
+    showOsc:false, showNorm:false, showBin:false, showCircle:false, showCalc:false,
+    frenetWarned:false,
+    planeMode:'unit', playing:false, direction:1, scrubbing:false,
+    baseFn:null, coeffFns:null, tmin:0, tmax:4*Math.PI,
+    samples:900, points:[], arc:[], maxArc:0,
+    curveObj:null, secondObj:null, frameGroup:null, trailObj:null,
+    trailPts:[], lastFrame:null, fitBox:null,
+    immersive:false, rideRestore:null, rideTarget:new THREE.Vector3(),
+    rideYaw:0, ridePitch:0, rideFov:68, rideBack:0, ridePointer:null
+  };
+
+  // ---------- THREE setup ----------
+  const viewport = $('viewport');
+  const scene = new THREE.Scene();
+  scene.background = new THREE.Color(THEME3D[currentTheme].bg);
+  scene.fog = new THREE.FogExp2(THEME3D[currentTheme].bg, 0.012);
+
+  const perspectiveCamera = new THREE.PerspectiveCamera(45, 1, 0.01, 2000);
+  perspectiveCamera.up.set(0,0,1);
+  perspectiveCamera.position.set(10, -12, 9);
+  const orthographicCamera = new THREE.OrthographicCamera(-10,10,10,-10,0.01,2000);
+  orthographicCamera.up.set(0,0,1);
+  orthographicCamera.position.copy(perspectiveCamera.position);
+  let camera = perspectiveCamera;
+  let orthoHeight = 20;
+
+  const renderer = new THREE.WebGLRenderer({antialias:true, alpha:false});
+  renderer.localClippingEnabled = true;
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  viewport.appendChild(renderer.domElement);
+
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.06;
+  controls.screenSpacePanning = true;
+  controls.minDistance = 0.15;
+  controls.maxDistance = 500;
+
+  const hemi = new THREE.HemisphereLight(THEME3D[currentTheme].hemiSky, THEME3D[currentTheme].hemiGround, 1.0);
+  scene.add(hemi);
+  const light = new THREE.DirectionalLight(THEME3D[currentTheme].dir, 0.55);
+  light.position.set(6,10,7);
+  scene.add(light);
+
+  const axes = new THREE.AxesHelper(4);
+  scene.add(axes);
+  function makeGridForTheme(theme){
+    const th=THEME3D[theme];
+    const g=new THREE.GridHelper(20,20,th.grid1,th.grid2);
+    g.rotation.x = Math.PI/2; // mathematical xy-plane, so z is vertical
+    g.material.transparent = true;
+    g.material.opacity = theme==='light' ? 0.62 : 0.5;
+    return g;
+  }
+  let grid = makeGridForTheme(currentTheme);
+  scene.add(grid);
+
+  function applyTheme(theme, refresh=true){
+    currentTheme = theme === 'light' ? 'light' : 'dark';
+    document.body.dataset.theme=currentTheme;
+    localStorage.setItem('tnb-curve-lab-theme',currentTheme);
+    const th=THEME3D[currentTheme];
+    scene.background.setHex(th.bg);
+    scene.fog.color.setHex(th.bg);
+    COLORS.curve=th.curve; COLORS.curve2=th.curve2; COLORS.point=th.point;
+    hemi.color.setHex(th.hemiSky); hemi.groundColor.setHex(th.hemiGround);
+    const gridVisible=grid.visible;
+    scene.remove(grid); disposeObject(grid);
+    grid=makeGridForTheme(currentTheme); grid.visible=gridVisible; scene.add(grid);
+    $('themeBtn').textContent=currentTheme==='dark'?'☀ Light':'☾ Dark';
+    $('themeBtn').title=currentTheme==='dark'?'Switch to light mode':'Switch to dark mode';
+    updateWindowBox();
+    if(refresh && state.baseFn) rebuildCurves(false);
+    else if(refresh) updateFrame();
+  }
+
+  function resize(){
+    const r = viewport.getBoundingClientRect();
+    renderer.setSize(r.width,r.height,false);
+    const aspect=Math.max(0.01,r.width/r.height);
+    perspectiveCamera.aspect = aspect;
+    perspectiveCamera.updateProjectionMatrix();
+    const zoom=Math.max(.1,parseFloat($('orthoZoom')?.value)||1);
+    const h=orthoHeight/zoom;
+    orthographicCamera.left=-h*aspect/2; orthographicCamera.right=h*aspect/2;
+    orthographicCamera.top=h/2; orthographicCamera.bottom=-h/2;
+    orthographicCamera.updateProjectionMatrix();
+  }
+  window.addEventListener('resize',resize);
+  resize();
+
+  // ---------- expression parser ----------
+  const MATH_NAMES = ['sin','cos','tan','asin','acos','atan','atan2','sqrt','abs','exp','log','sinh','cosh','tanh','asinh','acosh','atanh','floor','ceil','round','min','max','pow','sign'];
+  function compileExpr(expr, vars=['t']){
+    let e = String(expr).trim()
+      .replace(/[−–—]/g,'-')
+      .replace(/π/gi,'pi')
+      .replace(/\^/g,'**')
+      .replace(/\bln\b/g,'log');
+    const args = [...vars, ...MATH_NAMES, 'pi','e'];
+    const vals = [...MATH_NAMES.map(n=>Math[n].bind ? Math[n].bind(Math) : Math[n]), Math.PI, Math.E];
+    const fn = new Function(...args, `"use strict"; return (${e});`);
+    return (...xs) => {
+      const out = fn(...xs, ...vals);
+      if(!Number.isFinite(out)) throw new Error('Expression returned a non-finite value.');
+      return out;
+    };
+  }
+
+  function compileBase(){
+    const fx = compileExpr($('fx').value,['t']);
+    const fy = compileExpr($('fy').value,['t']);
+    const fz = compileExpr($('fz').value,['t']);
+    state.baseFn = t => new THREE.Vector3(fx(t),fy(t),fz(t));
+  }
+  function compileCoeffs(){
+    const fa = compileExpr($('fa').value,['t','s']);
+    const fb = compileExpr($('fb').value,['t','s']);
+    const fc = compileExpr($('fc').value,['t','s']);
+    state.coeffFns = {a:fa,b:fb,c:fc};
+  }
+
+  // ---------- differential geometry ----------
+  function hFor(t){
+    const span = Math.max(1e-6, Math.abs(state.tmax-state.tmin));
+    return Math.max(1e-5, span/50000, Math.abs(t)*1e-7);
+  }
+  function derivative(t){
+    const h=hFor(t); return state.baseFn(t+h).sub(state.baseFn(t-h)).multiplyScalar(1/(2*h));
+  }
+  function secondDerivative(t){
+    const h=hFor(t), p1=state.baseFn(t+h), p0=state.baseFn(t), pm=state.baseFn(t-h);
+    return p1.add(pm).addScaledVector(p0,-2).multiplyScalar(1/(h*h));
+  }
+  function thirdDerivative(t){
+    const h=hFor(t);
+    const p2=state.baseFn(t+2*h), p1=state.baseFn(t+h), pm=state.baseFn(t-h), pm2=state.baseFn(t-2*h);
+    // centered O(h^2): [f(t+2h)-2f(t+h)+2f(t-h)-f(t-2h)]/(2h^3)
+    return p2.addScaledVector(p1,-2).addScaledVector(pm,2).addScaledVector(pm2,-1).multiplyScalar(1/(2*h*h*h));
+  }
+  function frameAt(t){
+    const p=state.baseFn(t);
+    const d1=derivative(t), speed=d1.length();
+    if(speed<1e-7) return {ok:false,p,reason:"T and the tangential/normal acceleration decomposition are undefined here because |r′(t)| is approximately 0."};
+    const d2=secondDerivative(t);
+    const T=d1.clone().normalize();
+    const aT=d2.dot(T);
+    const cross=new THREE.Vector3().crossVectors(d1,d2);
+    const crossLen=cross.length();
+    const kappa=crossLen/Math.pow(speed,3);
+    const aN=crossLen/speed; // = kappa * speed^2; always nonnegative
+    if(crossLen<1e-7){
+      return {ok:true,frenetOK:false,p,d1,d2,cross,crossLen,T,N:null,B:null,speed,kappa:0,rho:Infinity,tau:NaN,aT,aN:0,
+        reason:"Curvature is 0 here, so N and B are not uniquely defined. T and the acceleration decomposition are still valid."};
+    }
+    const B=cross.clone().normalize();
+    const N=new THREE.Vector3().crossVectors(B,T).normalize();
+    let tau=NaN;
+    try{
+      const d3=thirdDerivative(t);
+      tau = cross.dot(d3)/(crossLen*crossLen);
+    }catch(e){}
+    return {ok:true,frenetOK:true,p,d1,d2,cross,crossLen,T,N,B,speed,kappa,rho:1/kappa,tau,aT,aN};
+  }
+
+  // ---------- geometry helpers ----------
+  function disposeObject(obj){
+    if(!obj) return;
+    obj.traverse?.(child=>{
+      child.geometry?.dispose?.();
+      if(child.material){
+        if(Array.isArray(child.material)) child.material.forEach(m=>m.dispose?.());
+        else child.material.dispose?.();
+      }
+      if(child.material?.map) child.material.map.dispose?.();
+    });
+    obj.parent?.remove(obj);
+  }
+  function makeLine(points,color,opacity=1){
+    const g=new THREE.BufferGeometry().setFromPoints(points);
+    const m=new THREE.LineBasicMaterial({color,transparent:opacity<1,opacity});
+    return new THREE.Line(g,m);
+  }
+  function makeTubeLine(points,color,radius=.04,opacity=1,radialSegments=8){
+    if(!points || points.length<2) return makeLine(points||[],color,opacity);
+    const clean=[];
+    for(const p of points){ if(!clean.length || p.distanceToSquared(clean[clean.length-1])>1e-12) clean.push(p.clone()); }
+    if(clean.length<2) return makeLine(points,color,opacity);
+    const curve=new THREE.CatmullRomCurve3(clean,false,'centripetal',0.5);
+    const tubular=Math.max(12,Math.min(2600,clean.length*2));
+    const g=new THREE.TubeGeometry(curve,tubular,Math.max(.001,+radius||.04),Math.max(5,radialSegments),false);
+    const m=new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity,side:THREE.DoubleSide});
+    return new THREE.Mesh(g,m);
+  }
+  function makeCylinderBetween(a,b,radius,color,opacity=1){
+    const d=b.clone().sub(a), len=d.length();
+    if(len<1e-9) return new THREE.Group();
+    const g=new THREE.CylinderGeometry(radius,radius,len,12,1,false);
+    const m=new THREE.MeshBasicMaterial({color,transparent:opacity<1,opacity});
+    const mesh=new THREE.Mesh(g,m);
+    mesh.position.copy(a).addScaledVector(d,.5);
+    mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),d.normalize());
+    return mesh;
+  }
+  function makePointSprite(color=0xffffff,size=0.13){
+    const g=new THREE.SphereGeometry(size,20,14);
+    const m=new THREE.MeshStandardMaterial({color,roughness:.35,metalness:.05});
+    return new THREE.Mesh(g,m);
+  }
+  function makeTextSprite(text,color='#ffffff',scale=0.55){
+    const canvas=document.createElement('canvas');
+    const ctx=canvas.getContext('2d');
+    const dpr=2; canvas.width=512*dpr; canvas.height=128*dpr;
+    ctx.scale(dpr,dpr);
+    ctx.font='700 34px Inter, Arial';
+    ctx.textBaseline='middle';
+    const metrics=ctx.measureText(text); const w=Math.min(500,metrics.width+28);
+    ctx.fillStyle='rgba(5,14,24,.82)';
+    roundRect(ctx,5,21,w,86,18); ctx.fill();
+    ctx.strokeStyle='rgba(180,210,235,.25)'; ctx.lineWidth=1.2; roundRect(ctx,5,21,w,86,18); ctx.stroke();
+    ctx.fillStyle=color; ctx.fillText(text,18,65);
+    const tex=new THREE.CanvasTexture(canvas); tex.minFilter=THREE.LinearFilter;
+    const mat=new THREE.SpriteMaterial({map:tex,transparent:true,depthTest:false});
+    const spr=new THREE.Sprite(mat);
+    spr.scale.set(scale*4,scale,1);
+    return spr;
+  }
+  function roundRect(ctx,x,y,w,h,r){
+    ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();
+  }
+  function cssHex(color){ return '#'+color.toString(16).padStart(6,'0'); }
+  function addArrow(group,p,dir,len,color,label,showLabel,thickness=null){
+    const r=Math.max(.006, thickness==null ? (+$('vecThick').value||.045) : +thickness);
+    const headLen=Math.min(.32*len,Math.max(.20,r*6));
+    const shaftLen=Math.max(.001,len-headLen);
+    const tip=p.clone().addScaledVector(dir,len);
+    const shaftEnd=p.clone().addScaledVector(dir,shaftLen);
+    group.add(makeCylinderBetween(p,shaftEnd,r,color));
+    const coneG=new THREE.ConeGeometry(r*2.7,headLen,14);
+    const coneM=new THREE.MeshBasicMaterial({color});
+    const cone=new THREE.Mesh(coneG,coneM);
+    cone.position.copy(shaftEnd).addScaledVector(dir,headLen/2);
+    cone.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.clone().normalize());
+    group.add(cone);
+    if(showLabel){ const s=makeTextSprite(label,cssHex(color),.45); s.position.copy(tip).addScaledVector(dir,.28); group.add(s); }
+  }
+  function addAccelerationDecomposition(group,fr){
+    if(!fr || !fr.ok) return;
+    const scale=Math.max(.001,+$('accelScale').value||.35);
+    const thick=Math.max(.006,+$('accelThick').value||.06);
+    const labels=$('accelLabels').checked;
+    const eps=1e-7;
+    const tComp=fr.T.clone().multiplyScalar(fr.aT||0);
+    if(tComp.length()>eps) addArrow(group,fr.p,tComp.clone().normalize(),tComp.length()*scale,COLORS.T,'a_T T',labels,thick);
+    if(fr.frenetOK && (fr.aN||0)>eps) addArrow(group,fr.p,fr.N,fr.aN*scale,COLORS.N,'a_N N',labels,thick);
+    if($('showTotalAccel').checked && fr.d2 && fr.d2.length()>eps){
+      addArrow(group,fr.p,fr.d2.clone().normalize(),fr.d2.length()*scale,COLORS.accel,'a',labels,thick);
+    }
+    // A faint parallelogram makes the vector decomposition visible without adding another control.
+    if(fr.frenetOK && tComp.length()>eps && (fr.aN||0)>eps && $('showTotalAccel').checked){
+      const tTip=fr.p.clone().addScaledVector(tComp,scale);
+      const nTip=fr.p.clone().addScaledVector(fr.N,fr.aN*scale);
+      const totalTip=fr.p.clone().addScaledVector(fr.d2,scale);
+      [[tTip,totalTip],[nTip,totalTip]].forEach(pair=>{
+        const g=new THREE.BufferGeometry().setFromPoints(pair);
+        const m=new THREE.LineDashedMaterial({color:COLORS.accel,dashSize:.08,gapSize:.06,transparent:true,opacity:.42});
+        const l=new THREE.Line(g,m); l.computeLineDistances(); group.add(l);
+      });
+    }
+  }
+
+  function planeCorners(p,u,v,mode,fullSize){
+    if(mode==='unit'){
+      return [
+        p.clone(), p.clone().add(u), p.clone().add(u).add(v), p.clone().add(v)
+      ];
+    }
+    const half=mode==='full'?fullSize:1;
+    return [
+      p.clone().addScaledVector(u,-half).addScaledVector(v,-half),
+      p.clone().addScaledVector(u, half).addScaledVector(v,-half),
+      p.clone().addScaledVector(u, half).addScaledVector(v, half),
+      p.clone().addScaledVector(u,-half).addScaledVector(v, half)
+    ];
+  }
+  function addPlane(group,p,u,v,color,label,showLabel){
+    const fullSize = Math.max(5, state.fitBox ? state.fitBox.getSize(new THREE.Vector3()).length()*0.8 : 8);
+    const cs=planeCorners(p,u,v,state.planeMode,fullSize);
+    const verts=new Float32Array([
+      ...cs[0].toArray(),...cs[1].toArray(),...cs[2].toArray(),
+      ...cs[0].toArray(),...cs[2].toArray(),...cs[3].toArray()
+    ]);
+    const g=new THREE.BufferGeometry(); g.setAttribute('position',new THREE.BufferAttribute(verts,3)); g.computeVertexNormals();
+    const m=new THREE.MeshBasicMaterial({color,side:THREE.DoubleSide,transparent:true,opacity:+$('planeOpacity').value,depthWrite:false});
+    const mesh=new THREE.Mesh(g,m); group.add(mesh);
+    const edgeGeom=new THREE.BufferGeometry().setFromPoints([cs[0],cs[1],cs[2],cs[3],cs[0]]);
+    group.add(new THREE.Line(edgeGeom,new THREE.LineBasicMaterial({color,transparent:true,opacity:.8})));
+    if(showLabel){
+      const center=cs.reduce((a,b)=>a.add(b),new THREE.Vector3()).multiplyScalar(1/4);
+      const s=makeTextSprite(label,cssHex(color),.42); s.position.copy(center); group.add(s);
+    }
+  }
+
+  function addOsculatingCircle(group,fr){
+    if(!Number.isFinite(fr.rho) || fr.rho<=0) return;
+    const center=fr.p.clone().addScaledVector(fr.N,fr.rho);
+    const pts=[];
+    const segs=144;
+    for(let i=0;i<=segs;i++){
+      const th=2*Math.PI*i/segs;
+      // theta=0 is the point of tangency; derivative there points in +T.
+      pts.push(center.clone()
+        .addScaledVector(fr.N,-fr.rho*Math.cos(th))
+        .addScaledVector(fr.T, fr.rho*Math.sin(th)));
+    }
+    const circle=makeTubeLine(pts,COLORS.circle,+$('circleThick').value||.035,1,8); group.add(circle);
+
+    if($('showCircleCenter').checked){
+      const cmark=makePointSprite(COLORS.circle,.105); cmark.position.copy(center); group.add(cmark);
+      const cs=makeTextSprite('C',cssHex(COLORS.circle),.40); cs.position.copy(center).addScaledVector(fr.B,.22); group.add(cs);
+    }
+    if($('showRadius').checked){
+      const rg=new THREE.BufferGeometry().setFromPoints([center,fr.p]);
+      const rm=new THREE.LineDashedMaterial({color:COLORS.circle,dashSize:.12,gapSize:.07,transparent:true,opacity:.85});
+      const radiusLine=new THREE.Line(rg,rm); radiusLine.computeLineDistances(); group.add(radiusLine);
+      const mid=center.clone().lerp(fr.p,.5);
+      const rs=makeTextSprite(`ρ = ${fr.rho.toFixed(3)}`,cssHex(COLORS.circle),.36); rs.position.copy(mid).addScaledVector(fr.B,.18); group.add(rs);
+    }
+    if($('labCircle').checked){
+      const lp=center.clone().addScaledVector(fr.T,fr.rho).addScaledVector(fr.B,.22);
+      const ls=makeTextSprite('Osculating circle',cssHex(COLORS.circle),.40); ls.position.copy(lp); group.add(ls);
+    }
+  }
+
+  // ---------- arc-length lookup ----------
+  function arcAt(t){
+    if(!state.arc.length) return 0;
+    const u=(t-state.tmin)/(state.tmax-state.tmin);
+    const x=Math.max(0,Math.min(state.arc.length-1,u*(state.arc.length-1)));
+    const i=Math.floor(x), j=Math.min(state.arc.length-1,i+1), f=x-i;
+    return state.arc[i]*(1-f)+state.arc[j]*f;
+  }
+
+  // ---------- plotting ----------
+  function showWarning(msg){ const w=$('warning'); w.textContent=msg; w.style.display='block'; clearTimeout(showWarning._t); showWarning._t=setTimeout(()=>w.style.display='none',4200); }
+
+  function readDomain(){
+    const a=parseFloat($('tmin').value), b=parseFloat($('tmax').value);
+    if(!Number.isFinite(a)||!Number.isFinite(b)||a===b) throw new Error('min t and max t must be distinct finite numbers.');
+    state.tmin=Math.min(a,b); state.tmax=Math.max(a,b);
+    state.samples=Math.max(150,Math.min(2500,parseInt($('samples').value)||900));
+    $('tSlider').min=state.tmin; $('tSlider').max=state.tmax; $('tSlider').step=(state.tmax-state.tmin)/3000;
+    $('tInput').min=state.tmin; $('tInput').max=state.tmax; $('tInput').step=(state.tmax-state.tmin)/3000;
+    if(+$('tSlider').value<state.tmin || +$('tSlider').value>state.tmax) $('tSlider').value=state.tmin;
+  }
+
+  function rebuildCurves(fit=false){
+    try{
+      readDomain(); compileBase(); compileCoeffs();
+      const pts=[], arc=[0]; let total=0;
+      for(let i=0;i<state.samples;i++){
+        const t=state.tmin+(state.tmax-state.tmin)*i/(state.samples-1);
+        const p=state.baseFn(t); if(![p.x,p.y,p.z].every(Number.isFinite)) throw new Error(`Base curve is not finite near t=${t.toFixed(3)}.`);
+        pts.push(p);
+        if(i){ total+=p.distanceTo(pts[i-1]); arc.push(total); }
+      }
+      state.points=pts; state.arc=arc; state.maxArc=total; state.frenetWarned=false;
+      disposeObject(state.curveObj);
+      state.curveObj=makeTubeLine(pts,COLORS.curve,+$('baseThick').value||.055,1,8); state.curveObj.visible=state.showBase; scene.add(state.curveObj);
+      state.fitBox=new THREE.Box3().setFromPoints(pts).expandByScalar(0.6);
+      buildSecondCurve();
+      state.trailPts=[]; rebuildTrail();
+      updateFrame();
+      if(fit) fitCamera();
+    }catch(err){ showWarning(err.message||String(err)); }
+  }
+
+  function buildSecondCurve(){
+    disposeObject(state.secondObj); state.secondObj=null;
+    if(!$('showSecond').checked) return;
+    const pts=[];
+    try{
+      for(let i=0;i<state.samples;i++){
+        const t=state.tmin+(state.tmax-state.tmin)*i/(state.samples-1);
+        const fr=frameAt(t); if(!fr.ok || !fr.frenetOK) continue;
+        const s=state.arc[i]||0;
+        const a=state.coeffFns.a(t,s), b=state.coeffFns.b(t,s), c=state.coeffFns.c(t,s);
+        pts.push(fr.p.clone().addScaledVector(fr.T,a).addScaledVector(fr.N,b).addScaledVector(fr.B,c));
+      }
+      if(pts.length>1){ state.secondObj=makeTubeLine(pts,COLORS.curve2,+$('secondThick').value||.045,1,8); scene.add(state.secondObj); }
+    }catch(err){ showWarning('Second curve: '+(err.message||String(err))); }
+  }
+
+  function rebuildTrail(){
+    disposeObject(state.trailObj); state.trailObj=null;
+    if(!$('showTrail').checked || state.trailPts.length<2) return;
+    state.trailObj=makeTubeLine(state.trailPts,0x79d7ff,+$('trailThick').value||.025,.65,6); scene.add(state.trailObj);
+  }
+
+  function fmtVec(v){
+    return v ? `⟨${v.x.toFixed(4)}, ${v.y.toFixed(4)}, ${v.z.toFixed(4)}⟩` : '—';
+  }
+
+  function updateCurvatureCalc(fr){
+    if(!fr || !fr.ok){
+      $('calcD1').textContent='—'; $('calcD2').textContent='—'; $('calcCross').textContent='—';
+      $('calcSpeed').textContent='—'; $('calcCrossMag').textContent='—'; $('calcResult').innerHTML='κ = —<br>ρ = —';
+      return;
+    }
+    $('calcD1').textContent=fmtVec(fr.d1);
+    $('calcD2').textContent=fmtVec(fr.d2);
+    $('calcCross').textContent=fmtVec(fr.cross);
+    $('calcSpeed').textContent=fr.speed.toFixed(6);
+    $('calcCrossMag').textContent=fr.crossLen.toFixed(6);
+    if(!fr.frenetOK){
+      $('calcResult').innerHTML=`κ = ${fr.crossLen.toFixed(6)} / (${fr.speed.toFixed(6)})³ ≈ <b>0</b><br>ρ = 1/κ = <b>∞</b><br><span class="tiny">Zero curvature means there is no unique principal normal, binormal, or osculating circle.</span>`;
+    }else{
+      $('calcResult').innerHTML=`κ = ${fr.crossLen.toFixed(6)} / (${fr.speed.toFixed(6)})³ = <b>${fr.kappa.toFixed(6)}</b><br>ρ = 1/κ = <b>${fr.rho.toFixed(6)}</b>`;
+    }
+  }
+
+  function updateAccelerationCalc(fr){
+    const ids=['accD1','accD2','accSpeed','accAT','accAN'];
+    if(!fr || !fr.ok){ ids.forEach(id=>$(id).textContent='—'); $('accResult').innerHTML='a = —'; return; }
+    const clean=x=>Math.abs(x)<1e-7?0:x;
+    const aT=clean(fr.aT||0), aN=clean(fr.aN||0);
+    $('accD1').textContent=fmtVec(fr.d1);
+    $('accD2').textContent=fmtVec(fr.d2);
+    $('accSpeed').textContent=fr.speed.toFixed(6);
+    $('accAT').textContent=`(${fr.d1.dot(fr.d2).toFixed(6)}) / ${fr.speed.toFixed(6)} = ${aT.toFixed(6)}`;
+    $('accAN').textContent=`${fr.crossLen.toFixed(6)} / ${fr.speed.toFixed(6)} = ${aN.toFixed(6)}  (= κ|v|²)`;
+    if(fr.frenetOK){
+      $('accResult').innerHTML=`<b>a</b> = (${aT.toFixed(6)})T + (${aN.toFixed(6)})N &nbsp;&nbsp; with &nbsp;&nbsp; |a| = ${fr.d2.length().toFixed(6)}`;
+    }else{
+      $('accResult').innerHTML=`<b>a</b> = (${aT.toFixed(6)})T &nbsp;&nbsp; and &nbsp;&nbsp; a<sub>N</sub> = 0<br><span class="tiny">The motion is locally straight, so the normal acceleration is zero even though N itself is not uniquely defined.</span>`;
+    }
+  }
+
+  function updateStats(fr,t){
+    $('statT').textContent=t.toFixed(3);
+    if(!fr){ $('statP').textContent='—'; $('statSpeed').textContent='—'; $('statK').textContent='—'; $('statTau').textContent='—'; updateCurvatureCalc(null); updateAccelerationCalc(null); return; }
+    $('statP').textContent=`(${fr.p.x.toFixed(2)}, ${fr.p.y.toFixed(2)}, ${fr.p.z.toFixed(2)})`;
+    $('statSpeed').textContent=Number.isFinite(fr.speed)?fr.speed.toFixed(4):'—';
+    $('statK').textContent=Number.isFinite(fr.kappa)?fr.kappa.toFixed(5):'—';
+    $('statTau').textContent=Number.isFinite(fr.tau)?fr.tau.toFixed(5):'—';
+    updateCurvatureCalc(fr);
+    updateAccelerationCalc(fr);
+  }
+
+  function updateFrame(){
+    disposeObject(state.frameGroup);
+    const group=new THREE.Group(); state.frameGroup=group; scene.add(group);
+    const t=+$('tSlider').value;
+    if($('tInput') && document.activeElement!==$('tInput')) $('tInput').value=Number.isFinite(t)?t.toFixed(6):'';
+    let fr;
+    try{ fr=frameAt(t); }catch(e){ showWarning(e.message); updateStats(null,t); return; }
+    state.lastFrame=fr;
+    if(!fr.ok){
+      updateStats(fr,t); showWarning(fr.reason); const p=makePointSprite(COLORS.point,.12); p.position.copy(fr.p); group.add(p); return;
+    }
+    updateStats(fr,t);
+    const pMarker=makePointSprite(COLORS.point,.12); pMarker.position.copy(fr.p); group.add(pMarker);
+    const len=+$('vecLen').value;
+    if(state.showT) addArrow(group,fr.p,fr.T,len,COLORS.T,'T',$('labT').checked);
+    if(fr.frenetOK){
+      state.frenetWarned=false;
+      if(state.showN) addArrow(group,fr.p,fr.N,len,COLORS.N,'N',$('labN').checked);
+      if(state.showB) addArrow(group,fr.p,fr.B,len,COLORS.B,'B',$('labB').checked);
+      if(state.showOsc) addPlane(group,fr.p,fr.T,fr.N,COLORS.osc,'Osculating',$('labOsc').checked);
+      if(state.showNorm) addPlane(group,fr.p,fr.N,fr.B,COLORS.normal,'Normal',$('labNorm').checked);
+      if(state.showBin) addPlane(group,fr.p,fr.T,fr.B,COLORS.binormal,'Rectifying plane',$('labBin').checked);
+      if(state.showCircle) addOsculatingCircle(group,fr);
+    }else if(!state.frenetWarned && (state.showN||state.showB||state.showOsc||state.showNorm||state.showBin||state.showCircle||$('showSecond').checked)){
+      showWarning(fr.reason); state.frenetWarned=true;
+    }
+
+    if($('showAccel').checked) addAccelerationDecomposition(group,fr);
+
+    if($('showSecond').checked && fr.frenetOK){
+      try{
+        const s=arcAt(t), a=state.coeffFns.a(t,s), b=state.coeffFns.b(t,s), c=state.coeffFns.c(t,s);
+        const q=fr.p.clone().addScaledVector(fr.T,a).addScaledVector(fr.N,b).addScaledVector(fr.B,c);
+        if($('secondPoint').checked){ const m=makePointSprite(COLORS.curve2,.13); m.position.copy(q); group.add(m); }
+        if($('showSpoke').checked){
+          const g=new THREE.BufferGeometry().setFromPoints([fr.p,q]);
+          const mat=new THREE.LineDashedMaterial({color:COLORS.curve2,dashSize:.12,gapSize:.08,transparent:true,opacity:.82});
+          const line=new THREE.Line(g,mat); line.computeLineDistances(); group.add(line);
+        }
+      }catch(e){}
+    }
+
+    if(state.immersive && fr.frenetOK) updateImmersiveCamera(fr);
+    else if(state.immersive && !fr.frenetOK) setImmersiveRide(false);
+    else if($('followPoint').checked){ controls.target.lerp(fr.p,.35); }
+    if($('showTrail').checked && state.playing){
+      if(!state.trailPts.length || state.trailPts[state.trailPts.length-1].distanceTo(fr.p)>.03){
+        state.trailPts.push(fr.p.clone()); if(state.trailPts.length>900) state.trailPts.shift(); rebuildTrail();
+      }
+    }
+  }
+
+  function fitBoxCamera(box){
+    if(!box) return;
+    const size=box.getSize(new THREE.Vector3()), center=box.getCenter(new THREE.Vector3());
+    const radius=Math.max(.5,size.length()/2);
+    const dir=new THREE.Vector3(1,.75,1).normalize();
+    if(camera.isPerspectiveCamera){
+      const dist=radius/Math.tan(THREE.MathUtils.degToRad(perspectiveCamera.fov/2))*1.25;
+      camera.position.copy(center).add(dir.multiplyScalar(dist));
+      camera.near=Math.max(.01,dist/1000); camera.far=Math.max(1000,dist*20);
+    }else{
+      orthoHeight=Math.max(1,size.length()*1.25);
+      const dist=Math.max(10,radius*3);
+      camera.position.copy(center).add(dir.multiplyScalar(dist));
+      camera.near=.01; camera.far=Math.max(1000,dist*20);
+      resize();
+    }
+    camera.updateProjectionMatrix(); controls.target.copy(center); controls.update();
+  }
+  function fitCamera(){ if(state.fitBox) fitBoxCamera(state.fitBox); }
+  function resetCamera(){ camera.position.set(10,-12,9); controls.target.set(0,0,0); orthoHeight=20; resize(); controls.update(); }
+
+  let windowBoxHelper=null;
+  function makeStableWindowBox(w){
+    const g=new THREE.Group();
+    const color=currentTheme==='light'?0x607d8b:0x7894aa;
+    const diag=w.box.getSize(new THREE.Vector3()).length();
+    const radius=Math.max(.008,Math.min(.035,diag*.0018));
+    // Pull the guide just inside the clipping boundary to avoid boundary flicker.
+    const eps=Math.max(radius*1.8,diag*1e-5);
+    const xa=w.xmin+eps, xb=w.xmax-eps, ya=w.ymin+eps, yb=w.ymax-eps, za=w.zmin+eps, zb=w.zmax-eps;
+    const pts=[
+      new THREE.Vector3(xa,ya,za),new THREE.Vector3(xb,ya,za),new THREE.Vector3(xa,yb,za),new THREE.Vector3(xb,yb,za),
+      new THREE.Vector3(xa,ya,zb),new THREE.Vector3(xb,ya,zb),new THREE.Vector3(xa,yb,zb),new THREE.Vector3(xb,yb,zb)
+    ];
+    const edges=[[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]];
+    for(const [i,j] of edges){
+      const m=makeCylinderBetween(pts[i],pts[j],radius,color,.62);
+      m.material.depthTest=false; m.material.depthWrite=false; m.renderOrder=950; g.add(m);
+    }
+    return g;
+  }
+  function readWindowBounds(){
+    const vals=['xmin','xmax','ymin','ymax','zmin','zmax'].map(id=>parseFloat($(id).value));
+    if(vals.some(v=>!Number.isFinite(v))) throw new Error('Window bounds must all be finite numbers.');
+    const [xmin,xmax,ymin,ymax,zmin,zmax]=vals;
+    if(!(xmin<xmax&&ymin<ymax&&zmin<zmax)) throw new Error('Each window minimum must be less than its maximum.');
+    return {xmin,xmax,ymin,ymax,zmin,zmax,box:new THREE.Box3(new THREE.Vector3(xmin,ymin,zmin),new THREE.Vector3(xmax,ymax,zmax))};
+  }
+  function updateWindowBox(){
+    if(windowBoxHelper){disposeObject(windowBoxHelper);windowBoxHelper=null;}
+    if(!$('showWindowBox').checked) return;
+    try{ const w=readWindowBounds(); windowBoxHelper=makeStableWindowBox(w); scene.add(windowBoxHelper); }catch(e){}
+  }
+  function applyClipping(){
+    try{
+      if(!$('clipWindow').checked){renderer.clippingPlanes=[];return;}
+      const w=readWindowBounds();
+      renderer.clippingPlanes=[
+        new THREE.Plane(new THREE.Vector3(1,0,0),-w.xmin), new THREE.Plane(new THREE.Vector3(-1,0,0),w.xmax),
+        new THREE.Plane(new THREE.Vector3(0,1,0),-w.ymin), new THREE.Plane(new THREE.Vector3(0,-1,0),w.ymax),
+        new THREE.Plane(new THREE.Vector3(0,0,1),-w.zmin), new THREE.Plane(new THREE.Vector3(0,0,-1),w.zmax)
+      ];
+    }catch(e){showWarning(e.message);}
+  }
+  function applyWindow(fit=true){
+    try{const w=readWindowBounds(); updateWindowBox(); applyClipping(); if(fit)fitBoxCamera(w.box);}catch(e){showWarning(e.message);}
+  }
+  function windowFromCurve(){
+    if(!state.fitBox)return; const b=state.fitBox.clone(); const sz=b.getSize(new THREE.Vector3()); const pad=Math.max(.25,sz.length()*.04); b.expandByScalar(pad);
+    $('xmin').value=b.min.x.toFixed(2);$('xmax').value=b.max.x.toFixed(2);$('ymin').value=b.min.y.toFixed(2);$('ymax').value=b.max.y.toFixed(2);$('zmin').value=b.min.z.toFixed(2);$('zmax').value=b.max.z.toFixed(2); applyWindow(false);
+  }
+  function setProjection(mode){
+    const oldPos=camera.position.clone(), oldTarget=controls.target.clone();
+    if(mode==='ortho'){
+      if(camera.isPerspectiveCamera){const dist=oldPos.distanceTo(oldTarget); orthoHeight=Math.max(1,2*dist*Math.tan(THREE.MathUtils.degToRad(perspectiveCamera.fov/2)));}
+      camera=orthographicCamera;
+    }else camera=perspectiveCamera;
+    camera.position.copy(oldPos); camera.up.set(0,0,1); controls.object=camera; controls.target.copy(oldTarget); resize(); controls.update();
+  }
+
+  function syncRideButton(){
+    $('rideBtn').classList.toggle('active',state.immersive);
+    $('rideBtn').textContent=state.immersive?'■ Exit Ride':'🎢 Ride Curve';
+    $('rideBtn').title=state.immersive?'Return to the previous camera view':'Ride the curve: forward = T, up = B';
+    if($('navHelp')) $('navHelp').textContent=state.immersive
+      ? 'Ride mode · Drag to look around · Scroll out for chase view · Scroll in toward first-person, then closer · Your ride point stays attached to the curve'
+      : 'Drag to orbit · Shift + drag / right-drag to pan · Scroll or pinch to zoom · Base curve: Plot / Update · Second curve updates automatically';
+    renderer.domElement.style.cursor=state.immersive?'grab':'';
+  }
+  function rideViewBasis(fr){
+    // Start from the Frenet frame, then apply a local yaw/pitch for looking around.
+    const cy=Math.cos(state.rideYaw), sy=Math.sin(state.rideYaw);
+    const cp=Math.cos(state.ridePitch), sp=Math.sin(state.ridePitch);
+    const forwardYaw=fr.T.clone().multiplyScalar(cy).addScaledVector(fr.N,sy).normalize();
+    const forward=forwardYaw.clone().multiplyScalar(cp).addScaledVector(fr.B,sp).normalize();
+    const up=fr.B.clone().multiplyScalar(cp).addScaledVector(forwardYaw,-sp).normalize();
+    return {forward,up};
+  }
+  function updateImmersiveCamera(fr, immediate=false){
+    if(!state.immersive || !fr || !fr.ok || !fr.frenetOK) return;
+    const scale=Math.max(.18, Math.min(1.0, (state.fitBox?state.fitBox.getSize(new THREE.Vector3()).length():10)*.018));
+    // The "seat" rides a little above (+B) and ahead (+T) of the Frenet-frame point.
+    // rideBack then dollies the CAMERA backward along -T without changing that riding
+    // point.  At larger values the TNB frame itself comes into view, producing an
+    // over-the-shoulder / chase-camera view.
+    const curveRadius=Math.max(.001,+$('baseThick').value||.055);
+    const rideForward=Math.max(scale*.95,curveRadius*6.5);
+    const rideHeight=Math.max(scale*1.15,curveRadius*8.0);
+    const seatPos=fr.p.clone().addScaledVector(fr.T,rideForward).addScaledVector(fr.B,rideHeight);
+    const back=Math.max(0,state.rideBack||0);
+    const desiredPos=seatPos.clone()
+      .addScaledVector(fr.T,-back)
+      .addScaledVector(fr.B,back*.12); // rise slightly as the chase camera pulls back
+    const view=rideViewBasis(fr);
+    const lookDistance=Math.max(2.1,scale*10);
+    // Keep looking from the camera through the moving riding point and onward.
+    // This makes the Frenet frame visible in front of the camera once back > rideForward.
+    const desiredTarget=seatPos.clone().addScaledVector(view.forward,lookDistance);
+    const alpha=immediate || !state.playing ? 1 : .32;
+    camera.position.lerp(desiredPos,alpha);
+    state.rideTarget.lerp(desiredTarget,alpha);
+    camera.up.lerp(view.up,alpha).normalize();
+    camera.lookAt(state.rideTarget);
+    controls.target.copy(state.rideTarget);
+  }
+  function updateRideViewImmediate(){
+    if(state.immersive && state.lastFrame && state.lastFrame.ok && state.lastFrame.frenetOK) updateImmersiveCamera(state.lastFrame,true);
+  }
+  function setImmersiveRide(on){
+    on=!!on; if(on===state.immersive) return;
+    if(on){
+      // Save the ACTIVE view verbatim.  Do not reconstruct it later from the ride camera:
+      // orthographic OrbitControls may have changed camera.zoom independently of orthoHeight.
+      state.rideRestore={
+        projection:$('projection').value,
+        pos:camera.position.clone(), target:controls.target.clone(), up:camera.up.clone(), quaternion:camera.quaternion.clone(),
+        orthoHeight, orthoZoom:orthographicCamera.zoom, perspectiveZoom:perspectiveCamera.zoom,
+        fov:perspectiveCamera.fov, near:camera.near, far:camera.far
+      };
+      state.immersive=true;
+      // Start slightly pitched downward so the base curve runs beneath the rider
+      // instead of appearing as a tube aimed straight at the camera.
+      state.rideYaw=0; state.ridePitch=-0.16; state.rideFov=68; state.rideBack=0;
+      if($('projection').value!=='persp'){ $('projection').value='persp'; setProjection('persp'); }
+      perspectiveCamera.fov=state.rideFov; perspectiveCamera.zoom=1; perspectiveCamera.updateProjectionMatrix();
+      controls.enabled=false;
+      const t=+$('tSlider').value; try{const fr=frameAt(t); if(fr.ok && fr.frenetOK){state.rideTarget.copy(fr.p).addScaledVector(fr.T,2);updateImmersiveCamera(fr,true);}else{showWarning('Ride mode needs a defined Frenet normal and binormal, so it is unavailable where curvature is 0.');setImmersiveRide(false);}}catch(e){}
+    }else{
+      state.immersive=false; controls.enabled=true; state.ridePointer=null;
+      const r=state.rideRestore;
+      if(r){
+        // Restore the original camera DIRECTLY rather than routing through setProjection(),
+        // which intentionally derives orthographic scale from the current camera and would
+        // therefore alter the view we are trying to preserve.
+        if((r.projection||'ortho')==='ortho'){
+          camera=orthographicCamera;
+          $('projection').value='ortho';
+          orthoHeight=Number.isFinite(r.orthoHeight)?r.orthoHeight:orthoHeight;
+          orthographicCamera.zoom=Number.isFinite(r.orthoZoom)?r.orthoZoom:1;
+        }else{
+          camera=perspectiveCamera;
+          $('projection').value='persp';
+          perspectiveCamera.fov=Number.isFinite(r.fov)?r.fov:45;
+          perspectiveCamera.zoom=Number.isFinite(r.perspectiveZoom)?r.perspectiveZoom:1;
+        }
+        controls.object=camera;
+        camera.position.copy(r.pos);
+        camera.up.copy(r.up||new THREE.Vector3(0,0,1));
+        if(r.quaternion) camera.quaternion.copy(r.quaternion);
+        if(Number.isFinite(r.near)) camera.near=r.near;
+        if(Number.isFinite(r.far)) camera.far=r.far;
+        controls.target.copy(r.target);
+        resize();
+        camera.updateProjectionMatrix();
+        controls.update();
+      }
+      state.rideRestore=null;
+    }
+    syncRideButton(); resize();
+  }
+
+  // Ride-mode interaction: drag changes local look direction without moving the ride point.
+  // The wheel acts like a chase-camera dolly: scroll out pulls the camera behind the
+  // moving Frenet frame; scroll in returns toward first-person.  A small FOV change is
+  // layered on top so the motion still feels like zooming rather than only translating.
+  renderer.domElement.addEventListener('pointerdown',e=>{
+    if(!state.immersive) return;
+    state.ridePointer={id:e.pointerId,x:e.clientX,y:e.clientY,yaw:state.rideYaw,pitch:state.ridePitch};
+    try{renderer.domElement.setPointerCapture(e.pointerId)}catch(_){}
+    renderer.domElement.style.cursor='grabbing'; e.preventDefault();
+  });
+  renderer.domElement.addEventListener('pointermove',e=>{
+    const p=state.ridePointer; if(!state.immersive || !p || p.id!==e.pointerId) return;
+    const dx=e.clientX-p.x, dy=e.clientY-p.y;
+    state.rideYaw=p.yaw-dx*0.0045;
+    state.ridePitch=Math.max(-1.30,Math.min(1.30,p.pitch-dy*0.0045));
+    updateRideViewImmediate(); e.preventDefault();
+  });
+  function endRidePointer(e){
+    if(!state.ridePointer || state.ridePointer.id!==e.pointerId) return;
+    state.ridePointer=null; renderer.domElement.style.cursor=state.immersive?'grab':'';
+  }
+  renderer.domElement.addEventListener('pointerup',endRidePointer);
+  renderer.domElement.addEventListener('pointercancel',endRidePointer);
+  renderer.domElement.addEventListener('wheel',e=>{
+    if(!state.immersive) return;
+    e.preventDefault();
+    const fitDiag=state.fitBox?state.fitBox.getSize(new THREE.Vector3()).length():10;
+    const scale=Math.max(.18,Math.min(1.0,fitDiag*.018));
+    const maxBack=Math.max(3.0,scale*16);
+    let d=e.deltaY;
+    const backPerDelta=.010*scale;
+    const fovPerDelta=.035;
+
+    if(d>0){
+      // Zooming OUT: if the user had zoomed in optically, first return to the
+      // normal 68° ride lens; then spend the remaining wheel motion pulling the
+      // camera physically behind the moving Frenet frame.
+      if(state.rideFov<68){
+        const needed=(68-state.rideFov)/fovPerDelta;
+        const used=Math.min(d,needed);
+        state.rideFov=Math.min(68,state.rideFov+used*fovPerDelta);
+        d-=used;
+      }
+      if(d>0) state.rideBack=Math.min(maxBack,(state.rideBack||0)+d*backPerDelta);
+    }else if(d<0){
+      // Zooming IN: first dolly forward from chase view toward the rider.  Once
+      // back at first-person distance, continued scrolling narrows the FOV for
+      // a genuine close-in zoom.
+      if((state.rideBack||0)>0){
+        const needed=state.rideBack/backPerDelta;
+        const used=Math.min(-d,needed);
+        state.rideBack=Math.max(0,state.rideBack-used*backPerDelta);
+        d+=used;
+      }
+      if(d<0) state.rideFov=Math.max(30,state.rideFov+d*fovPerDelta);
+    }
+
+    perspectiveCamera.fov=state.rideFov;
+    perspectiveCamera.updateProjectionMatrix();
+    updateRideViewImmediate();
+  },{passive:false});
+
+  // ---------- sharing, theme & fullscreen ----------
+  function showToast(msg){
+    const el=$('toast'); el.textContent=msg; el.classList.add('show');
+    clearTimeout(showToast._t); showToast._t=setTimeout(()=>el.classList.remove('show'),1800);
+  }
+  function setToggleState(id,key,val){
+    state[key]=!!val; const b=$(id); if(!b) return;
+    b.textContent=state[key]?'Shown':'Hidden'; b.classList.toggle('active',state[key]);
+  }
+  function captureShareState(){
+    return {
+      v:4, fx:$('fx').value, fy:$('fy').value, fz:$('fz').value,
+      mn:$('tmin').value, mx:$('tmax').value, sm:$('samples').value, t:$('tSlider').value,
+      fa:$('fa').value, fb:$('fb').value, fc:$('fc').value,
+      vl:$('vecLen').value, po:$('planeOpacity').value, pm:state.planeMode,
+      thk:[$('baseThick').value,$('secondThick').value,$('vecThick').value,$('accelThick').value,$('circleThick').value,$('trailThick').value],
+      win:[$('xmin').value,$('xmax').value,$('ymin').value,$('ymax').value,$('zmin').value,$('zmax').value,$('clipWindow').checked,$('showWindowBox').checked],
+      pr:[$('projection').value,$('orthoZoom').value], pc:$('app').classList.contains('sidebar-collapsed'), bv:state.showBase,
+      sh:[state.showT,state.showN,state.showB,state.showOsc,state.showNorm,state.showBin,state.showCircle,state.showCalc],
+      lb:[$('labT').checked,$('labN').checked,$('labB').checked,$('labOsc').checked,$('labNorm').checked,$('labBin').checked,$('labCircle').checked],
+      cc:[$('showCircleCenter').checked,$('showRadius').checked],
+      ac:[$('showAccel').checked,$('showTotalAccel').checked,$('accelLabels').checked,$('accelScale').value,$('accelThick').value],
+      sc:[$('showSecond').checked,$('showSpoke').checked,$('secondPoint').checked],
+      va:[$('showAxes').checked,$('showGrid').checked,$('followPoint').checked,$('showTrail').checked],
+      am:$('animMode').value, as:$('animSpeed').value, th:currentTheme, im:state.immersive,
+      cp:[camera.position.x,camera.position.y,camera.position.z], ct:[controls.target.x,controls.target.y,controls.target.z]
+    };
+  }
+  function bytesToUrlSafe(bytes){
+    let binary=''; for(let i=0;i<bytes.length;i++) binary+=String.fromCharCode(bytes[i]);
+    return btoa(binary).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+  }
+  function urlSafeToBytes(s){
+    s=s.replace(/-/g,'+').replace(/_/g,'/'); while(s.length%4)s+='=';
+    const bin=atob(s), out=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) out[i]=bin.charCodeAt(i); return out;
+  }
+  function encodeShareState(obj){ return bytesToUrlSafe(new TextEncoder().encode(JSON.stringify(obj))); }
+  function decodeShareState(s){ return JSON.parse(new TextDecoder().decode(urlSafeToBytes(s))); }
+  function buildShareUrl(){ return location.href.split('#')[0]+'#state='+encodeShareState(captureShareState()); }
+  function readSharedState(){
+    const m=location.hash.match(/^#state=(.+)$/); if(!m) return null;
+    try{return decodeShareState(m[1]);}catch(e){showWarning('This share link could not be read.');return null;}
+  }
+  function applySharedState(o){
+    if(!o || ![1,2,3,4].includes(o.v)) return false;
+    const value=(id,v)=>{if(v!==undefined && $(id)) $(id).value=v;};
+    value('fx',o.fx); value('fy',o.fy); value('fz',o.fz); value('tmin',o.mn); value('tmax',o.mx); value('samples',o.sm);
+    value('fa',o.fa); value('fb',o.fb); value('fc',o.fc); value('vecLen',o.vl); value('planeOpacity',o.po);
+    value('animMode',o.am); value('animSpeed',o.as);
+    if(Array.isArray(o.thk)){ const ids=o.thk.length>=6?['baseThick','secondThick','vecThick','accelThick','circleThick','trailThick']:['baseThick','secondThick','vecThick','circleThick','trailThick']; ids.forEach((id,i)=>value(id,o.thk[i])); }
+    if(Array.isArray(o.win)){['xmin','xmax','ymin','ymax','zmin','zmax'].forEach((id,i)=>value(id,o.win[i])); if(o.win[6]!==undefined)$('clipWindow').checked=!!o.win[6]; if(o.win[7]!==undefined)$('showWindowBox').checked=!!o.win[7];}
+    if(Array.isArray(o.pr)){value('projection',o.pr[0]);value('orthoZoom',o.pr[1]);}
+    if(o.pc!==undefined)$('app').classList.toggle('sidebar-collapsed',!!o.pc);
+    if(o.bv!==undefined) state.showBase=!!o.bv;
+    if(Array.isArray(o.sh)){
+      const defs=[['togT','showT'],['togN','showN'],['togB','showB'],['togOsc','showOsc'],['togNorm','showNorm'],['togBin','showBin'],['togCircle','showCircle']];
+      defs.forEach((d,i)=>setToggleState(d[0],d[1],o.sh[i]));
+      state.showCalc=!!o.sh[7]; $('togCalc').textContent=state.showCalc?'Shown':'Hidden'; $('togCalc').classList.toggle('active',state.showCalc); $('curvatureCalc').style.display=state.showCalc?'block':'none';
+    }
+    if(Array.isArray(o.lb)){['labT','labN','labB','labOsc','labNorm','labBin','labCircle'].forEach((id,i)=>{if(o.lb[i]!==undefined)$(id).checked=!!o.lb[i]})}
+    if(Array.isArray(o.cc)){ $('showCircleCenter').checked=!!o.cc[0]; $('showRadius').checked=!!o.cc[1]; }
+    if(Array.isArray(o.ac)){ $('showAccel').checked=!!o.ac[0]; $('showTotalAccel').checked=!!o.ac[1]; $('accelLabels').checked=!!o.ac[2]; value('accelScale',o.ac[3]); value('accelThick',o.ac[4]); $('accelCalc').style.display=$('showAccel').checked?'block':'none'; }
+    if(Array.isArray(o.sc)){ $('showSecond').checked=!!o.sc[0]; $('showSpoke').checked=!!o.sc[1]; $('secondPoint').checked=!!o.sc[2]; }
+    if(Array.isArray(o.va)){ $('showAxes').checked=!!o.va[0]; $('showGrid').checked=!!o.va[1]; $('followPoint').checked=!!o.va[2]; $('showTrail').checked=!!o.va[3]; axes.visible=$('showAxes').checked; grid.visible=$('showGrid').checked; }
+    state.planeMode=['full','unit','centered'].includes(o.pm)?o.pm:'unit';
+    [...$('planeSeg').querySelectorAll('button')].forEach(b=>b.classList.toggle('active',b.dataset.mode===state.planeMode));
+    $('vecLenOut').textContent=(+$('vecLen').value).toFixed(2); $('planeOpOut').textContent=(+$('planeOpacity').value).toFixed(2); $('speedOut').textContent=(+$('animSpeed').value).toFixed(1)+'×';
+    [['baseThick','baseThickOut',3],['secondThick','secondThickOut',3],['vecThick','vecThickOut',3],['accelThick','accelThickOut',3],['circleThick','circleThickOut',3],['trailThick','trailThickOut',3]].forEach(([id,out,n])=>$(out).textContent=(+$(id).value).toFixed(n));
+    $('accelScaleOut').textContent=(+$('accelScale').value).toFixed(2);
+    if(o.th) applyTheme(o.th,false);
+    setProjection($('projection').value||'ortho'); updateWindowBox(); applyClipping(); syncPanelButton(); syncHeaderVisibilityControls();
+    return true;
+  }
+  async function copyText(text){
+    try{ if(navigator.clipboard && window.isSecureContext){await navigator.clipboard.writeText(text);return true;} }catch(e){}
+    const ta=document.createElement('textarea'); ta.value=text; ta.style.position='fixed'; ta.style.opacity='0'; document.body.appendChild(ta); ta.select();
+    let ok=false; try{ok=document.execCommand('copy')}catch(e){} ta.remove(); return ok;
+  }
+  function openShare(){
+    const url=buildShareUrl(); $('shareUrl').value=url;
+    const local=location.protocol==='file:';
+    $('shareNote').textContent=local
+      ? 'Your exact construction is encoded in the link. Because this copy is opened as a local file, the link becomes portable to other devices after you host this HTML at a web address.'
+      : 'This link stores the curve, TNB construction settings, acceleration decomposition, thicknesses, custom window/projection, second curve, current t-value, theme, and camera view.';
+    $('nativeShare').style.display=navigator.share?'inline-block':'none';
+    $('shareBackdrop').classList.add('open'); $('shareBackdrop').setAttribute('aria-hidden','false');
+  }
+  function closeShare(){ $('shareBackdrop').classList.remove('open'); $('shareBackdrop').setAttribute('aria-hidden','true'); }
+  async function toggleFullscreen(){
+    const app=$('app');
+    try{
+      if(!document.fullscreenElement && !document.webkitFullscreenElement){
+        if(app.requestFullscreen) await app.requestFullscreen(); else if(app.webkitRequestFullscreen) app.webkitRequestFullscreen(); else throw new Error('Fullscreen is not supported by this browser.');
+      }else{ if(document.exitFullscreen) await document.exitFullscreen(); else if(document.webkitExitFullscreen) document.webkitExitFullscreen(); }
+    }catch(e){showWarning(e.message||'Fullscreen is not available.');}
+  }
+  function syncFullscreenButton(){ const on=!!(document.fullscreenElement||document.webkitFullscreenElement); $('fullBtn').textContent=on?'⛶ Exit Full Screen':'⛶ Full Screen'; setTimeout(resize,30); }
+
+  const ICONS={
+    eye:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z"/><circle cx="12" cy="12" r="2.5"/></svg>`,
+    eyeOff:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 6.2A10.8 10.8 0 0 1 12 6c6 0 9.5 6 9.5 6a14 14 0 0 1-2.2 2.9"/><path d="M6.1 6.1C3.8 7.7 2.5 12 2.5 12s3.5 6 9.5 6c1.7 0 3.2-.5 4.5-1.2"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`,
+    down:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 9.5 5 5 5-5"/></svg>`,
+    left:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 7-5 5 5 5"/></svg>`
+  };
+  function initCollapsibleSections(){
+    const visIds=['hdrBaseVis','hdrFrameVis','hdrPlanesVis','hdrCircleVis','hdrAccelVis','hdrSecondVis',null,null];
+    document.querySelectorAll('aside .section').forEach((sec,index)=>{
+      const h=sec.querySelector(':scope > h2'); if(!h || sec.querySelector(':scope > .sectionBody')) return;
+      const body=document.createElement('div'); body.className='sectionBody';
+      while(h.nextSibling) body.appendChild(h.nextSibling); sec.appendChild(body);
+      const collapsed=index!==0; sec.classList.toggle('collapsed',collapsed);
+      const actions=document.createElement('div'); actions.className='panelHeaderActions';
+      const visId=visIds[index];
+      if(visId){
+        const vis=document.createElement('button');
+        vis.type='button'; vis.id=visId; vis.className='headerIconBtn visibilityBtn';
+        vis.setAttribute('aria-label','Toggle feature visibility');
+        actions.appendChild(vis);
+      }
+      const fold=document.createElement('button');
+      fold.type='button'; fold.className='headerIconBtn collapseBtn';
+      const syncFold=()=>{
+        const c=sec.classList.contains('collapsed');
+        fold.innerHTML=c?ICONS.left:ICONS.down;
+        fold.dataset.tooltip=c?'Expand panel':'Collapse panel';
+        fold.title=c?'Expand panel':'Collapse panel';
+        fold.setAttribute('aria-label',c?'Expand panel':'Collapse panel');
+        fold.setAttribute('aria-expanded',String(!c));
+      };
+      fold.addEventListener('click',e=>{e.stopPropagation();sec.classList.toggle('collapsed');syncFold();});
+      actions.appendChild(fold); sec.appendChild(actions); syncFold();
+    });
+  }
+  function syncPanelButton(){
+    const c=$('app').classList.contains('sidebar-collapsed');
+    $('panelToggle').textContent=c?'☰ Controls':'◀ Hide Panel'; $('panelToggle').title=c?'Open the controls panel':'Collapse the controls panel';
+    setTimeout(resize,230);
+  }
+  initCollapsibleSections();
+
+  // ---------- UI ----------
+  function toggleButton(id,key){
+    $(id).addEventListener('click',()=>{
+      state[key]=!state[key]; const b=$(id); b.textContent=state[key]?'Shown':'Hidden'; b.classList.toggle('active',state[key]); syncHeaderVisibilityControls(); updateFrame();
+    });
+  }
+  toggleButton('togT','showT'); toggleButton('togN','showN'); toggleButton('togB','showB');
+  toggleButton('togOsc','showOsc'); toggleButton('togNorm','showNorm'); toggleButton('togBin','showBin');
+  toggleButton('togCircle','showCircle');
+
+  // Persistent visibility controls live in each section header, so they remain
+  // available while that section is collapsed.  Group panels control all of
+  // their related objects together, while the individual controls inside the
+  // expanded panel still allow mixed visibility.
+  function syncHeaderVisibilityControls(){
+    const setBtn=(id,isOn,titleOn,titleOff)=>{
+      const b=$(id); if(!b) return;
+      b.innerHTML=isOn?ICONS.eye:ICONS.eyeOff;
+      b.classList.toggle('visible',!!isOn);
+      b.setAttribute('aria-pressed',String(!!isOn));
+      const tip=isOn?titleOn:titleOff;
+      b.dataset.tooltip=tip; b.title=tip; b.setAttribute('aria-label',tip);
+    };
+    setBtn('hdrBaseVis',state.showBase,'Hide base curve','Show base curve');
+    const frameAll=state.showT&&state.showN&&state.showB;
+    setBtn('hdrFrameVis',frameAll,'Hide T, N, and B','Show T, N, and B');
+    const planesAll=state.showOsc&&state.showNorm&&state.showBin;
+    setBtn('hdrPlanesVis',planesAll,'Hide all fundamental planes','Show all fundamental planes');
+    setBtn('hdrCircleVis',state.showCircle,'Hide osculating circle','Show osculating circle');
+    setBtn('hdrAccelVis',$('showAccel').checked,'Hide acceleration components','Show acceleration components');
+    setBtn('hdrSecondVis',$('showSecond').checked,'Hide second TNB curve','Show second TNB curve');
+  }
+  $('hdrBaseVis').addEventListener('click',()=>{
+    state.showBase=!state.showBase;
+    if(state.curveObj) state.curveObj.visible=state.showBase;
+    syncHeaderVisibilityControls();
+  });
+  $('hdrFrameVis').addEventListener('click',()=>{
+    const v=!(state.showT&&state.showN&&state.showB);
+    [['togT','showT'],['togN','showN'],['togB','showB']].forEach(([id,key])=>setToggleState(id,key,v));
+    syncHeaderVisibilityControls(); updateFrame();
+  });
+  $('hdrPlanesVis').addEventListener('click',()=>{
+    const v=!(state.showOsc&&state.showNorm&&state.showBin);
+    [['togOsc','showOsc'],['togNorm','showNorm'],['togBin','showBin']].forEach(([id,key])=>setToggleState(id,key,v));
+    syncHeaderVisibilityControls(); updateFrame();
+  });
+  $('hdrCircleVis').addEventListener('click',()=>{
+    setToggleState('togCircle','showCircle',!state.showCircle);
+    syncHeaderVisibilityControls(); updateFrame();
+  });
+  $('hdrAccelVis').addEventListener('click',()=>{
+    $('showAccel').checked=!$('showAccel').checked;
+    $('accelCalc').style.display=$('showAccel').checked?'block':'none';
+    syncHeaderVisibilityControls(); updateFrame();
+  });
+  $('hdrSecondVis').addEventListener('click',()=>{
+    $('showSecond').checked=!$('showSecond').checked;
+    syncHeaderVisibilityControls(); refreshSecondCurve();
+  });
+  syncHeaderVisibilityControls();
+
+  $('showAccel').addEventListener('change',()=>{ $('accelCalc').style.display=$('showAccel').checked?'block':'none'; syncHeaderVisibilityControls(); updateFrame(); });
+  ['showTotalAccel','accelLabels'].forEach(id=>$(id).addEventListener('change',updateFrame));
+  $('accelScale').addEventListener('input',()=>{ $('accelScaleOut').textContent=(+$('accelScale').value).toFixed(2); updateFrame(); });
+  $('togCalc').addEventListener('click',()=>{
+    state.showCalc=!state.showCalc;
+    $('togCalc').textContent=state.showCalc?'Shown':'Hidden';
+    $('togCalc').classList.toggle('active',state.showCalc);
+    $('curvatureCalc').style.display=state.showCalc?'block':'none';
+    if(state.lastFrame) updateCurvatureCalc(state.lastFrame);
+  });
+  ['labT','labN','labB','labOsc','labNorm','labBin','labCircle','showCircleCenter','showRadius','showSpoke','secondPoint','followPoint'].forEach(id=>$(id).addEventListener('change',updateFrame));
+
+  $('planeSeg').addEventListener('click',e=>{
+    if(e.target.tagName!=='BUTTON') return;
+    [...$('planeSeg').querySelectorAll('button')].forEach(b=>b.classList.remove('active')); e.target.classList.add('active');
+    state.planeMode=e.target.dataset.mode; updateFrame();
+  });
+  $('planeOpacity').addEventListener('input',()=>{ $('planeOpOut').textContent=(+$('planeOpacity').value).toFixed(2); updateFrame(); });
+  $('vecLen').addEventListener('input',()=>{ $('vecLenOut').textContent=(+$('vecLen').value).toFixed(2); updateFrame(); });
+  const thicknessDefs=[
+    ['baseThick','baseThickOut',()=>rebuildCurves(false)],
+    ['secondThick','secondThickOut',()=>{buildSecondCurve();updateFrame();}],
+    ['vecThick','vecThickOut',updateFrame],
+    ['accelThick','accelThickOut',updateFrame],
+    ['circleThick','circleThickOut',updateFrame],
+    ['trailThick','trailThickOut',rebuildTrail]
+  ];
+  thicknessDefs.forEach(([id,out,fn])=>$(id).addEventListener('input',()=>{$(out).textContent=(+$(id).value).toFixed(3);fn();}));
+  // Smooth manual scrubbing: do at most one expensive frame rebuild per browser frame,
+  // and do not let animation fight the user's hand while the thumb is held.
+  let sliderUpdateRAF=0;
+  function scheduleSliderFrameUpdate(){
+    if(sliderUpdateRAF) return;
+    sliderUpdateRAF=requestAnimationFrame(()=>{ sliderUpdateRAF=0; updateFrame(); });
+  }
+  function finishSliderScrub(){
+    if(!state.scrubbing) return;
+    state.scrubbing=false;
+    if(sliderUpdateRAF){ cancelAnimationFrame(sliderUpdateRAF); sliderUpdateRAF=0; }
+    updateFrame();
+  }
+  $('tSlider').addEventListener('pointerdown',()=>{ state.scrubbing=true; });
+  $('tSlider').addEventListener('pointerup',finishSliderScrub);
+  $('tSlider').addEventListener('pointercancel',finishSliderScrub);
+  $('tSlider').addEventListener('lostpointercapture',finishSliderScrub);
+  $('tSlider').addEventListener('input',scheduleSliderFrameUpdate);
+  $('tSlider').addEventListener('change',finishSliderScrub);
+  // Safety in case the pointer is released outside the slider/browser control.
+  window.addEventListener('pointerup',finishSliderScrub);
+  function setTFromInput(){const v=parseFloat($('tInput').value);if(!Number.isFinite(v))return;const t=Math.max(state.tmin,Math.min(state.tmax,v));$('tSlider').value=t;$('tInput').value=t.toFixed(6);updateFrame();}
+  $('tInput').addEventListener('change',setTFromInput); $('tInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();setTFromInput();$('tInput').blur();}});
+  function refreshSecondCurve(showErrors=true){
+    try{ compileCoeffs(); buildSecondCurve(); updateFrame(); }catch(e){ if(showErrors) showWarning('Second curve: '+(e.message||String(e))); }
+  }
+  $('showSecond').addEventListener('change',()=>{ syncHeaderVisibilityControls(); refreshSecondCurve(); });
+  let secondEditTimer=null;
+  ['fa','fb','fc'].forEach(id=>{
+    $(id).addEventListener('change',refreshSecondCurve);
+    $(id).addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();refreshSecondCurve();$(id).blur();}});
+    $(id).addEventListener('input',()=>{clearTimeout(secondEditTimer); secondEditTimer=setTimeout(()=>{if($('showSecond').checked)refreshSecondCurve(false);},450);});
+  });
+  $('showAxes').addEventListener('change',()=>axes.visible=$('showAxes').checked);
+  $('showGrid').addEventListener('change',()=>grid.visible=$('showGrid').checked);
+  $('showTrail').addEventListener('change',()=>{ if(!$('showTrail').checked) state.trailPts=[]; rebuildTrail(); });
+  $('animSpeed').addEventListener('input',()=> $('speedOut').textContent=(+$('animSpeed').value).toFixed(1)+'×');
+  $('plotBtn').addEventListener('click',()=>rebuildCurves(false));
+  ['fx','fy','fz','tmin','tmax'].forEach(id=>$(id).addEventListener('dblclick',()=>rebuildCurves(false)));
+  $('fitBtn').addEventListener('click',fitCamera); $('fitCam2').addEventListener('click',fitCamera); $('resetCam').addEventListener('click',resetCamera);
+  $('panelToggle').addEventListener('click',()=>{$('app').classList.toggle('sidebar-collapsed');syncPanelButton();});
+  $('rideBtn').addEventListener('click',()=>setImmersiveRide(!state.immersive));
+  $('projection').addEventListener('change',()=>{
+    const requested=$('projection').value;
+    if(state.immersive){ setImmersiveRide(false); $('projection').value=requested; }
+    setProjection(requested);
+  });
+  $('orthoZoom').addEventListener('input',resize);
+  $('applyWindow').addEventListener('click',()=>applyWindow(true)); $('windowFromCurve').addEventListener('click',windowFromCurve);
+  $('clipWindow').addEventListener('change',applyClipping); $('showWindowBox').addEventListener('change',updateWindowBox);
+  ['xmin','xmax','ymin','ymax','zmin','zmax'].forEach(id=>$(id).addEventListener('change',()=>applyWindow(false)));
+  $('themeBtn').addEventListener('click',()=>applyTheme(currentTheme==='dark'?'light':'dark',true));
+  $('fullBtn').addEventListener('click',toggleFullscreen);
+  document.addEventListener('fullscreenchange',syncFullscreenButton); document.addEventListener('webkitfullscreenchange',syncFullscreenButton);
+  $('shareBtn').addEventListener('click',openShare); $('closeShare').addEventListener('click',closeShare);
+  $('shareBackdrop').addEventListener('click',e=>{if(e.target===$('shareBackdrop'))closeShare()});
+  $('copyShare').addEventListener('click',async()=>{const ok=await copyText($('shareUrl').value); showToast(ok?'Share link copied':'Select the link and copy it manually');});
+  $('nativeShare').addEventListener('click',async()=>{try{await navigator.share({title:'TNB Curve Lab',text:'Explore this TNB curve construction',url:$('shareUrl').value})}catch(e){if(e.name!=='AbortError')showWarning('Could not open the share menu.')}});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeShare()});
+  $('jumpMid').addEventListener('click',()=>{ $('tSlider').value=(state.tmin+state.tmax)/2; updateFrame(); });
+  $('exprHelpBtn').addEventListener('click',()=> $('exprHelp').style.display=$('exprHelp').style.display==='block'?'none':'block');
+
+  $('preset').addEventListener('change',()=>{
+    const p=$('preset').value;
+    const presets={
+      helix:['3*cos(t)','3*sin(t)','t',0,4*Math.PI],
+      circle:['4*cos(t)','4*sin(t)','0',0,2*Math.PI],
+      line:['2*t','0','0',-3,3],
+      accelLine:['t^2','0','0',0.5,3.5],
+      twisted:['t','0.35*t^2','0.08*t^3',-4,4],
+      lissajous:['3*sin(2*t)','3*sin(3*t+0.5)','2*sin(5*t)',0,2*Math.PI],
+      trefoil:['sin(t)+2*sin(2*t)','cos(t)-2*cos(2*t)','-sin(3*t)',0,2*Math.PI],
+      conical:['(1+0.12*t)*cos(t)','(1+0.12*t)*sin(t)','0.35*t',0,6*Math.PI],
+      spherical:['3*cos(t)*cos(0.18*t)','3*sin(t)*cos(0.18*t)','3*sin(0.18*t)',0,5*Math.PI],
+      figure8:['(2+cos(2*t))*cos(3*t)','(2+cos(2*t))*sin(3*t)','sin(4*t)',0,2*Math.PI],
+      torus25:['(2+0.65*cos(5*t))*cos(2*t)','(2+0.65*cos(5*t))*sin(2*t)','0.65*sin(5*t)',0,2*Math.PI],
+      viviani:['1+cos(t)','sin(t)','2*sin(t/2)',0,4*Math.PI]
+    };
+    const v=presets[p]; $('fx').value=v[0]; $('fy').value=v[1]; $('fz').value=v[2]; $('tmin').value=v[3]; $('tmax').value=v[4]; rebuildCurves(true);
+  });
+  $('spiralPreset').addEventListener('click',()=>{ $('fa').value='0'; $('fb').value='0.55*cos(6*t)'; $('fc').value='0.55*sin(6*t)'; $('showSecond').checked=true; syncHeaderVisibilityControls(); compileCoeffs(); buildSecondCurve(); updateFrame(); });
+  $('wobblePreset').addEventListener('click',()=>{ $('fa').value='0.35*sin(3*t)'; $('fb').value='0.55*cos(5*t)'; $('fc').value='0.55*sin(5*t)'; $('showSecond').checked=true; syncHeaderVisibilityControls(); compileCoeffs(); buildSecondCurve(); updateFrame(); });
+  $('arcPreset').addEventListener('click',()=>{ $('fa').value='0'; $('fb').value='0.5*cos(4*s)'; $('fc').value='0.5*sin(4*s)'; $('showSecond').checked=true; syncHeaderVisibilityControls(); compileCoeffs(); buildSecondCurve(); updateFrame(); });
+
+  syncHeaderVisibilityControls();
+
+  $('playBtn').addEventListener('click',()=>{
+    state.playing=!state.playing; $('playBtn').textContent=state.playing?'❚❚ Pause':'▶ Play';
+    const mode=$('animMode').value; state.direction=mode==='dec'?-1:1;
+  });
+
+  let last=performance.now();
+  function animate(now){
+    requestAnimationFrame(animate);
+    const dt=Math.min(.05,(now-last)/1000); last=now;
+    if(state.playing && !state.scrubbing){
+      const span=state.tmax-state.tmin; const speed=+$('animSpeed').value; const mode=$('animMode').value;
+      let t=+$('tSlider').value;
+      t += state.direction * span * 0.08 * speed * dt;
+      if(mode==='osc'){
+        if(t>=state.tmax){t=state.tmax;state.direction=-1}
+        if(t<=state.tmin){t=state.tmin;state.direction=1}
+      }else if(mode==='inc'){
+        state.direction=1; if(t>state.tmax)t=state.tmin;
+      }else{
+        state.direction=-1; if(t<state.tmin)t=state.tmax;
+      }
+      $('tSlider').value=t; updateFrame();
+    }
+    if(!state.immersive) controls.update();
+    renderer.render(scene,camera);
+  }
+
+  // Apply saved/shared appearance before the first render.
+  applyTheme(currentTheme,false);
+  const sharedState=readSharedState();
+  const hasShared=applySharedState(sharedState);
+  rebuildCurves(!hasShared);
+  if(!hasShared){ $('projection').value='ortho'; setProjection('ortho'); syncPanelButton(); updateWindowBox(); applyClipping(); syncRideButton(); }
+  if(hasShared){
+    if(sharedState.t!==undefined){ $('tSlider').value=Math.max(state.tmin,Math.min(state.tmax,+sharedState.t)); updateFrame(); }
+    if(Array.isArray(sharedState.cp)&&sharedState.cp.length===3) camera.position.set(...sharedState.cp.map(Number));
+    if(Array.isArray(sharedState.ct)&&sharedState.ct.length===3) controls.target.set(...sharedState.ct.map(Number));
+    controls.update();
+    if(sharedState.im) setImmersiveRide(true); else syncRideButton();
+  }
+  requestAnimationFrame(animate);
+})();
+</script>
+</body>
+</html>

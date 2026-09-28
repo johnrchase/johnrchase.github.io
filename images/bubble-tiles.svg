@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 180">
+  <rect width="360" height="180" fill="#edf0ff"/>
+  <defs>
+    <path id="tile" d="M0-36 Q21-42 31-18 Q15 0 31 18 Q21 42 0 36 Q-21 42-31 18 Q-15 0-31-18 Q-21-42 0-36Z"/>
+  </defs>
+  <g stroke="#fff" stroke-width="3" stroke-linejoin="round">
+    <use href="#tile" transform="translate(118 54)" fill="#8971cf"/>
+    <use href="#tile" transform="translate(180 54)" fill="#4aaab7"/>
+    <use href="#tile" transform="translate(242 54)" fill="#eeb65d"/>
+    <use href="#tile" transform="translate(87 108)" fill="#e589a3"/>
+    <use href="#tile" transform="translate(149 108)" fill="#eeb65d"/>
+    <use href="#tile" transform="translate(211 108)" fill="#8971cf"/>
+    <use href="#tile" transform="translate(273 108)" fill="#4aaab7"/>
+  </g>
+</svg>
