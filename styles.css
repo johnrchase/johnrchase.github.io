@@ -57,21 +57,20 @@ p {
 .apps a:hover {
   border-color: #234e91;
   background: #edf4ff;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 
 .apps a:focus-visible {
   outline: 3px solid #234e91;
   outline-offset: 4px;
-  text-decoration: underline;
-  text-underline-offset: 4px;
+  text-decoration: none;
 }
 
 .eyebrow { margin-bottom: 14px; color: #6440ba; font-size: .8rem; font-weight: 750; letter-spacing: .12em; text-transform: uppercase; }
 .apps img { display: block; width: 100%; height: auto; aspect-ratio: 36 / 25; object-fit: contain; border-bottom: 1px solid #d7e0ee; }
 .app-copy { display: flex; flex-direction: column; gap: 8px; padding: 20px; }
 .app-copy > span { color: #52627a; font-size: .95rem; font-weight: 400; }
+.app-copy > .app-subject { align-self: flex-start; padding: 3px 9px; border-radius: 6px; background: #edf2fa; color: #36527a; font-size: .75rem; font-weight: 650; }
 .about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px; margin-top: 48px; padding-top: 28px; border-top: 1px solid #d7e0ee; }
 h2 { margin: 0 0 12px; font-size: 1.5rem; }
 .about p { max-width: 70ch; font-size: 1rem; }
