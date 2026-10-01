@@ -63,7 +63,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 @media print{body{background:#fff;color:#111}.topbar .actions,.controls,.picker,.footerbar,.subtitle,.status{display:none!important}.app{width:100%;padding:0}.workspace{display:block}.groups-grid{grid-template-columns:repeat(3,1fr)}.card{box-shadow:none;break-inside:avoid;background:#fff;color:#111;border-color:#ccc}.card-head,li{border-color:#ddd}.count{background:#f4f4f4;color:#555}}
 </style>
 <style>
-/* Version 1.1: classroom adjustments and restore controls. */
+/* Version 1.2: classroom adjustments and restore controls. */
 .controls{grid-template-columns:minmax(190px,1fr) minmax(390px,1.7fr) 85px 85px;gap:10px;padding:12px}
 .controls>div:last-child{grid-column:1/-1}
 .class-field,.saved-class-field{min-width:0}.number-field{width:auto}
@@ -104,6 +104,45 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 @media(max-width:520px){.controls{grid-template-columns:minmax(0,1fr) 70px 70px}.saved-class-row{grid-template-columns:repeat(3,1fr)}.saved-class-row select{grid-column:1/-1}.appearance-tools .field>label:not(.compact-check){display:none}}
 @media print{.group-tools,.restore-panel,.group-grip,.remove-group,.remove-member{display:none!important}}
 </style>
+<style>
+.controls{grid-template-columns:minmax(0,1fr) 85px 85px}
+.saved-class-row{grid-template-columns:minmax(180px,1fr) repeat(4,auto)}
+.card.group-colored .member-grip{background:color-mix(in srgb,var(--group-head) 78%,var(--panel));border-color:var(--group-border)}
+.member{padding-right:60px}
+.member-grip{position:absolute;right:29px;top:3px;width:24px;height:24px;padding:0;border:1px solid var(--line);border-radius:3px;background:var(--panel);color:var(--text);cursor:grab}
+.actions>.quick-copy{flex:0 0 42px;padding:8px}
+#nameDisplayControls [aria-pressed="true"]{background:var(--accent);color:white;border-color:var(--accent)}
+#classOverlay .dialog{max-width:440px}
+@media(max-width:1000px){.controls .saved-class-field{grid-column:1/-1;grid-row:auto}}
+@media(max-width:700px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.saved-class-row{grid-template-columns:repeat(4,1fr)}.saved-class-row select{grid-column:1/-1}}
+</style>
+<style>
+.group-grip,.member-grip,.remove-group,.remove-member{display:inline-flex;align-items:center;justify-content:center;padding:0;line-height:1;flex-shrink:0}
+.group-grip{width:27px;height:27px}
+.group-grip svg,.member-grip svg,.remove-group svg,.remove-member svg{display:block;pointer-events:none;flex-shrink:0}
+.controls{grid-template-columns:minmax(430px,1fr) minmax(285px,.7fr) 85px 85px;align-items:end}
+.saved-class-row{grid-template-columns:minmax(160px,320px) repeat(4,auto);justify-content:start}
+.controls .group-tools{display:block;margin:0;color:var(--text);min-width:0}
+.group-theme-row{display:flex;align-items:center;gap:6px}
+.group-theme-row select{min-width:0;flex:1}
+.group-theme-row .btn{white-space:nowrap;padding:10px 8px;font-size:.8rem}
+.group-help{margin:0 2px 12px}
+@media(max-width:1100px){.controls{grid-template-columns:minmax(0,1fr) 85px 85px}.controls .saved-class-field{grid-column:1/-1}.saved-class-row{grid-template-columns:minmax(160px,320px) repeat(4,auto)}}
+@media(max-width:700px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.controls .group-tools{grid-column:1/-1}.saved-class-row{grid-template-columns:repeat(4,1fr)}.saved-class-row select{grid-column:1/-1}}
+</style>
+<style>
+.controls{grid-template-columns:minmax(430px,1fr) 326px 85px 85px}
+.group-theme-row select{width:205px;flex:0 0 205px}
+.card-head{padding-right:12px}
+.card-head-tools{gap:5px}
+.card-head-tools button{width:24px;height:24px}
+.visual[role="button"]{cursor:pointer}
+.visual[role="button"]:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.visual[aria-disabled="true"]{cursor:progress}
+@media(max-width:1100px){.controls{grid-template-columns:minmax(0,1fr) 85px 85px}}
+@media(max-width:700px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:380px){.group-theme-row{flex-wrap:wrap}}
+</style>
 </head>
 <body>
 <div class="app">
@@ -116,7 +155,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
       <button class="btn primary" id="rerunTop" title="Randomize groups again">↻ Rerun</button>
       <button class="btn" id="editBtn">✎ Edit names</button>
       <button class="btn" id="rulesBtn">⚙ Grouping rules</button>
-      <div class="share-menu">
+      <button class="btn quick-copy" id="quickCopyImage" title="Copy image using last export settings" aria-label="Quick image copy">&#128203;</button><div class="share-menu">
         <button class="btn" id="shareBtn">↗ Share / Export</button>
         <div class="popover" id="shareMenu">
           <button id="copyLink">Copy share link</button>
@@ -134,11 +173,12 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
   </div>
 
   <section class="controls" aria-label="Team settings">
-    <div class="field class-field"><label for="className">Class name</label><input id="className" type="text" maxlength="80" placeholder="e.g. Period 3 Statistics" /></div>
-    <div class="field saved-class-field"><label for="savedClassSelect">Saved classes</label><div class="saved-class-row"><select id="savedClassSelect"><option value="">Choose a saved class…</option></select><button class="btn compact" id="newClassBtn" title="Create a new class">New class</button><button class="btn compact" id="saveClassBtn" title="Save or update this class">Save</button><button class="btn compact" id="deleteClassBtn" title="Delete the selected saved class" disabled>Delete</button></div></div>
+
+    <div class="field saved-class-field"><label for="savedClassSelect">Saved classes</label><div class="saved-class-row"><select id="savedClassSelect"><option value="">Choose a saved class…</option></select><button class="btn compact" id="editClassBtn" title="Rename this class">Edit</button><button class="btn compact" id="newClassBtn" title="Create a new class">New class</button><button class="btn compact" id="saveClassBtn" title="Save or update this class">Save</button><button class="btn compact" id="deleteClassBtn" title="Delete the selected saved class" disabled>Delete</button></div></div>
+  <div class="field group-tools"><label for="groupNameTheme">Group names</label><div class="group-theme-row"><select id="groupNameTheme"><option value="custom">Custom / numbered</option><option value="animals">Animals</option><option value="superheroes">Superheroes</option><option value="mathematicians">Famous mathematicians</option><option value="space">Space</option></select><button class="btn compact" id="generateGroupNames">Generate names</button></div></div>
     <div class="field number-field"><label for="groupsMain"># of groups</label><input id="groupsMain" type="number" min="1" max="100" step="1" /></div>
     <div class="field number-field"><label for="sizeMain">Target size</label><input id="sizeMain" type="number" min="1" max="100" step="1" /></div>
-    <div class="appearance-tools" aria-label="Appearance and display">
+    <div class="appearance-tools" aria-label="Appearance and display"><div class="field"><label>Show names</label><div class="mode-tools" id="nameDisplayControls" role="group" aria-label="Name display"><button class="btn compact" data-name-display="first">First</button><button class="btn compact" data-name-display="last">Last</button><button class="btn compact" data-name-display="both">Both</button></div></div>
       <div class="field"><label>Font size</label><div class="font-tools"><button class="btn compact" id="fontDown" title="Smaller group text">A−</button><button class="btn compact" id="fontUp" title="Larger group text">A+</button></div></div>
       <div class="field"><label>Background</label><div class="mode-tools"><input class="color-input" id="bgColor" type="color" value="#f5f7fb" title="Choose page background color" aria-label="Page background color"><button class="btn compact bg-reset" id="bgReset" title="Use the default background">Reset</button></div></div>
       <div class="field"><label>Groups</label><label class="compact-check"><input id="groupColorsToggle" type="checkbox" checked> Colors</label></div>
@@ -146,10 +186,10 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
     </div>
   </section>
 
-  <div class="status"><div><strong id="itemCount">0</strong> names · <strong id="groupCount">0</strong> groups</div><div id="sizesText"></div></div>
+  <div class="status"><div><strong id="itemCount">0</strong> names · <strong id="groupCount">0</strong> groups</div><span class="help" style="margin:0">Drag a group's handle to reorder. Use × to set a student or group aside.</span></div>
   <div class="rule-status ok" id="ruleStatus"><div><strong>No grouping rules</strong></div><button class="btn compact" id="rulesStatusBtn">Edit rules</button></div>
 
-  <div class="group-tools"><label for="groupNameTheme">Group names</label><select id="groupNameTheme"><option value="custom">Custom / numbered</option><option value="animals">Animals</option><option value="superheroes">Superheroes</option><option value="mathematicians">Famous mathematicians</option><option value="space">Space</option></select><button class="btn compact" id="generateGroupNames">Generate names</button><span class="help" style="margin:0">Drag a group's handle to reorder. Use × to set a student or group aside.</span></div>
+
   <div class="workspace">
     <main class="groups-grid" id="teams" aria-live="polite"></main>
     <button class="picker-rail" id="pickerToggleBtn" title="Open random picker" aria-label="Open random picker" aria-controls="pickerPanel" aria-expanded="true"><b aria-hidden="true">‹</b><span>Random Picker</span></button>
@@ -159,28 +199,35 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
           <div class="picker-head-copy"><strong>Random Picker</strong></div>
           <div class="picker-head-actions"><button class="btn compact" id="pickerHugeBtn" title="Make the picker dominate the screen">Huge</button><button class="btn compact" id="pickerHideBtn" title="Hide the picker">Hide</button></div>
         </div>
-        <p>Choose a student, a group, or the same member position from every group.</p>
+
       </div>
       <div class="picker-controls">
         <div><label for="pickType">Pick</label><select id="pickType"><option value="student">Student</option><option value="group">Group</option><option value="member-position">Member from every group</option></select></div>
         <div><label for="visualType">Visual</label><select id="visualType"><option value="spinner">Spinner</option><option value="balls">Ball machine</option><option value="robot">Robot</option><option value="hat">Hat</option></select></div>
       </div>
       <div class="picker-effects"><label><input type="checkbox" id="confettiToggle"> Confetti</label><label><input type="checkbox" id="soundToggle"> Sound</label></div>
-      <div class="visual" id="visual"></div>
-      <div class="picker-result" id="pickerResult"><div class="small">Ready when you are.</div></div>
-      <button class="btn primary pick-btn" id="pickBtn">Pick randomly</button>
+      <div class="visual" id="visual" role="button" tabindex="0" aria-label="Pick randomly" aria-disabled="false"></div>
+      <div class="picker-result" id="pickerResult"><div class="small">Click to pick!</div></div>
+
     </aside>
   </div>
 
   <section class="restore-panel" id="restorePanel" hidden aria-labelledby="restoreHeading"><div class="restore-heading"><h2 id="restoreHeading">Absent students &amp; removed groups</h2><button class="btn compact" id="restoreAllBtn">Restore all</button></div><p>Set aside from groups and the random picker. Restore them whenever you are ready.</p><div class="restore-list" id="restoreList"></div></section>
   <div class="footerbar"><button class="btn primary" id="rerunBottom">↻ Rerun groups</button><button class="btn" id="editBottom">Edit names</button><button class="btn" id="rulesBottom">Grouping rules</button></div>
-  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.1 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a> &middot; <a href="version-history.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Version history</a></span></div>
+  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.2 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a> &middot; <a href="version-history.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Version history</a></span></div>
 </div>
 
+<div class="overlay" id="classOverlay" role="dialog" aria-modal="true" aria-labelledby="classDialogTitle">
+  <form class="dialog" id="classForm">
+    <div class="dialog-head"><h2 id="classDialogTitle">Rename class</h2><button class="iconbtn" type="button" id="closeClass">&times;</button></div>
+    <div class="dialog-body field"><label for="className">Class name</label><input id="className" type="text" maxlength="80" required placeholder="e.g. Period 3 Statistics"></div>
+    <div class="dialog-foot"><button class="btn" type="button" id="cancelClass">Cancel</button><button class="btn primary" type="submit">Save</button></div>
+  </form>
+</div>
 <div class="overlay" id="editOverlay" role="dialog" aria-modal="true" aria-labelledby="editTitle">
   <div class="dialog">
     <div class="dialog-head"><h2 id="editTitle">Edit Names</h2><button class="iconbtn" id="closeEdit" aria-label="Close">×</button></div>
-    <div class="dialog-body"><label for="itemsInput">Names / items</label><p class="help">Enter one name or item per line. Blank lines are ignored.</p><textarea id="itemsInput" spellcheck="false"></textarea><p class="help" id="splitPreview" style="margin-top:10px"></p></div>
+    <div class="dialog-body"><label for="itemsInput">Names / items</label><p class="help">Enter one name per line: First Last, or Last, First (helpful for compound last names). Single names work in every display mode. Blank lines are ignored.</p><textarea id="itemsInput" spellcheck="false"></textarea><p class="help" id="splitPreview" style="margin-top:10px"></p></div>
     <div class="dialog-foot"><button class="btn" id="cancelEdit">Cancel</button><button class="btn primary" id="applyEdit">Apply &amp; rerun</button></div>
   </div>
 </div>
@@ -242,7 +289,7 @@ const DEFAULT_ITEMS = [
 const DEFAULT_GROUPS = 6;
 const $ = id => document.getElementById(id);
 const els = {
-  teams:$('teams'), itemCount:$('itemCount'), groupCount:$('groupCount'), sizesText:$('sizesText'),
+  teams:$('teams'), itemCount:$('itemCount'), groupCount:$('groupCount'),
   className:$('className'), savedClassSelect:$('savedClassSelect'), newClassBtn:$('newClassBtn'), saveClassBtn:$('saveClassBtn'), deleteClassBtn:$('deleteClassBtn'), groupsMain:$('groupsMain'), sizeMain:$('sizeMain'), bgColor:$('bgColor'), bgReset:$('bgReset'), groupColorsToggle:$('groupColorsToggle'),
   editOverlay:$('editOverlay'), itemsInput:$('itemsInput'), splitPreview:$('splitPreview'),
   rulesOverlay:$('rulesOverlay'), togetherInput:$('togetherInput'), apartInput:$('apartInput'), rulesFeedback:$('rulesFeedback'), ruleStatus:$('ruleStatus'),
@@ -335,13 +382,13 @@ function loadImageExportPreferences(){
 }
 function refreshSavedClasses(selectedId=activeSavedId){
   const index=loadSavedIndex().sort((a,b)=>a.name.localeCompare(b.name,undefined,{sensitivity:'base'}));
-  els.savedClassSelect.innerHTML='<option value="">Choose a saved class…</option>'+index.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(x.name)}</option>`).join('');
+  els.savedClassSelect.innerHTML=`<option value="">${escapeHtml(state.className||'Unsaved class')}</option>`+index.map(x=>`<option value="${escapeHtml(x.id)}">${escapeHtml(x.name)}</option>`).join('');
   if(selectedId&&index.some(x=>x.id===selectedId)){els.savedClassSelect.value=selectedId;activeSavedId=selectedId;}else{els.savedClassSelect.value='';activeSavedId='';}
   els.deleteClassBtn.disabled=!activeSavedId;
 }
 function saveCurrentClass(){
   const name=state.className.trim();
-  if(!name){showToast('Enter a class name before saving');els.className.focus();return;}
+  if(!name){openClassDialog();return;}
   let index=loadSavedIndex();
   let id=activeSavedId;
   if(!id){
@@ -377,17 +424,17 @@ This cannot be undone.`))return;
   refreshSavedClasses();
   showToast(found?`Deleted ${found.name}`:'Saved class deleted');
 }
-function createNewClass(){
+function createNewClass(name){
   activeSavedId='';
-  state={items:DEFAULT_ITEMS.slice(),groups:Math.min(DEFAULT_GROUPS,DEFAULT_ITEMS.length),className:'',groupNames:[],togetherText:'',apartText:''};
+  state={items:DEFAULT_ITEMS.slice(),groups:Math.min(DEFAULT_GROUPS,DEFAULT_ITEMS.length),className:name,groupNames:[],togetherText:'',apartText:''};
   lastSizingMode='groups';
   targetSize=targetSizeFor(state.groups,state.items.length);
   currentTeams=[];
   render();
   refreshSavedClasses();
   updateUrl(false);
-  openEdit();
-  showToast('New class started — replace the sample names, then enter a class name and save');
+  saveCurrentClass();openEdit();
+  showToast('New class started — replace the sample names, then save');
 }
 function parseItems(raw){ return raw.split(/\r?\n/).map(s=>s.trim()).filter(Boolean); }
 function clampInt(v,min,max,fallback){ const n=Number.parseInt(v,10); return Number.isFinite(n)?Math.max(min,Math.min(max,n)):fallback; }
@@ -401,6 +448,43 @@ function loadFromUrl(){
 }
 let state=loadFromUrl();
 let currentTeams=[];
+let nameDisplay='both';
+function displayName(raw){
+  const text=String(raw).trim(),comma=text.indexOf(',');
+  let first,last;
+  if(comma>=0){last=text.slice(0,comma).trim();first=text.slice(comma+1).trim();}
+  else {const parts=text.split(/\s+/);last=parts.length>1?parts.pop():'';first=parts.join(' ');}
+  if(!first||!last)return first||last;
+  return nameDisplay==='first'?first:nameDisplay==='last'?last:first+' '+last;
+}
+let classDialogMode='edit',classDialogTrigger=null;
+function openClassDialog(mode='edit'){
+  classDialogMode=mode;classDialogTrigger=document.activeElement;
+  $('classDialogTitle').textContent=mode==='new'?'New class':'Rename class';
+  els.className.value=mode==='new'?'':state.className;
+  els.className.setCustomValidity('');
+  $('classOverlay').classList.add('open');els.className.focus();els.className.select();
+}
+function closeClassDialog(){
+  if(!$('classOverlay').classList.contains('open'))return;
+  $('classOverlay').classList.remove('open');classDialogTrigger?.focus();
+}
+$('classForm').addEventListener('submit',e=>{
+  e.preventDefault();const name=els.className.value.trim();
+  const duplicate=loadSavedIndex().some(x=>x.name.toLocaleLowerCase()===name.toLocaleLowerCase()&&(classDialogMode==='new'||x.id!==activeSavedId));
+  if(!name||duplicate){els.className.setCustomValidity(duplicate?'A class with that name already exists. Choose another name.':'Enter a class name.');els.className.reportValidity();return;}
+  closeClassDialog();
+  if(classDialogMode==='new')createNewClass(name);
+  else {state.className=name;saveCurrentClass();render({rerandomize:false});}
+});
+$('editClassBtn').addEventListener('click',()=>openClassDialog());
+$('closeClass').addEventListener('click',closeClassDialog);
+$('cancelClass').addEventListener('click',closeClassDialog);
+$('classOverlay').addEventListener('click',e=>{if(e.target===$('classOverlay'))closeClassDialog();});
+$('nameDisplayControls').addEventListener('click',e=>{
+  const button=e.target.closest('[data-name-display]');if(!button)return;
+  nameDisplay=button.dataset.nameDisplay;render({rerandomize:false});
+});
 let lastSizingMode='groups';
 let targetSize=Math.max(1,Math.ceil(state.items.length/Math.max(1,state.groups)));
 function storageGet(key){try{return localStorage.getItem(key);}catch(_){return null;}}
@@ -580,11 +664,10 @@ function render({rerandomize=true}={}){
   if(rerandomize){const made=splitIntoGroups(activeItems(),state.groups);currentTeams=made.groups;}
   state.groups=currentTeams.length;
   const ruleEval=evaluateCurrentRules();
-  els.teams.innerHTML=currentTeams.map((team,i)=>{const label=groupLabel(i);return `<section class="card${groupColorsEnabled?' group-colored':''}" data-group-index="${i}"${groupColorStyle(i)}><div class="card-head"><button class="group-grip" draggable="true" data-drag-group="${i}" aria-label="Drag to reorder ${escapeHtml(label)}" title="Drag to reorder group">&#8942;&#8942;</button><input class="group-name-input" type="text" maxlength="60" value="${escapeHtml(label)}" data-group-name-index="${i}" aria-label="Name for group ${i+1}" title="Click to rename this group"><div class="card-head-tools"><button class="remove-group" type="button" data-remove-group="${i}" aria-label="Remove ${escapeHtml(label)}" title="Set this group aside">&times;</button><button class="group-shuffle" type="button" data-shuffle-group="${i}" title="Randomize order within ${escapeHtml(label)}" aria-label="Randomize order within ${escapeHtml(label)}">↻</button></div></div>${team.length?`<ol class="team-list" data-group-index="${i}">${team.map((n,j)=>`<li class="member" draggable="true" data-name="${escapeHtml(n)}" data-group-index="${i}" title="Drag to another group">${escapeHtml(n)}<button class="remove-member" type="button" data-remove-student="${j}" data-group-index="${i}" aria-label="Mark ${escapeHtml(n)} absent" title="Mark absent">&times;</button><span class="drag-handle" aria-hidden="true">⋮⋮</span></li>`).join('')}</ol>`:`<ol class="team-list" data-group-index="${i}"><li class="empty" style="list-style:none">Drop a name here</li></ol>`}</section>`}).join('');
+  els.teams.innerHTML=currentTeams.map((team,i)=>{const label=groupLabel(i);return `<section class="card${groupColorsEnabled?' group-colored':''}" data-group-index="${i}"${groupColorStyle(i)}><div class="card-head"><input class="group-name-input" type="text" maxlength="60" value="${escapeHtml(label)}" data-group-name-index="${i}" aria-label="Name for group ${i+1}" title="Click to rename this group"><div class="card-head-tools"><button class="group-shuffle" type="button" data-shuffle-group="${i}" title="Randomize order within ${escapeHtml(label)}" aria-label="Randomize order within ${escapeHtml(label)}">↻</button><button class="group-grip" draggable="true" data-drag-group="${i}" aria-label="Drag to reorder ${escapeHtml(label)}" title="Drag to reorder group"><svg aria-hidden="true" width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1"/><circle cx="9" cy="3" r="1"/><circle cx="3" cy="8" r="1"/><circle cx="9" cy="8" r="1"/><circle cx="3" cy="13" r="1"/><circle cx="9" cy="13" r="1"/></svg></button><button class="remove-group" type="button" data-remove-group="${i}" aria-label="Remove ${escapeHtml(label)}" title="Set this group aside"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></button></div></div>${team.length?`<ol class="team-list" data-group-index="${i}">${team.map((n,j)=>`<li class="member" draggable="true" data-name="${escapeHtml(n)}" data-group-index="${i}" title="Drag to another group">${escapeHtml(displayName(n))}<button class="remove-member" type="button" data-remove-student="${j}" data-group-index="${i}" aria-label="Mark ${escapeHtml(n)} absent" title="Mark absent"><svg aria-hidden="true" width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"><path d="M3 3l6 6M9 3l-6 6"/></svg></button><button class="member-grip" type="button" draggable="true" aria-label="Move ${escapeHtml(n)}" title="Drag to another group"><svg aria-hidden="true" width="12" height="16" viewBox="0 0 12 16" fill="currentColor"><circle cx="3" cy="3" r="1"/><circle cx="9" cy="3" r="1"/><circle cx="3" cy="8" r="1"/><circle cx="9" cy="8" r="1"/><circle cx="3" cy="13" r="1"/><circle cx="9" cy="13" r="1"/></svg></button></li>`).join('')}</ol>`:`<ol class="team-list" data-group-index="${i}"><li class="empty" style="list-style:none">Drop a name here</li></ol>`}</section>`}).join('');
   els.itemCount.textContent=activeItems().length; els.groupCount.textContent=state.groups;
   els.groupsMain.max=Math.max(1,Math.min(100,state.items.length)); els.groupsMain.value=state.groups; els.sizeMain.value=targetSize; els.className.value=state.className;
-  const sizes=currentTeams.map(t=>t.length),unique=[...new Set(sizes)].sort((a,b)=>b-a);
-  els.sizesText.textContent=unique.length===1?`${unique[0]} per group`:`Group sizes: ${unique.join(' or ')}`;
+  document.querySelectorAll('[data-name-display]').forEach(button=>button.setAttribute('aria-pressed',String(button.dataset.nameDisplay===nameDisplay)));
   renderRuleStatus(ruleEval); renderVisual(); clearPicker(); renderRestorePanel(); $('groupNameTheme').value=state.nameTheme||'custom'; updateUrl(false);
 }
 function renderRuleStatus(ruleEval=evaluateCurrentRules()){
@@ -609,7 +692,7 @@ function buildShareUrl(){
   return u.href;
 }
 function updateUrl(push){ try{history[push?'pushState':'replaceState'](null,'',buildShareUrl());}catch(_){} saveWorkspace();}
-function teamsAsText(){ const heading=state.className.trim()?state.className.trim()+'\n\n':''; return heading+currentTeams.map((team,i)=>`${groupLabel(i)}\n${team.map((n,j)=>`${j+1}. ${n}`).join('\n')}`).join('\n\n'); }
+function teamsAsText(){ const heading=state.className.trim()?state.className.trim()+'\n\n':''; return heading+currentTeams.map((team,i)=>`${groupLabel(i)}\n${team.map((n,j)=>`${j+1}. ${displayName(n)}`).join('\n')}`).join('\n\n'); }
 
 let toastTimer;
 function showToast(msg){ clearTimeout(toastTimer); els.toast.textContent=msg; els.toast.classList.add('show'); toastTimer=setTimeout(()=>els.toast.classList.remove('show'),1900); }
@@ -687,19 +770,19 @@ function renderVisual(){
   else if(kind==='hat') els.visual.innerHTML='<div class="hat-wrap" id="hatWrap"><div class="hat-body"><div class="hat-crown"></div><div class="hat-band"></div><div class="hat-brim"></div><div class="hat-opening"></div></div><div class="hat-paper" id="hatPaper">?</div><div class="hat-front-lip"></div></div>';
   else els.visual.innerHTML='<div class="robot-scene"><div class="robot-bubble" id="robotScreen" role="status">Ready to choose!</div><div class="robot" id="robot" aria-hidden="true">🤖</div></div>';
 }
-function clearPicker(){ clearTimeout(pickTimer);stopBallMachine();$('robot')?.classList.remove('running');if($('robotScreen'))$('robotScreen').textContent='Ready to choose!';picking=false;$('pickBtn').disabled=false;els.pickerResult.innerHTML='<div class="small">Ready when you are.</div>'; }
+function clearPicker(){ clearTimeout(pickTimer);stopBallMachine();$('robot')?.classList.remove('running');if($('robotScreen'))$('robotScreen').textContent='Ready to choose!';picking=false;els.visual.setAttribute('aria-disabled','false');els.pickerResult.innerHTML='<div class="small">Click to pick!</div>'; }
 function resultData(){
   if(els.pickType.value==='group'){
-    if(!currentTeams.length) return null; const options=currentTeams.map((t,i)=>t.length?i:-1).filter(i=>i>=0);if(!options.length)return null;const i=options[randomInt(options.length)]; return {label:groupLabel(i),detail:currentTeams[i].join(' · ')};
+    if(!currentTeams.length) return null; const options=currentTeams.map((t,i)=>t.length?i:-1).filter(i=>i>=0);if(!options.length)return null;const i=options[randomInt(options.length)]; return {label:groupLabel(i),detail:currentTeams[i].map(displayName).join(' · ')};
   }
   if(els.pickType.value==='member-position'){
     const nonempty=currentTeams.filter(team=>team.length>0); if(!nonempty.length) return null;
     const maxCommon=Math.min(...nonempty.map(team=>team.length)); if(maxCommon<1) return null;
     const position=randomInt(maxCommon)+1;
-    const chosen=currentTeams.map((team,i)=>team[position-1]?`${groupLabel(i)}: ${team[position-1]}`:null).filter(Boolean);
+    const chosen=currentTeams.map((team,i)=>team[position-1]?`${groupLabel(i)}: ${displayName(team[position-1])}`:null).filter(Boolean);
     return {label:`Group Member ${position}`,detail:chosen.join(' · ')};
   }
-  const present=activeItems();if(!present.length) return null; const name=present[randomInt(present.length)]; return {label:name,detail:'Selected student'};
+  const present=activeItems();if(!present.length) return null; const name=present[randomInt(present.length)]; return {label:displayName(name),detail:'Selected student'};
 }
 let audioCtx=null;
 function playPickSound(){
@@ -750,7 +833,7 @@ let picking=false,pickTimer=null;
 function runPicker(){
   if(picking) return; const result=resultData(); if(!result) return;
   if(els.soundToggle.checked){try{audioCtx=audioCtx||new (window.AudioContext||window.webkitAudioContext)();audioCtx.resume?.();}catch(_){}}
-  picking=true; $('pickBtn').disabled=true; els.pickerResult.innerHTML='<div class="small">Choosing…</div>';
+  picking=true; els.visual.setAttribute('aria-disabled','true'); els.pickerResult.innerHTML='<div class="small">Choosing…</div>';
   const kind=els.visualType.value;
   if(kind==='spinner'){
     const wheel=$('spinnerWheel'); const turns=5+randomInt(4),deg=turns*360+randomInt(360); wheel.style.transform=`rotate(${deg}deg)`;
@@ -763,7 +846,7 @@ function runPicker(){
     if(kind==='robot'){ $('robot')?.classList.remove('running'); const screen=$('robotScreen'); if(screen) screen.textContent=result.label; }
     els.pickerResult.innerHTML=(kind==='robot'?'':`<div class="big">${escapeHtml(result.label)}</div>`)+`<div class="small">${escapeHtml(result.detail)}</div>`;
     playPickSound(); launchConfetti();
-    picking=false; $('pickBtn').disabled=false;
+    picking=false; els.visual.setAttribute('aria-disabled','false');
   },kind==='spinner'?2200:kind==='hat'?1500:1500);
 }
 
@@ -889,7 +972,7 @@ function makeExportCanvas(){
       ctx.font=`600 ${fontSize}px ${fontFamily}`;
       team.forEach((name,j)=>{
         const prefix=showNumbers?`${j+1}. `:'';
-        widest=Math.max(widest,ctx.measureText(prefix+name).width);
+        widest=Math.max(widest,ctx.measureText(prefix+displayName(name)).width);
       });
     }
     return Math.ceil(widest)+(hasBox?boxPadX*2+6:10);
@@ -953,7 +1036,7 @@ function makeExportCanvas(){
         ctx.font=`600 ${fontSize}px ${fontFamily}`;
         team.forEach((name,j)=>{
           const prefix=showNumbers?`${j+1}. `:'';
-          ctx.fillText(prefix+name,x+boxPadX,y+headH+j*lineH+4);
+          ctx.fillText(prefix+displayName(name),x+boxPadX,y+headH+j*lineH+4);
         });
       }
       x+=w+gap;
@@ -974,8 +1057,7 @@ function canvasBlob(type='image/png',quality=.94){
   return new Promise(resolve=>canvas.toBlob(resolve,type,quality));
 }
 async function copyPng(){
-  const blob=await canvasBlob('image/png'); if(!blob){showToast('Could not create image');return;}
-  try{await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);showToast('PNG copied — paste it into your slide');}
+  try{const blob=canvasBlob('image/png').then(value=>{if(!value)throw new Error('Could not create image');return value;});await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);showToast('PNG copied — paste it into your slide');}
   catch(_){showToast('Clipboard image copy is blocked here; use Download PNG');}
 }
 async function downloadImage(type){
@@ -989,6 +1071,7 @@ function currentAppPreferences(){
     theme:document.documentElement.dataset.theme==='dark'?'dark':'light',
     backgroundColor:normalizeHexColor(storageGet('qtg-bg-color'))||'',
     memberScale,
+    nameDisplay,
     groupColorsEnabled:!!groupColorsEnabled,
     picker:{
       hidden:!!pickerHidden,
@@ -1007,6 +1090,7 @@ function applyAppPreferences(pref){
   if(typeof pref.backgroundColor==='string')applyBackgroundColor(pref.backgroundColor,{save:true});
   if(Number.isFinite(Number(pref.memberScale))){memberScale=clampInt(pref.memberScale,80,150,100);applyFontScale();}
   if(typeof pref.groupColorsEnabled==='boolean'){groupColorsEnabled=pref.groupColorsEnabled;els.groupColorsToggle.checked=groupColorsEnabled;storageSet('qtg-group-colors',groupColorsEnabled?'1':'0');}
+  if(['first','last','both'].includes(pref.nameDisplay))nameDisplay=pref.nameDisplay;
   const pk=pref.picker||{};
   if(['student','group','member-position'].includes(pk.pickType))els.pickType.value=pk.pickType;
   if(['spinner','balls','robot','hat'].includes(pk.visualType))els.visualType.value=pk.visualType;
@@ -1120,18 +1204,18 @@ $('rerunTop').addEventListener('click',rerun);$('rerunBottom').addEventListener(
 $('closeEdit').addEventListener('click',closeEdit);$('cancelEdit').addEventListener('click',closeEdit);$('applyEdit').addEventListener('click',applyEdit);els.itemsInput.addEventListener('input',updatePreview);
 $('closeRules').addEventListener('click',closeRules);$('cancelRules').addEventListener('click',closeRules);$('applyRules').addEventListener('click',applyRules);$('clearRules').addEventListener('click',clearRules);els.togetherInput.addEventListener('input',updateRulesFeedback);els.apartInput.addEventListener('input',updateRulesFeedback);
 els.groupsMain.addEventListener('input',syncFromGroups);els.sizeMain.addEventListener('input',syncFromSize);
-els.savedClassSelect.addEventListener('change',()=>{const id=els.savedClassSelect.value;if(id)loadSavedClass(id);else{activeSavedId='';els.deleteClassBtn.disabled=true;}});els.newClassBtn.addEventListener('click',createNewClass);els.saveClassBtn.addEventListener('click',saveCurrentClass);els.deleteClassBtn.addEventListener('click',deleteSavedClass);
-els.className.addEventListener('input',()=>{state.className=els.className.value.slice(0,80);updateUrl(false);if(els.imageOverlay.classList.contains('open')){makeExportCanvas();}});
+els.savedClassSelect.addEventListener('change',()=>{const id=els.savedClassSelect.value;if(id)loadSavedClass(id);else{activeSavedId='';els.deleteClassBtn.disabled=true;}});els.newClassBtn.addEventListener('click',()=>openClassDialog('new'));els.saveClassBtn.addEventListener('click',saveCurrentClass);els.deleteClassBtn.addEventListener('click',deleteSavedClass);
+els.className.addEventListener('input',()=>els.className.setCustomValidity(''));
 $('fontDown').addEventListener('click',()=>{memberScale=Math.max(80,memberScale-10);applyFontScale();});$('fontUp').addEventListener('click',()=>{memberScale=Math.min(150,memberScale+10);applyFontScale();});
 els.bgColor.addEventListener('input',()=>applyBackgroundColor(els.bgColor.value));els.bgReset.addEventListener('click',resetBackgroundColor);els.groupColorsToggle.addEventListener('change',()=>{groupColorsEnabled=els.groupColorsToggle.checked;storageSet('qtg-group-colors',groupColorsEnabled?'1':'0');render({rerandomize:false});});$('themeBtn').addEventListener('click',toggleTheme);$('fullBtn').addEventListener('click',toggleFullscreen);
-els.visualType.addEventListener('change',()=>{renderVisual();clearPicker();});els.pickType.addEventListener('change',clearPicker);$('pickBtn').addEventListener('click',runPicker);
+els.visualType.addEventListener('change',()=>{renderVisual();clearPicker();});els.pickType.addEventListener('change',clearPicker);els.visual.addEventListener('click',runPicker);els.visual.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();if(!e.repeat)runPicker();}});
 els.pickerHideBtn.addEventListener('click',()=>{setPickerHidden(true);els.pickerToggleBtn.focus();});els.pickerToggleBtn.addEventListener('click',()=>{setPickerHidden(false);els.pickerHideBtn.focus();});els.pickerHugeBtn.addEventListener('click',()=>setPickerHuge(!pickerHuge));
 
 $('shareBtn').addEventListener('click',e=>{e.stopPropagation();els.shareMenu.classList.toggle('open');});document.addEventListener('click',()=>els.shareMenu.classList.remove('open'));els.shareMenu.addEventListener('click',e=>e.stopPropagation());
 $('copyLink').addEventListener('click',()=>{copyText(buildShareUrl(),'Share link copied');els.shareMenu.classList.remove('open');});$('copyTeams').addEventListener('click',()=>{copyText(teamsAsText(),'Groups copied');els.shareMenu.classList.remove('open');});
 $('imageExport').addEventListener('click',()=>{els.shareMenu.classList.remove('open');openImage();});$('exportCurrentData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportCurrentData();});$('exportAllData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportAllData();});$('importData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');$('importDataFile').click();});$('importDataFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(file)await importDataFile(file);e.target.value='';});$('printBtn').addEventListener('click',()=>{els.shareMenu.classList.remove('open');window.print();});
 $('nativeShare').addEventListener('click',async()=>{els.shareMenu.classList.remove('open');if(navigator.share){try{await navigator.share({title:state.className.trim()||'Team Generator',text:'Random team generator',url:buildShareUrl()});}catch(_){}}else copyText(buildShareUrl(),'Share link copied');});
-$('closeImage').addEventListener('click',closeImage);$('copyPng').addEventListener('click',copyPng);$('downloadPng').addEventListener('click',()=>downloadImage('png'));$('downloadJpg').addEventListener('click',()=>downloadImage('jpg'));
+$('closeImage').addEventListener('click',closeImage);$('copyPng').addEventListener('click',copyPng);$('quickCopyImage').addEventListener('click',copyPng);$('downloadPng').addEventListener('click',()=>downloadImage('png'));$('downloadJpg').addEventListener('click',()=>downloadImage('jpg'));
 [els.exportTitle,els.exportBorders,els.exportColors,els.exportMembers,els.exportNumbers,els.exportFont,els.exportGap].forEach(el=>{
   const update=()=>{saveImageExportPreferences();makeExportCanvas();};
   el.addEventListener('input',update);el.addEventListener('change',update);
@@ -1139,7 +1223,7 @@ $('closeImage').addEventListener('click',closeImage);$('copyPng').addEventListen
 els.exportColumns.addEventListener('input',()=>{els.exportColumns.dataset.touched='1';els.exportPreset.value='custom';setExportColumns(els.exportColumns.value);saveImageExportPreferences();makeExportCanvas();});
 els.exportPreset.addEventListener('change',()=>{els.exportColumns.dataset.touched='1';applyExportPreset();saveImageExportPreferences();});
 els.editOverlay.addEventListener('click',e=>{if(e.target===els.editOverlay)closeEdit();});els.rulesOverlay.addEventListener('click',e=>{if(e.target===els.rulesOverlay)closeRules();});els.imageOverlay.addEventListener('click',e=>{if(e.target===els.imageOverlay)closeImage();});
-document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(pickerHuge)setPickerHuge(false);closeEdit();closeRules();closeImage();els.shareMenu.classList.remove('open');}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&els.editOverlay.classList.contains('open'))applyEdit();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeClassDialog();if(pickerHuge)setPickerHuge(false);closeEdit();closeRules();closeImage();els.shareMenu.classList.remove('open');}if((e.ctrlKey||e.metaKey)&&e.key==='Enter'&&els.editOverlay.classList.contains('open'))applyEdit();});
 window.addEventListener('popstate',()=>{state=loadFromUrl();activeSavedId='';lastSizingMode='groups';targetSize=targetSizeFor(state.groups);render();refreshSavedClasses();});
 
 const WORKSPACE_KEY='qtg-workspace-v2';
@@ -1213,7 +1297,7 @@ function reorderGroup(from,to){
 function renderRestorePanel(){
   const absent=state.absent||[],removed=state.removedGroups||[];
   $('restorePanel').hidden=!absent.length&&!removed.length;
-  $('restoreList').innerHTML=absent.map((x,i)=>`<button class="btn" data-restore-student="${i}">Restore ${escapeHtml(x.name)}</button>`).join('')+removed.map((x,i)=>`<button class="btn" data-restore-group="${i}">Restore ${escapeHtml(x.name)} (${x.members.length} students)</button>`).join('');
+  $('restoreList').innerHTML=absent.map((x,i)=>`<button class="btn" data-restore-student="${i}">Restore ${escapeHtml(displayName(x.name))}</button>`).join('')+removed.map((x,i)=>`<button class="btn" data-restore-group="${i}">Restore ${escapeHtml(x.name)} (${x.members.length} students)</button>`).join('');
 }
 function generateGroupNames(){
   state.nameTheme=$('groupNameTheme').value;
