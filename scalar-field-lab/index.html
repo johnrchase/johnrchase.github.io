@@ -1,0 +1,735 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Scalar Field Lab</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230f766e'/%3E%3Ccircle cx='32' cy='32' r='20' fill='none' stroke='white' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='12' fill='none' stroke='white' stroke-width='4'/%3E%3Ccircle cx='32' cy='32' r='4' fill='white'/%3E%3C/svg%3E">
+<style>
+:root{--bg:#06101c;--panel:#0a1725;--panel2:#0d1d2d;--panel3:#102335;--line:#233b50;--text:#e6eef6;--muted:#8ea4b7;--accent:#20c4b6;--accent2:#5eead4;--btn:#173044;--input:#071522;--shadow:0 14px 42px rgba(0,0,0,.28);--danger:#fb7185;--x:#60a5fa;--y:#34d399;--z:#f59e0b;--grad:#fb7185}
+body[data-theme="light"]{--bg:#f1f6fa;--panel:#f8fbfd;--panel2:#eef4f8;--panel3:#e8f0f5;--line:#c8d7e2;--text:#182431;--muted:#607487;--accent:#0f9488;--accent2:#0d766d;--btn:#e0ebf2;--input:#fff;--shadow:0 14px 42px rgba(37,57,75,.14)}
+*{box-sizing:border-box}html,body{margin:0;height:100%;overflow:hidden;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}button,input,select{font:inherit}button{border:1px solid var(--line);background:var(--btn);color:var(--text);border-radius:8px;padding:7px 10px;cursor:pointer;transition:.15s}button:hover{filter:brightness(1.12);border-color:#3d637f}button.primary{background:#0f766e;border-color:#14978d;color:#fff}button.active{background:#0f766e;border-color:#1ab3a6;color:#fff}button.ghost{background:transparent}.iconbtn{width:28px;height:28px;padding:0;border-radius:7px;display:grid;place-items:center;background:#142c43;color:#cfe0ee;border:1px solid #29455e}.iconbtn.visible{background:#214c67;color:#f2fbff;border-color:#3a708b}.iconbtn.eye svg{width:16px;height:16px;display:block;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}.section.tooloff>.sectionbody{opacity:.72}
+#app{height:100%;display:grid;grid-template-columns:390px 1fr;transition:grid-template-columns .2s ease}body.sidebar-collapsed #app{grid-template-columns:0 1fr}aside{overflow:auto;background:linear-gradient(180deg,var(--panel),#07131f 68%,var(--panel));border-right:1px solid var(--line);padding:14px;min-width:0;transition:opacity .15s,transform .2s;z-index:5;scrollbar-width:thin;scrollbar-color:#31536b #07131f}aside::-webkit-scrollbar{width:10px}aside::-webkit-scrollbar-track{background:#07131f;border-left:1px solid var(--line)}aside::-webkit-scrollbar-thumb{background:#31536b;border:2px solid #07131f;border-radius:999px}body[data-theme="light"] aside{background:linear-gradient(180deg,var(--panel),#edf4f8 68%,var(--panel));scrollbar-color:#9fb7c8 #edf4f8}body.sidebar-collapsed aside{opacity:0;transform:translateX(-20px);pointer-events:none}
+.brand{display:flex;align-items:center;gap:10px;margin:2px 2px 12px}.brandmark{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#14b8a6,#2563eb);display:grid;place-items:center;font-weight:800;color:#fff;box-shadow:var(--shadow)}.brand h1{font-size:20px;margin:0;letter-spacing:.2px}.brand .sub{font-size:11px;color:var(--muted);margin-top:2px}.section{border:1px solid var(--line);background:rgba(13,29,45,.72);border-radius:11px;margin:9px 0;overflow:hidden}.sectionbody{padding:10px}.section.collapsed .sectionbody{display:none}body[data-theme="light"] .section{background:rgba(255,255,255,.72)}.sectionhead{display:flex;align-items:center;gap:7px;padding:8px 9px;background:rgba(20,40,57,.6);border-bottom:1px solid var(--line)}body[data-theme="light"] .sectionhead{background:rgba(232,240,245,.8)}.section.collapsed .sectionhead{border-bottom:none}.sectiontitle{font-weight:700;font-size:13px;flex:1}.num{font-size:10px;color:#c9fff9;background:#0f766e;border:1px solid #148f85;border-radius:999px;padding:2px 6px}.tiny{font-size:11px;color:var(--muted);line-height:1.4}.readout{font-size:11px;line-height:1.5;border:1px solid var(--line);background:var(--input);padding:7px 8px;border-radius:8px;margin-top:7px}.readout b{color:var(--text)}label{font-size:11px;color:var(--muted)}.row{display:grid;grid-template-columns:1fr 1fr;gap:7px}.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.field{margin:6px 0}.field>label{display:block;margin-bottom:4px}input[type=text],input[type=number],select{width:100%;border:1px solid var(--line);background:var(--input);color:var(--text);border-radius:7px;padding:7px 8px;outline:none}input:focus,select:focus{border-color:var(--accent)}input[type=range]{width:100%;accent-color:var(--accent)}input[type=color]{width:42px;height:30px;padding:2px;border-radius:7px;border:1px solid var(--line);background:var(--input)}.buttonrow{display:flex;gap:6px;flex-wrap:wrap}.buttonrow>*{flex:1 1 auto}.levelcontrol{display:grid;grid-template-columns:34px minmax(0,1fr) 72px 78px;gap:6px;align-items:center}.levelcontrol button{padding:6px 7px}.levelcontrol input[type=number]{padding:6px 7px}.checkGrid2{display:grid;grid-template-columns:1fr 1fr;gap:7px 10px}.checkwrap{display:flex;align-items:center;gap:5px;white-space:nowrap;font-size:11px;color:var(--muted)}.checkwrap input{accent-color:var(--accent)}.disabledControl{opacity:1;cursor:default;pointer-events:auto}.disabledControl.disabled{opacity:.38;cursor:not-allowed;pointer-events:none}.formula{font-family:"Cambria Math","STIX Two Math",serif;color:var(--text)}hr{border:none;border-top:1px solid var(--line);margin:9px 0}.copyright{text-align:center;margin:8px 0 3px;color:#61778b;font-size:10px}
+main{position:relative;min-width:0;overflow:hidden;background:var(--bg)}#viewport{position:absolute;inset:0}.viewerbar{position:absolute;left:12px;top:12px;z-index:4;display:flex;gap:6px;flex-wrap:wrap;max-width:calc(100% - 24px)}.viewerbar button{background:rgba(10,23,37,.9);backdrop-filter:blur(8px);box-shadow:0 3px 14px rgba(0,0,0,.18)}body[data-theme="light"] .viewerbar button{background:rgba(248,251,253,.92)}.hud{position:absolute;right:12px;top:12px;z-index:3;background:rgba(7,21,34,.86);border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11px;line-height:1.5;color:var(--muted);max-width:360px;backdrop-filter:blur(8px)}body[data-theme="light"] .hud{background:rgba(255,255,255,.88)}.hud b{color:var(--text)}.legendbar{height:10px;border-radius:999px;background:linear-gradient(90deg,#313695,#4575b4,#74add1,#abd9e9,#e0f3f8,#ffffbf,#fee090,#fdae61,#f46d43,#d73027,#a50026);margin:5px 0 2px}.legendnums{display:flex;justify-content:space-between;font-size:9px;color:var(--muted)}
+.timeline{position:absolute;left:18px;right:18px;bottom:20px;z-index:4;background:rgba(7,21,34,.91);border:1px solid var(--line);border-radius:14px;padding:9px 11px 10px;box-shadow:var(--shadow);backdrop-filter:blur(8px)}body[data-theme="light"] .timeline{background:rgba(255,255,255,.91)}.timegrid{display:grid;grid-template-columns:18px 28px minmax(130px,1fr) 74px 114px 72px;gap:7px;align-items:center}.timegrid+.timegrid{margin-top:5px}.timegrid .tag{font-weight:800;font-size:11px}.axisx{color:var(--x)}.axisy{color:var(--y)}.axisz{color:var(--z)}.timeline input[type=number]{padding:5px 6px}.timeline button{padding:6px 7px}.timeline input[type=range]{cursor:ew-resize}.speedlab{font-size:9px;color:var(--muted);text-align:center}.navhelp{position:absolute;right:12px;bottom:4px;z-index:3;color:var(--muted);font-size:9px;text-align:right;pointer-events:none}.warning{position:absolute;left:50%;top:70px;transform:translateX(-50%);z-index:8;background:#6b1c2d;color:#fff;border:1px solid #fb7185;border-radius:8px;padding:8px 12px;font-size:12px;display:none;max-width:min(700px,90%)}.toast{position:fixed;left:50%;bottom:30px;transform:translateX(-50%);background:#0f766e;color:white;border-radius:8px;padding:8px 12px;z-index:50;opacity:0;pointer-events:none;transition:.2s}.toast.show{opacity:1}
+@media(max-width:900px){.timegrid{grid-template-columns:18px 28px 1fr 68px 90px}.speedlab{display:none}}@media(max-width:760px){#app{grid-template-columns:330px 1fr}.hud{display:none}.timeline{left:8px;right:8px;bottom:8px}.viewerbar{top:7px;left:7px}.timegrid{grid-template-columns:18px 28px 1fr 62px}.timegrid select{display:none}.brand h1{font-size:18px}}@media(max-width:600px){#app{display:block}aside{position:absolute;inset:0 auto 0 0;width:min(340px,92vw);box-shadow:var(--shadow)}body.sidebar-collapsed aside{transform:translateX(-105%)}main{height:100%}}
+</style>
+</head>
+<body data-theme="dark">
+<div id="app">
+<aside id="sidebar">
+  <div class="brand"><div class="brandmark">f₃</div><div><h1>Scalar Field Lab</h1><div class="sub">Explore functions of three variables in 3D</div></div></div>
+
+  <section class="section" data-panel="function">
+    <div class="sectionhead"><span class="num">1</span><span class="sectiontitle">Function & Domain</span><button class="iconbtn collapse">▾</button></div>
+    <div class="sectionbody">
+      <div class="field"><label>Example</label><select id="example"></select></div>
+      <div class="field"><label>f(x,y,z)</label><input id="expr" type="text" value="sin(x+y) + 0.5*z*z - x"></div>
+      <div class="row3"><div class="field"><label>x min</label><input id="xmin" type="number" value="-5" step="0.5"></div><div class="field"><label>x max</label><input id="xmax" type="number" value="5" step="0.5"></div><div class="field"><label>x samples</label><input id="nx" type="number" value="22" min="6" max="36"></div></div>
+      <div class="row3"><div class="field"><label>y min</label><input id="ymin" type="number" value="-5" step="0.5"></div><div class="field"><label>y max</label><input id="ymax" type="number" value="5" step="0.5"></div><div class="field"><label>y samples</label><input id="ny" type="number" value="22" min="6" max="36"></div></div>
+      <div class="row3"><div class="field"><label>z min</label><input id="zmin" type="number" value="-4" step="0.5"></div><div class="field"><label>z max</label><input id="zmax" type="number" value="4" step="0.5"></div><div class="field"><label>z samples</label><input id="nz" type="number" value="22" min="6" max="36"></div></div>
+      <div class="buttonrow"><button id="apply" class="primary">Apply</button><button id="autoRange">Auto value range</button></div>
+      <div id="funcReadout" class="readout"></div>
+    </div>
+  </section>
+
+  <section class="section" data-panel="value">
+    <div class="sectionhead"><span class="num">2</span><span class="sectiontitle">Visualize the 4th Variable</span><button id="valueEye" class="iconbtn eye visible" title="Show / hide scalar-field visualizations"></button><button class="iconbtn collapse">▾</button></div>
+    <div class="sectionbody">
+      <div class="tiny">Geometry shows <i>where</i> you are in 3-space; color and slices show the scalar value <span class="formula">f(x,y,z)</span>.</div>
+      <div class="checkGrid2" style="margin-top:8px">
+        <label class="checkwrap"><input id="showXY" type="checkbox"> z = current slice</label>
+        <label class="checkwrap"><input id="showXZ" type="checkbox"> y = current slice</label>
+        <label class="checkwrap"><input id="showYZ" type="checkbox"> x = current slice</label>
+        <label class="checkwrap"><input id="showCloud" type="checkbox" checked> point sample cloud</label>
+        <label class="checkwrap"><input id="showFieldBox" type="checkbox"> color volume</label>
+      </div>
+      <div class="row"><div class="field"><label>Slice opacity</label><input id="sliceOpacity" type="range" min="0.08" max="1" step="0.01" value="0.72"></div><div class="field"><label>Point sphere size</label><input id="cloudSize" type="range" min="0.02" max="0.22" step="0.01" value="0.08"></div></div>
+      <div class="row"><div class="field"><label>Point cloud opacity</label><input id="cloudOpacity" type="range" min="0.03" max="1" step="0.01" value="0.65"></div><div class="field"><label>Color volume transparency</label><input id="fieldBoxOpacity" type="range" min="0.05" max="1" step="0.01" value="0.58"></div></div>
+      <div class="tiny">The color volume fills the whole viewing box. Its six boundary faces show heat maps of the field; transparency lets you see the colored interior.</div>
+      <div class="row"><div class="field"><label>Color min</label><input id="vmin" type="number" value="0" step="0.5"></div><div class="field"><label>Color max</label><input id="vmax" type="number" value="27" step="0.5"></div></div>
+      <label class="checkwrap"><input id="symmetricRange" type="checkbox"> symmetric color scale about 0</label>
+    </div>
+  </section>
+
+  <section class="section collapsed" data-panel="levels">
+    <div class="sectionhead"><span class="num">3</span><span class="sectiontitle">Level Surfaces</span><button id="levelsEye" class="iconbtn eye" title="Show / hide level surfaces"></button><button class="iconbtn collapse">◂</button></div>
+    <div class="sectionbody">
+      <div class="checkGrid2"><label class="checkwrap"><input id="showCurrentLevel" type="checkbox" checked> highlighted level</label><label class="checkwrap"><input id="attachLevel" type="checkbox" checked> attach to current point</label><label class="checkwrap"><input id="showStack" type="checkbox" checked> show level stack</label><label class="checkwrap"><input id="colorLevels" type="checkbox" checked> color level surfaces</label><label class="checkwrap"><input id="wireLevel" type="checkbox"> wireframe surfaces</label></div>
+      <div class="field"><label>Highlighted level c</label><div class="levelcontrol"><button id="levelPlay" title="Animate highlighted level">▶</button><input id="levelC" type="range" min="-6" max="14" value="1" step="0.1"><input id="levelNum" type="number" value="1" step="0.1"><select id="levelSpeed"><option value="0.25">0.25×</option><option value="0.5">0.5×</option><option value="1" selected>1×</option><option value="2">2×</option><option value="4">4×</option></select></div></div>
+      <div class="row3"><div class="field"><label>Stack min</label><input id="stackMin" type="number" value="-6"></div><div class="field"><label>Stack max</label><input id="stackMax" type="number" value="14"></div><div class="field"><label>Interval</label><input id="stackStep" type="number" value="1.5" min="0.01"></div></div>
+      <div class="row"><div class="field"><label>Stack transparency</label><input id="levelOpacity" type="range" min="0.05" max="1" step="0.01" value="0.10"></div><div class="field"><label>Resolution</label><input id="levelRes" type="range" min="16" max="72" step="1" value="52"></div></div>
+      <div class="tiny" style="margin-top:7px">Stack starts almost entirely transparent (10% opacity). Moving the slider right makes the stack less transparent / more opaque. Neighboring level surfaces can be neutral gray or colored by value.</div>
+    </div>
+  </section>
+
+  <section class="section collapsed" data-panel="probe">
+    <div class="sectionhead"><span class="num">4</span><span class="sectiontitle">Gradient & Normal</span><button id="gradientEye" class="iconbtn eye" title="Show / hide gradient tools"></button><button class="iconbtn collapse">◂</button></div>
+    <div class="sectionbody">
+      <div class="checkGrid2"><label class="checkwrap"><input id="showGrad" type="checkbox"> gradient vector ∇f</label><label class="checkwrap"><input id="normalizeGrad" type="checkbox"> unit normal vector</label><label class="checkwrap"><input id="showTangentPlane" type="checkbox"> tangent plane to level surface</label><label class="checkwrap"><input id="showTrail" type="checkbox"> leave probe trail</label></div>
+      <div class="row"><div class="field"><label>Tangent-plane size</label><input id="tangentPlaneSize" type="range" min="0.15" max="1.5" step="0.05" value="0.65"></div><div class="field"><label>Plane opacity</label><input id="tangentPlaneOpacity" type="range" min="0.05" max="1" step="0.01" value="0.38"></div></div>
+      <div class="field"><label>Plane color</label><input id="tangentPlaneColor" type="color" value="#22d3ee"></div>
+      <div id="tangentPlaneEquation" class="readout"><span class="tiny">Turn on the tangent plane to display its equation.</span></div>
+      <hr>
+      <div id="levelGradientWrap" class="checkwrap disabledControl" title="Turn on ‘highlighted level’ in the Level Surfaces panel first."><input id="showLevelGradients" type="checkbox" disabled> gradient vectors on highlighted level</div>
+      <div class="row"><div class="field"><label>Surface vector count</label><input id="levelGradCount" type="range" min="60" max="1500" step="20" value="500"></div><div class="field"><label>Surface vector scale</label><input id="levelGradScale" type="range" min="0.15" max="1.5" step="0.05" value="0.55"></div></div><div class="field"><label>Surface vector thickness</label><input id="levelGradThickness" type="range" min="0.25" max="2.5" step="0.05" value="0.75"></div>
+      <div class="row"><div class="field"><label>Vector scale</label><input id="gradScale" type="range" min="0.2" max="4" step="0.1" value="1.4"></div><div class="field"><label>Finite-difference h</label><input id="diffH" type="number" value="0.001" step="0.001" min="0.00001"></div></div>
+      <div id="probeReadout" class="readout"></div>
+      <button id="clearTrail" style="width:100%;margin-top:7px">Clear trail</button>
+    </div>
+  </section>
+
+  <section class="section collapsed" data-panel="display">
+    <div class="sectionhead"><span class="num">5</span><span class="sectiontitle">Display & Navigation</span><button class="iconbtn collapse">◂</button></div>
+    <div class="sectionbody">
+      <div class="checkGrid2"><label class="checkwrap"><input id="axesToggle" type="checkbox" checked> axes</label><label class="checkwrap"><input id="gridToggle" type="checkbox"> ground grid</label><label class="checkwrap"><input id="boxToggle" type="checkbox"> domain box</label><label class="checkwrap"><input id="orthoToggle" type="checkbox"> orthographic camera</label></div>
+      <div class="buttonrow" style="margin-top:8px"><button id="resetView">Reset view</button><button id="themeToggle">Light mode</button></div>
+      <div class="buttonrow" style="margin-top:6px"><button id="shareBtn">Copy share link</button><button id="fullscreenBtn">Fullscreen</button></div>
+    </div>
+  </section>
+  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.</div>
+</aside>
+
+<main>
+  <div id="viewport"></div>
+  <div class="viewerbar"><button id="sidebarToggle">☰ Controls</button><button id="homeView">⌂ Home</button><button id="topView">Top</button><button id="frontView">Front</button><button id="sideView">Side</button></div>
+  <div class="hud"><b id="hudTitle">Scalar field</b><div id="hudPoint"></div><div class="legendbar"></div><div class="legendnums"><span id="hudMin">0</span><span id="hudMax">1</span></div></div>
+  <div id="warning" class="warning"></div>
+  <div class="timeline">
+    <div class="timegrid"><span class="tag axisx">x</span><button class="playAxis" data-axis="x">▶</button><input id="xslider" type="range"><input id="xval" type="number"><select id="xspeed"><option>.25×</option><option>.5×</option><option selected>1×</option><option>2×</option><option>4×</option></select><span class="speedlab">animate x</span></div>
+    <div class="timegrid"><span class="tag axisy">y</span><button class="playAxis" data-axis="y">▶</button><input id="yslider" type="range"><input id="yval" type="number"><select id="yspeed"><option>.25×</option><option>.5×</option><option selected>1×</option><option>2×</option><option>4×</option></select><span class="speedlab">animate y</span></div>
+    <div class="timegrid"><span class="tag axisz">z</span><button class="playAxis" data-axis="z">▶</button><input id="zslider" type="range"><input id="zval" type="number"><select id="zspeed"><option>.25×</option><option>.5×</option><option selected>1×</option><option>2×</option><option>4×</option></select><span class="speedlab">animate z</span></div>
+  </div>
+  <div class="navhelp">Drag: orbit · Shift/right-drag: pan · Wheel: zoom</div>
+</main>
+</div>
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/objects/MarchingCubes.js"></script>
+<script>
+(() => {
+'use strict';
+const $=id=>document.getElementById(id);
+const EXAMPLES=[
+ {name:'Wavy layered field · sheets',expr:'sin(x+y) + 0.5*z*z - x',dom:[-5,5,-5,5,-4,4],point:[0,0,0]},
+ {name:'Radial quadratic · spheres',expr:'x*x + y*y + z*z',dom:[-3,3,-3,3,-3,3],point:[1,1,1]},
+ {name:'Distance from origin · spheres',expr:'sqrt(x*x + y*y + z*z)',dom:[-3,3,-3,3,-3,3],point:[1.2,0.8,1]},
+ {name:'Linear field · planes',expr:'x + 2*y - z',dom:[-3,3,-3,3,-3,3],point:[1,0.5,-1]},
+ {name:'Trilinear interaction',expr:'x*y*z',dom:[-2.5,2.5,-2.5,2.5,-2.5,2.5],point:[1,1,1]},
+ {name:'Saddle family',expr:'x*x + y*y - z*z',dom:[-3,3,-3,3,-3,3],point:[1.5,0,1]},
+ {name:'Hyperbolic mix',expr:'x*x - y*y + 0.6*z*z',dom:[-3,3,-3,3,-3,3],point:[1.2,0.8,1]},
+ {name:'3D wave',expr:'sin(x)*cos(y)*sin(z)',dom:[-3.1416,3.1416,-3.1416,3.1416,-3.1416,3.1416],point:[1,0.6,1.3]},
+ {name:'Sum of waves',expr:'sin(x) + cos(y) + sin(z)',dom:[-3.1416,3.1416,-3.1416,3.1416,-3.1416,3.1416],point:[1,1,1]},
+ {name:'Gaussian hill in 3D',expr:'exp(-(x*x+y*y+z*z))',dom:[-2.5,2.5,-2.5,2.5,-2.5,2.5],point:[0.8,0.4,0.6]},
+ {name:'Two-source field',expr:'exp(-((x-1.2)^2+y^2+z^2)) + 0.8*exp(-((x+1.2)^2+y^2+z^2))',dom:[-3,3,-3,3,-3,3],point:[0,0.5,0]},
+ {name:'Temperature-like gradient',expr:'20 + 4*z - 0.7*(x*x+y*y)',dom:[-3,3,-3,3,-2,3],point:[1,1,1]},
+ {name:'Potential-like inverse distance',expr:'1/sqrt(x*x+y*y+z*z+0.18)',dom:[-3,3,-3,3,-3,3],point:[1,1,0.5]},
+ {name:'Product of radius & height',expr:'z*(x*x+y*y)',dom:[-2.5,2.5,-2.5,2.5,-2.5,2.5],point:[1,1,1]},
+ {name:'Cubic symmetry',expr:'x^3 + y^3 + z^3 - 3*x*y*z',dom:[-2.5,2.5,-2.5,2.5,-2.5,2.5],point:[1.2,-0.5,0.8]}
+];
+let fn, state={x:1,y:1,z:1,vmin:0,vmax:27};
+let anim={x:false,y:false,z:false,level:false,last:performance.now(),lastLevelMesh:0};
+let levelGroup, currentLevelMesh, stackGroup, cloud, fieldBoxGroup, fieldVolumeTexture, sliceXY, sliceXZ, sliceYZ, pointMesh, gradArrow, tangentPlaneMesh, levelGradientGroup, trailGroup, axes, grid, domainBox;
+let fieldCache=null;
+let camera, persp, ortho, renderer, scene, controls;
+let axesSpeed={x:1,y:1,z:1}; let valueVisualsOn=true, gradientToolsOn=false;
+
+EXAMPLES.forEach((e,i)=>{const o=document.createElement('option');o.value=i;o.textContent=e.name;$('example').appendChild(o)});
+
+function eyeSvg(on){return on?`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z"/><circle cx="12" cy="12" r="2.8"/></svg>`:`<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3l18 18"/><path d="M10.6 6.1A11.3 11.3 0 0 1 12 6c6.5 0 10 6 10 6a18 18 0 0 1-3 3.7M6.3 6.3C3.5 8.2 2 12 2 12s3.5 6 10 6a10.8 10.8 0 0 0 4.1-.8M9.9 9.9a3 3 0 0 0 4.2 4.2"/></svg>`}
+function setEye(btn,on){btn.classList.toggle('visible',on);btn.innerHTML=eyeSvg(on)}
+function updateValueVisibility(){if(sliceXY)sliceXY.visible=valueVisualsOn&&$('showXY').checked;if(sliceXZ)sliceXZ.visible=valueVisualsOn&&$('showXZ').checked;if(sliceYZ)sliceYZ.visible=valueVisualsOn&&$('showYZ').checked;if(cloud)cloud.visible=valueVisualsOn&&$('showCloud').checked;if(fieldBoxGroup)fieldBoxGroup.visible=valueVisualsOn&&$('showFieldBox').checked}
+function updateGradientVisibility(){gradArrow.visible=gradientToolsOn&&$('showGrad').checked;if(tangentPlaneMesh)tangentPlaneMesh.visible=gradientToolsOn&&$('showTangentPlane').checked;levelGradientGroup.visible=gradientToolsOn&&$('showLevelGradients').checked}
+function compile(expr){
+  const js=expr.replace(/\^/g,'**');
+  const body=`const {sin,cos,tan,asin,acos,atan,atan2,sinh,cosh,tanh,sqrt,abs,exp,log,log10,pow,min,max,floor,ceil,round,sign}=Math; const pi=Math.PI,e=Math.E; return (${js});`;
+  const f=new Function('x','y','z',body);
+  const test=f(0.371,-0.219,0.463); if(typeof test!=='number') throw new Error('Function did not return a number.');
+  return f;
+}
+function safeVal(x,y,z){try{const v=fn(x,y,z);return Number.isFinite(v)?v:NaN}catch{return NaN}}
+function domain(){return {xmin:+$('xmin').value,xmax:+$('xmax').value,ymin:+$('ymin').value,ymax:+$('ymax').value,zmin:+$('zmin').value,zmax:+$('zmax').value}}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function colorFor(v){let a=+$('vmin').value,b=+$('vmax').value;if(!(b>a)){a=0;b=1}const t=clamp((v-a)/(b-a),0,1);const stops=[[0,0x313695],[.1,0x4575b4],[.2,0x74add1],[.3,0xabd9e9],[.4,0xe0f3f8],[.5,0xffffbf],[.6,0xfee090],[.7,0xfdae61],[.8,0xf46d43],[.9,0xd73027],[1,0xa50026]];let j=0;while(j<stops.length-2&&t>stops[j+1][0])j++;const [t0,c0]=stops[j],[t1,c1]=stops[j+1],u=(t-t0)/(t1-t0);const C0=new THREE.Color(c0),C1=new THREE.Color(c1);return C0.lerp(C1,u)}
+function cssColor(v){return '#'+colorFor(v).getHexString()}
+function showWarn(msg){$('warning').textContent=msg;$('warning').style.display='block';clearTimeout(showWarn.t);showWarn.t=setTimeout(()=>$('warning').style.display='none',4500)}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),1600)}
+
+function init3D(){
+ scene=new THREE.Scene();scene.background=new THREE.Color(getComputedStyle(document.body).getPropertyValue('--bg').trim());
+ renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));$('viewport').appendChild(renderer.domElement);
+ persp=new THREE.PerspectiveCamera(45,1,.05,500);persp.position.set(7.5,6.2,8.5);ortho=new THREE.OrthographicCamera(-6,6,6,-6,.05,500);ortho.position.copy(persp.position);camera=persp;
+ controls=new THREE.OrbitControls(camera,renderer.domElement);controls.enableDamping=true;controls.dampingFactor=.08;controls.target.set(0,0,0);
+ scene.add(new THREE.HemisphereLight(0xffffff,0x18263d,1.05));const dl=new THREE.DirectionalLight(0xffffff,.8);dl.position.set(5,8,6);scene.add(dl);
+ levelGroup=new THREE.Group();scene.add(levelGroup);stackGroup=new THREE.Group();scene.add(stackGroup);levelGradientGroup=new THREE.Group();scene.add(levelGradientGroup);trailGroup=new THREE.Group();scene.add(trailGroup);
+ axes=new THREE.AxesHelper(4);scene.add(axes);grid=new THREE.GridHelper(8,16,0x456178,0x21384c);grid.position.y=domain().ymin;grid.visible=false;scene.add(grid);
+ pointMesh=new THREE.Mesh(new THREE.SphereGeometry(.11,26,20),new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x333333,depthTest:false,depthWrite:false}));pointMesh.renderOrder=100;scene.add(pointMesh);
+ gradArrow=new THREE.ArrowHelper(new THREE.Vector3(1,0,0),new THREE.Vector3(),1,0xfb7185,.22,.12);gradArrow.line.material.depthTest=false;gradArrow.line.material.depthWrite=false;gradArrow.cone.material.depthTest=false;gradArrow.cone.material.depthWrite=false;gradArrow.line.renderOrder=95;gradArrow.cone.renderOrder=95;scene.add(gradArrow);
+ window.addEventListener('resize',resize);resize();animate();
+}
+let pointDrag={active:false,plane:new THREE.Plane(),raycaster:new THREE.Raycaster(),pointer:new THREE.Vector2()};
+function pointerNDC(e){const r=renderer.domElement.getBoundingClientRect();pointDrag.pointer.set(((e.clientX-r.left)/r.width)*2-1,-((e.clientY-r.top)/r.height)*2+1)}
+function setPointXYZ(P){
+  const d=domain();state.x=clamp(P.x,d.xmin,d.xmax);state.y=clamp(P.y,d.ymin,d.ymax);state.z=clamp(P.z,d.zmin,d.zmax);
+  for(const a of ['x','y','z']){$(a+'slider').value=state[a];$(a+'val').value=+state[a].toFixed(4)}
+  updateProbe();updateSlices();
+  if($('attachLevel').checked){const c=safeVal(state.x,state.y,state.z);if(Number.isFinite(c)){setLevelValue(c,true);scheduleCurrentLevel(true)}}
+}
+function enablePointDragging(){
+  const canvas=renderer.domElement;
+  canvas.addEventListener('pointerdown',e=>{
+    pointerNDC(e);pointDrag.raycaster.setFromCamera(pointDrag.pointer,camera);
+    const hits=pointDrag.raycaster.intersectObject(pointMesh,false);if(!hits.length)return;
+    e.preventDefault();pointDrag.active=true;controls.enabled=false;canvas.setPointerCapture(e.pointerId);
+    const normal=new THREE.Vector3();camera.getWorldDirection(normal);pointDrag.plane.setFromNormalAndCoplanarPoint(normal,pointMesh.position);
+    canvas.style.cursor='grabbing';
+  });
+  canvas.addEventListener('pointermove',e=>{
+    if(!pointDrag.active)return;pointerNDC(e);pointDrag.raycaster.setFromCamera(pointDrag.pointer,camera);const P=new THREE.Vector3();
+    if(pointDrag.raycaster.ray.intersectPlane(pointDrag.plane,P))setPointXYZ(P);
+  });
+  const end=e=>{if(!pointDrag.active)return;pointDrag.active=false;controls.enabled=true;canvas.style.cursor='';try{canvas.releasePointerCapture(e.pointerId)}catch{};if($('attachLevel').checked)buildCurrentLevel(false)};
+  canvas.addEventListener('pointerup',end);canvas.addEventListener('pointercancel',end);
+}
+function resize(){const r=$('viewport').getBoundingClientRect();renderer.setSize(r.width,r.height,false);persp.aspect=r.width/r.height;persp.updateProjectionMatrix();const s=6,asp=r.width/r.height;ortho.left=-s*asp;ortho.right=s*asp;ortho.top=s;ortho.bottom=-s;ortho.updateProjectionMatrix()}
+function switchCamera(useOrtho){const old=camera;camera=useOrtho?ortho:persp;camera.position.copy(old.position);camera.quaternion.copy(old.quaternion);controls.object=camera;controls.update()}
+function resetView(){const d=domain(),sx=d.xmax-d.xmin,sy=d.ymax-d.ymin,sz=d.zmax-d.zmin,m=Math.max(sx,sy,sz),cx=(d.xmin+d.xmax)/2,cy=(d.ymin+d.ymax)/2,cz=(d.zmin+d.zmax)/2;controls.target.set(cx,cy,cz);camera.position.set(cx+1.25*m,cy+1.05*m,cz+1.4*m);if(camera.isOrthographicCamera){const aspect=renderer.domElement.clientWidth/renderer.domElement.clientHeight,s=.8*m;camera.left=-s*aspect;camera.right=s*aspect;camera.top=s;camera.bottom=-s;camera.updateProjectionMatrix()}controls.update()}
+
+function setupSliders(){const d=domain();for(const a of ['x','y','z']){const sl=$(a+'slider'),nv=$(a+'val'),mn=d[a+'min'],mx=d[a+'max'];sl.min=mn;sl.max=mx;sl.step=(mx-mn)/400;nv.min=mn;nv.max=mx;nv.step=(mx-mn)/200;state[a]=clamp(state[a],mn,mx);sl.value=state[a];nv.value=+state[a].toFixed(4)}}
+function setAxis(a,v,fromAnim=false){const d=domain(),mn=d[a+'min'],mx=d[a+'max'];state[a]=clamp(+v,mn,mx);$(a+'slider').value=state[a];$(a+'val').value=+state[a].toFixed(4);updateProbe(fromAnim);updateSlices();if($('attachLevel').checked){const c=safeVal(state.x,state.y,state.z);if(Number.isFinite(c)){setLevelValue(c,true);if(!fromAnim)scheduleCurrentLevel();else if(performance.now()-anim.lastLevelMesh>85){anim.lastLevelMesh=performance.now();buildCurrentLevel(true)}}}if($('showTrail').checked&&fromAnim)addTrailPoint()}
+function axisSpeed(sel){return parseFloat(sel.value)||1}
+
+function gradientAt(x,y,z){
+  const d=domain(),m=Math.max(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin),h=Math.max(1e-7,+$('diffH').value||.001,1e-5*m),f0=safeVal(x,y,z);
+  const deriv=(fp,fm)=>Number.isFinite(fp)&&Number.isFinite(fm)?(fp-fm)/(2*h):Number.isFinite(fp)&&Number.isFinite(f0)?(fp-f0)/h:Number.isFinite(fm)&&Number.isFinite(f0)?(f0-fm)/h:NaN;
+  return new THREE.Vector3(deriv(safeVal(x+h,y,z),safeVal(x-h,y,z)),deriv(safeVal(x,y+h,z),safeVal(x,y-h,z)),deriv(safeVal(x,y,z+h),safeVal(x,y,z-h)));
+}
+function updateTangentPlane(){
+  if(tangentPlaneMesh){scene.remove(tangentPlaneMesh);tangentPlaneMesh.geometry.dispose();tangentPlaneMesh.material.dispose();tangentPlaneMesh=null}
+  const eq=$('tangentPlaneEquation');
+  if(!gradientToolsOn||!$('showTangentPlane').checked){eq.innerHTML='<span class="tiny">Turn on the tangent plane to display its equation.</span>';return}
+  const {x,y,z}=state,g=gradientAt(x,y,z),L=g.length();
+  if(!Number.isFinite(L)||L<1e-10){eq.innerHTML='<span class="tiny">The gradient is zero here, so the tangent plane is not determined.</span>';return}
+  const n=g.clone().normalize(),d=domain(),m=Math.max(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin),size=(+$('tangentPlaneSize').value||.65)*m;
+  const geo=new THREE.PlaneGeometry(size,size,1,1),mat=new THREE.MeshBasicMaterial({color:$('tangentPlaneColor').value,side:THREE.DoubleSide,transparent:true,opacity:+$('tangentPlaneOpacity').value,depthWrite:false});
+  tangentPlaneMesh=new THREE.Mesh(geo,mat);tangentPlaneMesh.position.set(x,y,z);tangentPlaneMesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1),n);tangentPlaneMesh.renderOrder=30;scene.add(tangentPlaneMesh);
+  const a=g.x,b=g.y,c=g.z;
+  const sx=v=>v>=0?`+ ${fmt(v)}`:`− ${fmt(Math.abs(v))}`;
+  eq.innerHTML=`<b>Tangent plane:</b><br><span class="formula">${fmt(a)}(x ${sx(-x)}) + ${fmt(b)}(y ${sx(-y)}) + ${fmt(c)}(z ${sx(-z)}) = 0</span><br><span class="tiny">Normal vector = ∇f = ⟨${fmt(a)}, ${fmt(b)}, ${fmt(c)}⟩.</span>`;
+}
+function updateProbe(){const {x,y,z}=state,v=safeVal(x,y,z),g=gradientAt(x,y,z);pointMesh.position.set(x,y,z);pointMesh.visible=true;gradArrow.position.set(x,y,z);let len=g.length();if(Number.isFinite(len)&&len>1e-10){const dir=g.clone().normalize(),scale=+$('gradScale').value||1;if(!$('normalizeGrad').checked)len=Math.min(6,len);else len=1;gradArrow.setDirection(dir);gradArrow.setLength(scale*len,.18*scale,.10*scale);gradArrow.visible=gradientToolsOn&&$('showGrad').checked}else gradArrow.visible=false;$('probeReadout').innerHTML=`<b>Point:</b> (${x.toFixed(3)}, ${y.toFixed(3)}, ${z.toFixed(3)})<br><b>f:</b> ${fmt(v)}<br><b>∇f:</b> ⟨${fmt(g.x)}, ${fmt(g.y)}, ${fmt(g.z)}⟩<br><span class="tiny">∇f is normal to the level surface through this point. Drag the white point in the canvas to move it in the current screen plane.</span>`;$('hudPoint').innerHTML=`(${x.toFixed(2)}, ${y.toFixed(2)}, ${z.toFixed(2)}) → <b>${fmt(v)}</b>`;updateTangentPlane()}
+function fmt(v){return Number.isFinite(v)?(+v.toPrecision(5)).toString():'undefined'}
+function addTrailPoint(){if(trailGroup.children.length>180){const o=trailGroup.children.shift();o.geometry.dispose();o.material.dispose()}const v=safeVal(state.x,state.y,state.z);const m=new THREE.Mesh(new THREE.SphereGeometry(.035,8,6),new THREE.MeshBasicMaterial({color:colorFor(v),transparent:true,opacity:.65}));m.position.set(state.x,state.y,state.z);trailGroup.add(m)}
+function clearTrail(){while(trailGroup.children.length){const o=trailGroup.children.pop();o.geometry.dispose();o.material.dispose()}}
+
+function chooseNiceStep(span,target=12){
+  if(!(span>0))return 1;
+  const raw=span/target,pow=Math.pow(10,Math.floor(Math.log10(raw))),m=raw/pow;
+  const nice=m<=1?1:m<=2?2:m<=2.5?2.5:m<=5?5:10;
+  return nice*pow;
+}
+function setAutomaticStackRange(mn,mx){
+  const span=mx-mn;
+  if(!(span>0))return;
+  const step=chooseNiceStep(span,12);
+  // Keep levels strictly inside the observed range when possible; endpoints
+  // can collapse to degenerate boundary patches for bounded examples.
+  let a=Math.ceil((mn+1e-9*span)/step)*step,
+      b=Math.floor((mx-1e-9*span)/step)*step;
+  if(!(b>=a)){a=mn;b=mx}
+  $('stackMin').value=+a.toPrecision(7);
+  $('stackMax').value=+b.toPrecision(7);
+  $('stackStep').value=+step.toPrecision(7);
+}
+function sampleRange(){
+  const d=domain(),N=15;let mn=Infinity,mx=-Infinity;
+  for(let i=0;i<N;i++)for(let j=0;j<N;j++)for(let k=0;k<N;k++){
+    const x=d.xmin+(d.xmax-d.xmin)*i/(N-1),y=d.ymin+(d.ymax-d.ymin)*j/(N-1),z=d.zmin+(d.zmax-d.zmin)*k/(N-1),v=safeVal(x,y,z);
+    if(Number.isFinite(v)){mn=Math.min(mn,v);mx=Math.max(mx,v)}
+  }
+  if(!Number.isFinite(mn)||!(mx>mn)){mn=-1;mx=1}
+  if($('symmetricRange').checked){const M=Math.max(Math.abs(mn),Math.abs(mx));mn=-M;mx=M}
+  $('vmin').value=+mn.toPrecision(6);$('vmax').value=+mx.toPrecision(6);state.vmin=mn;state.vmax=mx;
+  setAutomaticStackRange(mn,mx);
+  syncLevelRange();updateHudLegend();
+}
+function syncLevelRange(){const mn=+$('vmin').value,mx=+$('vmax').value;$('levelC').min=mn;$('levelC').max=mx;$('levelC').step=(mx-mn)/300||.01;const v=clamp(+$('levelC').value,mn,mx);setLevelValue(v,true)}
+function updateHudLegend(){$('hudMin').textContent=fmt(+$('vmin').value);$('hudMax').textContent=fmt(+$('vmax').value)}
+
+function makeSlice(axis){const d=domain(),N=72,canvas=document.createElement('canvas');canvas.width=N;canvas.height=N;const ctx=canvas.getContext('2d'),im=ctx.createImageData(N,N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){let x,y,z;if(axis==='xy'){x=d.xmin+(d.xmax-d.xmin)*i/(N-1);y=d.ymin+(d.ymax-d.ymin)*(N-1-j)/(N-1);z=state.z}else if(axis==='xz'){x=d.xmin+(d.xmax-d.xmin)*i/(N-1);y=state.y;z=d.zmin+(d.zmax-d.zmin)*(N-1-j)/(N-1)}else{x=state.x;y=d.ymin+(d.ymax-d.ymin)*i/(N-1);z=d.zmin+(d.zmax-d.zmin)*(N-1-j)/(N-1)}const v=safeVal(x,y,z),c=Number.isFinite(v)?colorFor(v):new THREE.Color(0x111111),p=4*(j*N+i);im.data[p]=Math.round(c.r*255);im.data[p+1]=Math.round(c.g*255);im.data[p+2]=Math.round(c.b*255);im.data[p+3]=Number.isFinite(v)?255:0}ctx.putImageData(im,0,0);const tex=new THREE.CanvasTexture(canvas);tex.minFilter=THREE.LinearFilter;return tex}
+function updateSliceMesh(which){const d=domain(),op=+$('sliceOpacity').value;let mesh=which==='xy'?sliceXY:which==='xz'?sliceXZ:sliceYZ;if(!mesh){const geo=new THREE.PlaneGeometry(1,1),mat=new THREE.MeshBasicMaterial({side:THREE.DoubleSide,transparent:true,opacity:op,depthWrite:false});mesh=new THREE.Mesh(geo,mat);scene.add(mesh);if(which==='xy')sliceXY=mesh;else if(which==='xz')sliceXZ=mesh;else sliceYZ=mesh}if(mesh.material.map)mesh.material.map.dispose();mesh.material.map=makeSlice(which);mesh.material.needsUpdate=true;mesh.material.opacity=op;if(which==='xy'){mesh.scale.set(d.xmax-d.xmin,d.ymax-d.ymin,1);mesh.rotation.set(0,0,0);mesh.position.set((d.xmin+d.xmax)/2,(d.ymin+d.ymax)/2,state.z);mesh.visible=valueVisualsOn&&$('showXY').checked}else if(which==='xz'){mesh.scale.set(d.xmax-d.xmin,d.zmax-d.zmin,1);mesh.rotation.set(Math.PI/2,0,0);mesh.position.set((d.xmin+d.xmax)/2,state.y,(d.zmin+d.zmax)/2);mesh.visible=valueVisualsOn&&$('showXZ').checked}else{mesh.scale.set(d.ymax-d.ymin,d.zmax-d.zmin,1);mesh.rotation.set(0,Math.PI/2,0);mesh.position.set(state.x,(d.ymin+d.ymax)/2,(d.zmin+d.zmax)/2);mesh.visible=valueVisualsOn&&$('showYZ').checked}}
+let sliceRAF=0;function updateSlices(){cancelAnimationFrame(sliceRAF);sliceRAF=requestAnimationFrame(()=>{if($('showXY').checked||sliceXY)updateSliceMesh('xy');if($('showXZ').checked||sliceXZ)updateSliceMesh('xz');if($('showYZ').checked||sliceYZ)updateSliceMesh('yz')})}
+function disposeCloud(){if(!cloud)return;scene.remove(cloud);cloud.geometry&&cloud.geometry.dispose();cloud.material&&cloud.material.dispose();cloud=null}
+function buildCloud(){disposeCloud();if(!$('showCloud').checked)return;const d=domain(),nx=Math.min(24,+$('nx').value),ny=Math.min(24,+$('ny').value),nz=Math.min(24,+$('nz').value),size=+$('cloudSize').value,opacity=+$('cloudOpacity').value;const geo=new THREE.SphereGeometry(size,9,7),mat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity,depthWrite:false});cloud=new THREE.InstancedMesh(geo,mat,nx*ny*nz);cloud.instanceMatrix.setUsage(THREE.DynamicDrawUsage);const dummy=new THREE.Object3D();let n=0;for(let i=0;i<nx;i++)for(let j=0;j<ny;j++)for(let k=0;k<nz;k++){const x=d.xmin+(d.xmax-d.xmin)*i/(nx-1),y=d.ymin+(d.ymax-d.ymin)*j/(ny-1),z=d.zmin+(d.zmax-d.zmin)*k/(nz-1),v=safeVal(x,y,z);if(!Number.isFinite(v))continue;dummy.position.set(x,y,z);dummy.updateMatrix();cloud.setMatrixAt(n,dummy.matrix);cloud.setColorAt(n,colorFor(v));n++}cloud.count=n;if(cloud.instanceColor)cloud.instanceColor.needsUpdate=true;scene.add(cloud);cloud.visible=valueVisualsOn&&$('showCloud').checked}
+function disposeFieldBox(){
+  if(!fieldBoxGroup)return;
+
+  scene.remove(fieldBoxGroup);
+
+  fieldBoxGroup.traverse(o=>{
+    if(o.geometry)o.geometry.dispose();
+
+    if(o.material){
+      const mats=Array.isArray(o.material)?o.material:[o.material];
+      mats.forEach(mat=>{
+        if(!mat)return;
+        if(mat.map){
+          mat.map.dispose();
+          mat.map=null;
+        }
+        mat.dispose();
+      });
+    }
+  });
+
+  if(fieldVolumeTexture){
+    fieldVolumeTexture.dispose();
+    fieldVolumeTexture=null;
+  }
+
+  fieldBoxGroup.clear();
+  fieldBoxGroup=null;
+}
+function makeFaceTexture(face,N=128){const d=domain(),canvas=document.createElement('canvas');canvas.width=N;canvas.height=N;const ctx=canvas.getContext('2d'),im=ctx.createImageData(N,N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){const u=i/(N-1),v=(N-1-j)/(N-1);let x,y,z;if(face==='xmin'||face==='xmax'){x=face==='xmin'?d.xmin:d.xmax;y=d.ymin+(d.ymax-d.ymin)*u;z=d.zmin+(d.zmax-d.zmin)*v}else if(face==='ymin'||face==='ymax'){y=face==='ymin'?d.ymin:d.ymax;x=d.xmin+(d.xmax-d.xmin)*u;z=d.zmin+(d.zmax-d.zmin)*v}else{z=face==='zmin'?d.zmin:d.zmax;x=d.xmin+(d.xmax-d.xmin)*u;y=d.ymin+(d.ymax-d.ymin)*v}const val=safeVal(x,y,z),c=Number.isFinite(val)?colorFor(val):new THREE.Color(0x111111),q=4*(j*N+i);im.data[q]=Math.round(c.r*255);im.data[q+1]=Math.round(c.g*255);im.data[q+2]=Math.round(c.b*255);im.data[q+3]=Number.isFinite(val)?255:0}ctx.putImageData(im,0,0);const tex=new THREE.CanvasTexture(canvas);tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;tex.needsUpdate=true;return tex}
+function makeVolumeTexture(N=44){if(!THREE.DataTexture3D)return null;const d=domain(),data=new Uint8Array(N*N*N*4);let q=0;for(let k=0;k<N;k++){const z=d.zmin+(d.zmax-d.zmin)*k/(N-1);for(let j=0;j<N;j++){const y=d.ymin+(d.ymax-d.ymin)*j/(N-1);for(let i=0;i<N;i++){const x=d.xmin+(d.xmax-d.xmin)*i/(N-1),v=safeVal(x,y,z),c=Number.isFinite(v)?colorFor(v):new THREE.Color(0x111111);data[q++]=Math.round(c.r*255);data[q++]=Math.round(c.g*255);data[q++]=Math.round(c.b*255);data[q++]=Number.isFinite(v)?255:0}}}const tex=new THREE.DataTexture3D(data,N,N,N);tex.format=THREE.RGBAFormat;tex.type=THREE.UnsignedByteType;tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;tex.unpackAlignment=1;tex.needsUpdate=true;return tex}
+function makeInteriorSlice(z,N=96){const d=domain(),canvas=document.createElement('canvas');canvas.width=N;canvas.height=N;const ctx=canvas.getContext('2d'),im=ctx.createImageData(N,N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){const x=d.xmin+(d.xmax-d.xmin)*i/(N-1),y=d.ymin+(d.ymax-d.ymin)*(N-1-j)/(N-1),v=safeVal(x,y,z),c=Number.isFinite(v)?colorFor(v):new THREE.Color(0x111111),q=4*(j*N+i);im.data[q]=Math.round(c.r*255);im.data[q+1]=Math.round(c.g*255);im.data[q+2]=Math.round(c.b*255);im.data[q+3]=Number.isFinite(v)?255:0}ctx.putImageData(im,0,0);const tex=new THREE.CanvasTexture(canvas);tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;return tex}
+function makeVolumeSlice(axis,t,N=72){const d=domain(),canvas=document.createElement('canvas');canvas.width=N;canvas.height=N;const ctx=canvas.getContext('2d'),im=ctx.createImageData(N,N);for(let j=0;j<N;j++)for(let i=0;i<N;i++){const u=i/(N-1),v=(N-1-j)/(N-1);let x,y,z;if(axis==='z'){z=t;x=d.xmin+(d.xmax-d.xmin)*u;y=d.ymin+(d.ymax-d.ymin)*v}else if(axis==='y'){y=t;x=d.xmin+(d.xmax-d.xmin)*u;z=d.zmin+(d.zmax-d.zmin)*v}else{x=t;y=d.ymin+(d.ymax-d.ymin)*u;z=d.zmin+(d.zmax-d.zmin)*v}const val=safeVal(x,y,z),c=Number.isFinite(val)?colorFor(val):new THREE.Color(0x111111),q=4*(j*N+i);im.data[q]=Math.round(c.r*255);im.data[q+1]=Math.round(c.g*255);im.data[q+2]=Math.round(c.b*255);im.data[q+3]=Number.isFinite(val)?255:0}ctx.putImageData(im,0,0);const tex=new THREE.CanvasTexture(canvas);tex.minFilter=THREE.LinearFilter;tex.magFilter=THREE.LinearFilter;return tex}
+function updateFieldBoxOpacity(){
+  if(!fieldBoxGroup)return;
+  const op=+$('fieldBoxOpacity').value;
+
+  (fieldBoxGroup.userData.shellMats||[]).forEach(mat=>{
+    mat.opacity=Math.min(.78,.12+.48*op);
+    mat.needsUpdate=true;
+  });
+
+  const alpha=Math.min(.105,.012+.050*op);
+  (fieldBoxGroup.userData.fallbackMats||[]).forEach(mat=>{
+    mat.opacity=alpha;
+    mat.needsUpdate=true;
+  });
+}
+function buildFieldBox(){
+  disposeFieldBox();
+  if(!$('showFieldBox').checked)return;
+
+  const d=domain(),
+        cx=(d.xmin+d.xmax)/2,cy=(d.ymin+d.ymax)/2,cz=(d.zmin+d.zmax)/2,
+        sx=d.xmax-d.xmin,sy=d.ymax-d.ymin,sz=d.zmax-d.zmin,
+        op=+$('fieldBoxOpacity').value;
+
+  fieldBoxGroup=new THREE.Group();
+  fieldBoxGroup.userData.shellMats=[];
+  fieldBoxGroup.userData.fallbackMats=[];
+
+  // Closed heat-map boundary box.
+  const faces=['xmax','xmin','ymax','ymin','zmax','zmin'];
+  const shellMats=faces.map(face=>new THREE.MeshBasicMaterial({
+    map:makeFaceTexture(face),
+    side:THREE.FrontSide,
+    transparent:true,
+    opacity:Math.min(.78,.12+.48*op),
+    depthWrite:false
+  }));
+  fieldBoxGroup.userData.shellMats=shellMats;
+
+  const shell=new THREE.Mesh(new THREE.BoxGeometry(sx,sy,sz),shellMats);
+  shell.position.set(cx,cy,cz);
+  shell.renderOrder=4;
+  fieldBoxGroup.add(shell);
+
+  // Deterministic volumetric approximation:
+  // three intersecting families of heat-map slices fill the entire domain.
+  // This avoids the browser-dependent 3D-texture shader lifecycle that was
+  // failing after a function change.
+  const slices=26;
+  const alpha=Math.min(.105,.012+.050*op);
+
+  function addSlice(axis,t,geo,rot,pos){
+    const mat=new THREE.MeshBasicMaterial({
+      map:makeVolumeSlice(axis,t,72),
+      side:THREE.DoubleSide,
+      transparent:true,
+      opacity:alpha,
+      depthWrite:false,
+      depthTest:false
+    });
+    fieldBoxGroup.userData.fallbackMats.push(mat);
+    const m=new THREE.Mesh(geo,mat);
+    m.rotation.set(rot.x,rot.y,rot.z);
+    m.position.copy(pos);
+    m.renderOrder=2;
+    fieldBoxGroup.add(m);
+  }
+
+  for(let k=1;k<slices;k++){
+    const z=d.zmin+sz*k/slices;
+    addSlice('z',z,new THREE.PlaneGeometry(sx,sy),
+             {x:0,y:0,z:0},new THREE.Vector3(cx,cy,z));
+  }
+  for(let k=1;k<slices;k++){
+    const y=d.ymin+sy*k/slices;
+    addSlice('y',y,new THREE.PlaneGeometry(sx,sz),
+             {x:Math.PI/2,y:0,z:0},new THREE.Vector3(cx,y,cz));
+  }
+  for(let k=1;k<slices;k++){
+    const x=d.xmin+sx*k/slices;
+    addSlice('x',x,new THREE.PlaneGeometry(sy,sz),
+             {x:0,y:Math.PI/2,z:0},new THREE.Vector3(x,cy,cz));
+  }
+
+  scene.add(fieldBoxGroup);
+  updateValueVisibility();
+}
+function getFieldGrid(res){
+  res=Math.max(8,Math.round(res));
+  const d=domain(),key=[res,d.xmin,d.xmax,d.ymin,d.ymax,d.zmin,d.zmax,$('expr').value].join('|');
+  if(fieldCache&&fieldCache.key===key)return fieldCache;
+  const vals=new Float32Array(res*res*res),
+        sx=(d.xmax-d.xmin)/(res-1),
+        sy=(d.ymax-d.ymin)/(res-1),
+        sz=(d.zmax-d.zmin)/(res-1),
+        r2=res*res;
+  for(let k=0;k<res;k++)for(let j=0;j<res;j++)for(let i=0;i<res;i++){
+    const x=d.xmin+i*sx,y=d.ymin+j*sy,z=d.zmin+k*sz,v=safeVal(x,y,z);
+    vals[i+j*res+k*r2]=Number.isFinite(v)?v:1e20;
+  }
+  fieldCache={key,res,vals,d};
+  return fieldCache;
+}
+function isoGeometry(level,res){
+  const g=getFieldGrid(res),d=g.d;
+  if(typeof THREE.MarchingCubes!=='function'){
+    showWarn('Marching Cubes did not load. Refresh the page while online.');
+    return new THREE.BufferGeometry();
+  }
+  const mc=new THREE.MarchingCubes(g.res,new THREE.MeshBasicMaterial(),false,false);
+  mc.field.set(g.vals);
+  mc.isolation=level;
+  const geo=mc.generateBufferGeometry();
+
+  // THREE.MarchingCubes works in a normalized [-1,1]^3 coordinate cube.
+  // This direct scale/translate mapping is intentionally used here because
+  // it gives the most complete and stable family of stacked level sheets.
+  geo.scale(
+    (d.xmax-d.xmin)/2,
+    (d.ymax-d.ymin)/2,
+    (d.zmax-d.zmin)/2
+  );
+  geo.translate(
+    (d.xmin+d.xmax)/2,
+    (d.ymin+d.ymax)/2,
+    (d.zmin+d.zmax)/2
+  );
+  geo.computeBoundingSphere();
+  return geo;
+}
+function clearLevelGradients(){while(levelGradientGroup&&levelGradientGroup.children.length){const o=levelGradientGroup.children.pop();if(o.geometry)o.geometry.dispose();if(o.material)o.material.dispose()}}
+function updateLevelGradientAvailability(){const enabled=$('showCurrentLevel').checked;$('showLevelGradients').disabled=!enabled;const w=$('levelGradientWrap');w.classList.toggle('disabled',!enabled);w.title=enabled?'Show many gradient vectors normal to the highlighted level surface. Turn on the Level Surfaces eye to display them.':'Turn on “highlighted level” first.';if(!enabled){$('showLevelGradients').checked=false;clearLevelGradients()}updateGradientVisibility()}
+function buildLevelGradients(){
+  clearLevelGradients();
+  if(!gradientToolsOn||!$('showLevelGradients').checked||!currentLevelMesh||!$('showCurrentLevel').checked)return;
+  const pos=currentLevelMesh.geometry.getAttribute('position');
+  if(!pos||pos.count<3)return;
+
+  const target=Math.max(60,+$('levelGradCount').value||500),
+        scale=+$('levelGradScale').value||.55,
+        thick=+$('levelGradThickness').value||.75,
+        d=domain(),
+        m=Math.max(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin),
+        rad=.0024*m*thick,
+        headLen=Math.min(scale*.28,.09*m),
+        shaftLen=Math.max(.035,scale-headLen),
+        lift=Math.max(.004*m,rad*1.8);
+
+  const shaftGeo=new THREE.CylinderGeometry(rad,rad,1,8),
+        headGeo=new THREE.ConeGeometry(rad*2.25,1,10),
+        mat=new THREE.MeshPhongMaterial({color:0xf97316,shininess:28,depthTest:true,depthWrite:true}),
+        shafts=new THREE.InstancedMesh(shaftGeo,mat,target),
+        heads=new THREE.InstancedMesh(headGeo,mat,target),
+        Y=new THREE.Vector3(0,1,0),
+        mat4=new THREE.Matrix4(),
+        quat=new THREE.Quaternion(),
+        scl=new THREE.Vector3();
+
+  // Marching Cubes returns non-indexed triangles. Sample triangle centroids
+  // evenly across the ENTIRE triangle list so vectors are distributed across
+  // the whole level surface, not merely the first region generated.
+  const triCount=Math.floor(pos.count/3);
+  let made=0;
+  for(let n=0;n<target&&n<triCount;n++){
+    const ti=Math.min(triCount-1,Math.floor((n+.5)*triCount/Math.min(target,triCount)));
+    const a=3*ti;
+    const P=new THREE.Vector3(
+      (pos.getX(a)+pos.getX(a+1)+pos.getX(a+2))/3,
+      (pos.getY(a)+pos.getY(a+1)+pos.getY(a+2))/3,
+      (pos.getZ(a)+pos.getZ(a+1)+pos.getZ(a+2))/3
+    );
+    const g=gradientAt(P.x,P.y,P.z);
+    if(!Number.isFinite(g.lengthSq())||g.lengthSq()<1e-10)continue;
+    const dir=g.normalize();
+
+    // Lift the vector just off the surface to avoid z-fighting while retaining
+    // normal depth testing, so vectors on the hidden side stay hidden.
+    const base=P.clone().addScaledVector(dir,lift);
+    quat.setFromUnitVectors(Y,dir);
+
+    scl.set(1,shaftLen,1);
+    mat4.compose(base.clone().addScaledVector(dir,shaftLen/2),quat,scl);
+    shafts.setMatrixAt(made,mat4);
+
+    scl.set(1,headLen,1);
+    mat4.compose(base.clone().addScaledVector(dir,shaftLen+headLen/2),quat,scl);
+    heads.setMatrixAt(made,mat4);
+    made++;
+  }
+  shafts.count=heads.count=made;
+  shafts.instanceMatrix.needsUpdate=heads.instanceMatrix.needsUpdate=true;
+  shafts.renderOrder=24;heads.renderOrder=24;
+  levelGradientGroup.add(shafts,heads);
+  updateGradientVisibility();
+}
+function disposeMesh(m){if(!m)return;if(m.parent)m.parent.remove(m);m.geometry&&m.geometry.dispose();if(m.material){if(Array.isArray(m.material))m.material.forEach(x=>x.dispose());else m.material.dispose()}}
+function setLevelValue(v,silent=false){$('levelC').value=v;$('levelNum').value=+v.toFixed(5);if(!silent&&!$('attachLevel').checked)scheduleCurrentLevel()}
+let levelTimer;function scheduleCurrentLevel(fast=false){clearTimeout(levelTimer);levelTimer=setTimeout(()=>buildCurrentLevel(fast),fast?10:70)}
+function buildCurrentLevel(fast=false){
+  disposeMesh(currentLevelMesh);
+  currentLevelMesh=null;
+  clearLevelGradients();
+
+  if(!$('showCurrentLevel').checked)return;
+
+  const c=+$('levelC').value,
+        res=fast?Math.min(28,+$('levelRes').value):+$('levelRes').value,
+        geo=isoGeometry(c,res),
+        mat=new THREE.MeshPhongMaterial({
+          color:colorFor(c),
+          side:THREE.DoubleSide,
+          transparent:false,
+          opacity:1,
+          wireframe:$('wireLevel').checked,
+          shininess:24,
+          depthWrite:true,
+          depthTest:true,
+          flatShading:false
+        });
+
+  currentLevelMesh=new THREE.Mesh(geo,mat);
+  currentLevelMesh.renderOrder=20;
+  currentLevelMesh.visible=$('levelsEye').classList.contains('visible');
+  levelGroup.add(currentLevelMesh);
+
+  if($('showLevelGradients').checked)buildLevelGradients();
+}
+function clearStack(){while(stackGroup.children.length){const m=stackGroup.children.pop();m.geometry.dispose();m.material.dispose()}}
+function buildStack(){
+  clearStack();
+  if(!$('showStack').checked)return;
+
+  let a=+$('stackMin').value,
+      b=+$('stackMax').value,
+      s=Math.abs(+$('stackStep').value);
+
+  if(!(b>=a)||!(s>0)){
+    showWarn('Check the level-stack minimum, maximum, and interval.');
+    return;
+  }
+
+  const count=Math.floor((b-a)/s)+1;
+  if(count>24){
+    showWarn('For responsiveness, the level stack is limited to 24 surfaces. Increase the interval.');
+    return;
+  }
+
+  const res=Math.min(46,+$('levelRes').value),
+        opacity=+$('levelOpacity').value,
+        useColor=$('colorLevels').checked;
+
+  getFieldGrid(res);
+
+  for(let c=a;c<=b+1e-10;c+=s){
+    const geo=isoGeometry(c,res),
+          mat=new THREE.MeshPhongMaterial({
+            color:useColor?colorFor(c):0xd8dde3,
+            side:THREE.DoubleSide,
+            transparent:opacity<.995,
+            opacity,
+            wireframe:$('wireLevel').checked,
+            shininess:10,
+            depthWrite:true,
+            depthTest:true,
+            flatShading:false
+          }),
+          m=new THREE.Mesh(geo,mat);
+
+    m.renderOrder=15;
+    m.visible=$('levelsEye').classList.contains('visible');
+    stackGroup.add(m);
+  }
+}
+function refreshLevelSurfaces(){
+  if($('showCurrentLevel').checked)buildCurrentLevel(false);
+  else{
+    disposeMesh(currentLevelMesh);
+    currentLevelMesh=null;
+    clearLevelGradients();
+  }
+
+  if($('showStack').checked)buildStack();
+  else clearStack();
+
+  const on=$('levelsEye').classList.contains('visible');
+  levelGroup.visible=on;
+  stackGroup.visible=on;
+  if(currentLevelMesh)currentLevelMesh.visible=on;
+  stackGroup.children.forEach(m=>m.visible=on);
+  updateLevelGradientAvailability();
+  updateGradientVisibility();
+}
+function updateLevelVisibility(){
+  const on=$('levelsEye').classList.contains('visible');
+  levelGroup.visible=on;
+  stackGroup.visible=on;
+  if(currentLevelMesh)currentLevelMesh.visible=on;
+  stackGroup.children.forEach(m=>m.visible=on);
+
+  if(on){
+    if($('attachLevel').checked){
+      const c=safeVal(state.x,state.y,state.z);
+      if(Number.isFinite(c))setLevelValue(c,true);
+    }
+    if($('showCurrentLevel').checked&&!currentLevelMesh)buildCurrentLevel(false);
+    if($('showStack').checked&&stackGroup.children.length===0)buildStack();
+  }else{
+    clearLevelGradients();
+  }
+
+  updateLevelGradientAvailability();
+  updateGradientVisibility();
+}
+
+function updateDomainBox(){if(domainBox){scene.remove(domainBox);domainBox.geometry.dispose();domainBox.material.dispose();domainBox=null}if(!$('boxToggle').checked)return;const d=domain(),geo=new THREE.BoxGeometry(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin),edges=new THREE.EdgesGeometry(geo);geo.dispose();domainBox=new THREE.LineSegments(edges,new THREE.LineBasicMaterial({color:0x6f879b,transparent:true,opacity:.7}));domainBox.position.set((d.xmin+d.xmax)/2,(d.ymin+d.ymax)/2,(d.zmin+d.zmax)/2);scene.add(domainBox)}
+function forceRefreshForFunctionChange(){
+  fieldCache=null;
+
+  // Update fourth-variable views from the newly compiled function.
+  updateSlices();
+  buildCloud();
+
+  if($('showFieldBox').checked){
+    try{
+      buildFieldBox();
+    }catch(err){
+      console.error('Color Volume rebuild failed:',err);
+      showWarn('Color Volume could not be rebuilt: '+err.message);
+      disposeFieldBox();
+    }
+  }else{
+    disposeFieldBox();
+  }
+
+  if($('attachLevel').checked){
+    const c=safeVal(state.x,state.y,state.z);
+    if(Number.isFinite(c))setLevelValue(c,true);
+  }
+
+  // Level surfaces must rebuild even if another visualization encounters an error.
+  try{
+    refreshLevelSurfaces();
+  }catch(err){
+    console.error('Level-surface rebuild failed:',err);
+    showWarn('Level surfaces could not be rebuilt: '+err.message);
+  }
+}
+function applyAll(reset=false){
+  try{
+    fn=compile($('expr').value);
+  }catch(e){
+    showWarn('Could not parse f(x,y,z): '+e.message);
+    return;
+  }
+
+  fieldCache=null;
+  setupSliders();
+
+  // sampleRange determines vmin/vmax and a sensible stack range for this function.
+  // It may issue ordinary UI updates, but the authoritative geometry rebuild happens
+  // once below after every dependent value is finalized.
+  sampleRange();
+
+  updateProbe();
+  forceRefreshForFunctionChange();
+  updateDomainBox();
+
+  const d=domain();
+  grid.position.y=d.ymin;
+  grid.scale.set((d.xmax-d.xmin)/8,1,(d.zmax-d.zmin)/8);
+
+  $('funcReadout').innerHTML=
+    `<b>f(x,y,z) =</b> <span class="formula">${$('expr').value}</span>`+
+    `<br><span class="tiny">Use ^ or ** for powers. Supported functions include sin, cos, exp, log, sqrt, abs, min, and max.</span>`;
+
+  $('hudTitle').textContent=
+    $('example').selectedOptions[0]?.textContent||'Scalar field';
+
+  if(reset)resetView();
+}
+function loadExample(i){
+  const e=EXAMPLES[i];
+
+  // Stop animation and remove old-function geometry immediately.
+  anim.level=false;
+  $('levelPlay').textContent='▶';
+  disposeMesh(currentLevelMesh);
+  currentLevelMesh=null;
+  clearStack();
+  clearLevelGradients();
+  fieldCache=null;
+
+  $('expr').value=e.expr;
+  [
+    $('xmin').value,$('xmax').value,
+    $('ymin').value,$('ymax').value,
+    $('zmin').value,$('zmax').value
+  ]=e.dom;
+  [state.x,state.y,state.z]=e.point;
+
+  applyAll(true);
+}
+
+function animate(now=performance.now()){requestAnimationFrame(animate);const dt=Math.min(.05,(now-anim.last)/1000);anim.last=now;const d=domain();for(const a of ['x','y','z'])if(anim[a]){const mn=d[a+'min'],mx=d[a+'max'],span=mx-mn,speed=axisSpeed($(a+'speed'));let v=state[a]+span*.12*speed*dt;if(v>mx)v=mn+(v-mx);setAxis(a,v,true)}if(anim.level){const mn=+$('vmin').value,mx=+$('vmax').value,span=mx-mn,speed=+$('levelSpeed').value;let v=+$('levelC').value+span*.08*speed*dt;if(v>mx)v=mn+(v-mx);$('attachLevel').checked=false;setLevelValue(v,true);if(now-anim.lastLevelMesh>85){anim.lastLevelMesh=now;buildCurrentLevel(true)}}controls.update();renderer.render(scene,camera)}
+
+function wireEvents(){
+ document.querySelectorAll('.collapse').forEach(b=>{const s=b.closest('.section');b.textContent=s.classList.contains('collapsed')?'◂':'▾';b.onclick=()=>{s.classList.toggle('collapsed');b.textContent=s.classList.contains('collapsed')?'◂':'▾'}});
+ $('example').onchange=()=>loadExample(+$('example').value);$('apply').onclick=()=>applyAll(false);$('autoRange').onclick=()=>{sampleRange();if($('showFieldBox').checked)buildFieldBox();refreshLevelSurfaces()};
+ ['x','y','z'].forEach(a=>{$(a+'slider').oninput=e=>setAxis(a,e.target.value);$(a+'val').onchange=e=>setAxis(a,e.target.value)});
+ document.querySelectorAll('.playAxis').forEach(b=>b.onclick=()=>{const a=b.dataset.axis;anim[a]=!anim[a];b.textContent=anim[a]?'❚❚':'▶'});
+ for(const id of ['showXY','showXZ','showYZ'])$(id).onchange=()=>{updateSlices();updateValueVisibility()};$('sliceOpacity').oninput=updateSlices;$('showCloud').onchange=()=>{buildCloud();updateValueVisibility()};$('cloudSize').oninput=buildCloud;$('cloudOpacity').oninput=()=>{if(cloud)cloud.material.opacity=+$('cloudOpacity').value};$('showFieldBox').onchange=()=>{if($('showFieldBox').checked&&!fieldBoxGroup)buildFieldBox();updateValueVisibility()};$('fieldBoxOpacity').oninput=updateFieldBoxOpacity;
+ for(const id of ['vmin','vmax'])$(id).onchange=()=>{syncLevelRange();updateHudLegend();updateSlices();buildCloud();if($('showFieldBox').checked)buildFieldBox();refreshLevelSurfaces()};$('symmetricRange').onchange=sampleRange;
+ $('showCurrentLevel').onchange=refreshLevelSurfaces;$('attachLevel').onchange=()=>{if($('attachLevel').checked)setAxis('x',state.x)};$('levelC').oninput=e=>{ $('attachLevel').checked=false;setLevelValue(+e.target.value,true);scheduleCurrentLevel()};$('levelNum').onchange=e=>{$('attachLevel').checked=false;setLevelValue(+e.target.value,true);scheduleCurrentLevel()};$('levelOpacity').oninput=()=>{
+   const op=+$('levelOpacity').value;
+   stackGroup.children.forEach(m=>{
+     m.material.opacity=op;
+     m.material.transparent=op<.995;
+     m.material.needsUpdate=true;
+   });
+ };
+ $('levelOpacity').onchange=refreshLevelSurfaces;$('levelRes').oninput=()=>{if($('levelsEye').classList.contains('visible')&&$('showCurrentLevel').checked)scheduleCurrentLevel()};$('levelRes').onchange=refreshLevelSurfaces;$('wireLevel').onchange=refreshLevelSurfaces;$('colorLevels').onchange=refreshLevelSurfaces;
+ $('showStack').onchange=refreshLevelSurfaces;for(const id of ['stackMin','stackMax','stackStep'])$(id).onchange=refreshLevelSurfaces;$('levelsEye').addEventListener('click',()=>{const on=!$('levelsEye').classList.contains('visible');setEye($('levelsEye'),on);updateLevelVisibility()});$('levelPlay').onclick=()=>{anim.level=!anim.level;$('levelPlay').textContent=anim.level?'❚❚':'▶';if(!anim.level)buildCurrentLevel(false)};
+ for(const id of ['showGrad','normalizeGrad','gradScale','diffH'])$(id).oninput=()=>{updateProbe();updateGradientVisibility()};for(const id of ['showTangentPlane','tangentPlaneSize','tangentPlaneOpacity','tangentPlaneColor'])$(id).oninput=()=>{updateTangentPlane();updateGradientVisibility()};$('showLevelGradients').onchange=buildLevelGradients;$('levelGradCount').oninput=buildLevelGradients;$('levelGradScale').oninput=buildLevelGradients;$('levelGradThickness').oninput=buildLevelGradients;$('clearTrail').onclick=clearTrail;$('showTrail').onchange=()=>{if(!$('showTrail').checked)clearTrail()};$('gradientEye').onclick=()=>{gradientToolsOn=!gradientToolsOn;setEye($('gradientEye'),gradientToolsOn);if(gradientToolsOn){$('showGrad').checked=true;$('normalizeGrad').checked=false;$('showLevelGradients').checked=false}else{$('showGrad').checked=false;$('normalizeGrad').checked=false;$('showTangentPlane').checked=false;$('showLevelGradients').checked=false;clearLevelGradients()}updateProbe();updateGradientVisibility()};$('valueEye').onclick=()=>{valueVisualsOn=!valueVisualsOn;setEye($('valueEye'),valueVisualsOn);updateValueVisibility()};
+ $('axesToggle').onchange=()=>axes.visible=$('axesToggle').checked;$('gridToggle').onchange=()=>grid.visible=$('gridToggle').checked;$('boxToggle').onchange=updateDomainBox;$('orthoToggle').onchange=()=>switchCamera($('orthoToggle').checked);$('resetView').onclick=resetView;$('homeView').onclick=resetView;
+ $('topView').onclick=()=>setView(0,1,0);$('frontView').onclick=()=>setView(0,0,1);$('sideView').onclick=()=>setView(1,0,0);$('sidebarToggle').onclick=()=>document.body.classList.toggle('sidebar-collapsed');
+ $('themeToggle').onclick=()=>{const light=document.body.dataset.theme!=='light';document.body.dataset.theme=light?'light':'dark';$('themeToggle').textContent=light?'Dark mode':'Light mode';scene.background=new THREE.Color(getComputedStyle(document.body).getPropertyValue('--bg').trim())};
+ $('fullscreenBtn').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();$('shareBtn').onclick=copyShare;
+ }
+ function setView(x,y,z){const d=domain(),cx=(d.xmin+d.xmax)/2,cy=(d.ymin+d.ymax)/2,cz=(d.zmin+d.zmax)/2,m=Math.max(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin);controls.target.set(cx,cy,cz);camera.position.set(cx+x*2*m,cy+y*2*m,cz+z*2*m);camera.up.set(0,1,0);if(y!==0)camera.up.set(0,0,-1);controls.update()}
+ function copyShare(){const p=new URLSearchParams({f:$('expr').value,xmin:$('xmin').value,xmax:$('xmax').value,ymin:$('ymin').value,ymax:$('ymax').value,zmin:$('zmin').value,zmax:$('zmax').value,x:state.x,y:state.y,z:state.z});const u=location.origin+location.pathname+'?'+p.toString();navigator.clipboard?.writeText(u).then(()=>toast('Share link copied'))}
+ function loadQuery(){const q=new URLSearchParams(location.search);if(!q.has('f'))return false;$('expr').value=q.get('f');for(const id of ['xmin','xmax','ymin','ymax','zmin','zmax'])if(q.has(id))$(id).value=q.get(id);for(const a of ['x','y','z'])if(q.has(a))state[a]=+q.get(a);applyAll(true);return true}
+
+init3D();enablePointDragging();wireEvents();setEye($('valueEye'),true);setEye($('levelsEye'),false);setEye($('gradientEye'),false);gradientToolsOn=false;valueVisualsOn=true;levelGroup.visible=false;stackGroup.visible=false;$('showCurrentLevel').checked=true;$('showStack').checked=true;$('attachLevel').checked=true;$('colorLevels').checked=true;$('showXY').checked=false;$('showXZ').checked=false;$('showYZ').checked=false;$('showCloud').checked=true;$('showFieldBox').checked=false;$('showGrad').checked=false;$('normalizeGrad').checked=false;$('showTangentPlane').checked=false;$('showLevelGradients').checked=false;$('gridToggle').checked=false;$('boxToggle').checked=false;grid.visible=false;updateLevelGradientAvailability();if(!loadQuery())loadExample(0);updateProbe();updateValueVisibility();updateGradientVisibility();
+})();
+</script>
+</body>
+</html>
