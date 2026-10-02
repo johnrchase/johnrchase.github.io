@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#6c63ff" />
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <title>Math Fact Frenzy 1.0</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="confetti-layer" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="topbar">
+      <button id="homeBtn" class="brand-button" type="button" aria-label="Go to profile screen">
+        <span class="brand-mark">⚡</span>
+        <span>
+          <strong>Math Fact Frenzy</strong>
+          <small>Timed challenges & untimed practice</small>
+        </span>
+      </button>
+      <div class="top-actions">
+        <button id="mainScreenBtn" class="secondary-button top-main-button hidden" type="button" title="Return to player selection">🏠 Players</button>
+        <button id="soundToggle" class="icon-button" type="button" aria-pressed="true" title="Turn sound effects on or off">🔊</button>
+        <button id="settingsBtn" class="icon-button hidden" type="button" title="Profile settings">⚙️</button>
+      </div>
+    </header>
+
+    <main>
+      <section id="profileScreen" class="screen active" aria-labelledby="profileHeading">
+        <div class="hero-card">
+          <div class="hero-sparkles">✨ ⭐ ✨</div>
+          <h1 id="profileHeading">Ready for a math sprint?</h1>
+          <p>Create a player or pick one you have used on this browser.</p>
+          <div class="hero-badges">
+            <span>⏱️ 60-second games</span>
+            <span>🌈 Untimed practice</span>
+            <span>🔥 Streaks</span>
+            <span>🏆 Levels</span>
+            <span>📈 Progress</span>
+          </div>
+        </div>
+
+        <div class="section-heading-row">
+          <div>
+            <h2>Players</h2>
+            <p class="muted">Profiles stay on this device. No account needed.</p>
+          </div>
+          <div class="row-actions">
+            <button id="exportAllBtn" class="secondary-button" type="button">⬇ Export all players</button>
+            <label class="secondary-button file-button">
+              Import JSON
+              <input id="importInput" type="file" accept="application/json,.json" />
+            </label>
+            <button id="newProfileBtn" class="primary-button" type="button">+ New player</button>
+          </div>
+        </div>
+        <div id="allPlayersStats" class="all-players-stats" aria-label="All players combined statistics"></div>
+        <div id="profileGrid" class="profile-grid"></div>
+      </section>
+
+      <section id="dashboardScreen" class="screen" aria-labelledby="dashboardHeading">
+        <div class="dashboard-hero">
+          <div id="dashboardAvatar" class="avatar avatar-xl" aria-hidden="true"></div>
+          <div class="dashboard-copy">
+            <div class="eyebrow">Welcome back</div>
+            <h1 id="dashboardHeading"></h1>
+            <p id="dashboardEncouragement">Pick a skill and start your next 60-second sprint!</p>
+          </div>
+          <div class="quick-stats">
+            <div class="stat-pill"><span>🏆</span><strong id="overallBest">0</strong><small>Best round</small></div>
+            <div class="stat-pill"><span>🔥</span><strong id="bestStreak">0</strong><small>Best streak</small></div>
+            <div class="stat-pill"><span>🎮</span><strong id="gamesPlayed">0</strong><small>Timed games</small></div>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel skill-panel" aria-labelledby="skillHeading">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Choose your challenge</div>
+                <h2 id="skillHeading">Math operation</h2>
+              </div>
+            </div>
+            <div id="operationCards" class="operation-grid"></div>
+
+            <div class="play-mode-zone">
+              <div>
+                <span class="eyebrow">How do you want to play?</span>
+                <div id="playModeButtons" class="play-mode-buttons" role="group" aria-label="Choose timed or untimed practice">
+                  <button type="button" data-play-mode="timed" class="play-mode-button active"><strong>⏱️ 60-second challenge</strong><small>Counts toward scores and unlocks</small></button>
+                  <button type="button" data-play-mode="practice" class="play-mode-button"><strong>🌈 Untimed practice</strong><small>Practice as long as you want — no points</small></button>
+                </div>
+              </div>
+            </div>
+
+            <div class="level-zone">
+              <div class="level-zone-header">
+                <div>
+                  <span class="eyebrow">Difficulty</span>
+                  <h3 id="levelLabel">Level 1</h3>
+                </div>
+                <span id="unlockMessage" class="unlock-message"></span>
+              </div>
+              <div id="levelButtons" class="level-buttons" aria-label="Select level"></div>
+              <div id="levelDescription" class="level-description"></div>
+            </div>
+
+            <button id="startGameBtn" class="mega-button" type="button">
+              <span id="startGameText">Start 60-second challenge</span>
+              <small id="startGameSubtext">Press Enter or click to begin</small>
+            </button>
+          </section>
+
+          <section class="panel progress-panel" aria-labelledby="progressHeading">
+            <div class="panel-heading">
+              <div>
+                <div class="eyebrow">Your progress</div>
+                <h2 id="progressHeading">Progress dashboard</h2>
+              </div>
+              <button id="exportProfileBtn" class="secondary-button compact" type="button">Export JSON</button>
+            </div>
+
+            <div class="progress-subheading">
+              <div>
+                <h3>Core skill levels</h3>
+                <p>Level shows the highest unlocked difficulty for each basic operation.</p>
+              </div>
+            </div>
+            <div id="masteryGrid" class="mastery-grid"></div>
+
+            <div class="progress-subheading stats-subheading">
+              <div>
+                <h3>Lifetime stats</h3>
+                <p>Timed challenges and untimed practice both count here.</p>
+              </div>
+            </div>
+            <div id="progressStats" class="progress-stats"></div>
+
+            <div class="progress-subheading recent-subheading">
+              <div>
+                <h3>Recent activity</h3>
+                <p>Your latest timed challenges and practice sessions.</p>
+              </div>
+            </div>
+            <div id="recentSessions" class="recent-sessions"></div>
+          </section>
+        </div>
+      </section>
+
+      <section id="gameScreen" class="screen" aria-labelledby="gameQuestion">
+        <div class="game-wrap">
+          <div class="game-topline">
+            <div class="game-player">
+              <div>
+                <strong id="gamePlayerName"></strong>
+                <span id="gameModeLabel"></span>
+              </div>
+            </div>
+            <div class="game-counters">
+              <div><span id="scoreCounterLabel">Score</span><strong id="scoreDisplay">0</strong></div>
+              <div><span>Streak</span><strong id="streakDisplay">0 🔥</strong></div>
+            </div>
+          </div>
+
+          <div id="timerWrap" class="timer-wrap" aria-label="Time remaining">
+            <div id="timerBar" class="timer-bar"></div>
+            <div id="timerText" class="timer-text">60</div>
+          </div>
+          <div id="practiceNotice" class="practice-notice hidden">🌈 Untimed practice — no pressure, no points, just practice!</div>
+
+          <div class="coach-zone">
+            <div id="gameAvatar" class="avatar avatar-coach idle" aria-hidden="true"></div>
+            <div id="coachBubble" class="coach-bubble" role="status">You’ve got this!</div>
+          </div>
+
+          <div id="questionCard" class="question-card">
+            <div id="questionBadge" class="question-badge">Addition • Level 1</div>
+            <div id="gameQuestion" class="question" aria-live="polite">2 + 3 = ?</div>
+            <label class="answer-label" for="answerInput">Your answer</label>
+            <input id="answerInput" class="answer-input" type="text" inputmode="numeric" autocomplete="off" aria-describedby="feedbackText" />
+            <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
+          </div>
+
+          <div class="keypad" aria-label="On-screen number pad">
+            <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
+            <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+            <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+            <button type="button" data-key="backspace" class="key-special">⌫</button><button type="button" data-key="0">0</button><button type="button" data-key="enter" class="key-submit">↵</button>
+          </div>
+
+          <button id="quitGameBtn" class="text-button" type="button">Quit game</button>
+        </div>
+      </section>
+
+      <section id="resultScreen" class="screen" aria-labelledby="resultHeading">
+        <div class="result-card">
+          <div id="resultAvatar" class="avatar avatar-xxl" aria-hidden="true"></div>
+          <div id="resultStars" class="result-stars">⭐ ⭐ ⭐</div>
+          <h1 id="resultHeading">Great work!</h1>
+          <p id="resultSummary"></p>
+          <div class="result-stats">
+            <div><span>Correct</span><strong id="resultScore">0</strong></div>
+            <div><span>Accuracy</span><strong id="resultAccuracy">0%</strong></div>
+            <div><span>Best streak</span><strong id="resultStreak">0</strong></div>
+          </div>
+          <div id="levelUpBanner" class="level-up-banner hidden"></div>
+          <div class="result-actions">
+            <button id="nextLevelBtn" class="primary-button big hidden" type="button">Next level →</button>
+            <button id="playAgainBtn" class="primary-button big" type="button">Play again</button>
+            <button id="backDashboardBtn" class="secondary-button big" type="button">Back to dashboard</button>
+            <button id="resultMainBtn" class="secondary-button big" type="button">🏠 Players</button>
+          </div>
+        </div>
+      </section>
+    </main>
+    <footer class="suite-footer">Copyright 2026 John Chase. Made with help from ChatGPT.<br>Version 1.0 &middot; <a href="../">Back to Teaching Apps</a></footer>
+  </div>
+
+  <dialog id="profileDialog" class="modal">
+    <form id="profileForm" method="dialog">
+      <div class="modal-heading">
+        <div>
+          <div class="eyebrow">Player profile</div>
+          <h2 id="profileDialogTitle">Create a player</h2>
+        </div>
+        <button class="icon-button" value="cancel" formnovalidate aria-label="Close">✕</button>
+      </div>
+      <label class="field-label" for="playerName">Name</label>
+      <input id="playerName" class="text-input" maxlength="20" placeholder="Your name" required />
+      <fieldset class="avatar-picker-fieldset">
+        <legend>Choose an avatar</legend>
+        <div id="avatarPicker" class="avatar-picker"></div>
+      </fieldset>
+      <div class="modal-actions">
+        <button id="deleteProfileBtn" class="danger-button hidden" type="button">Delete player</button>
+        <span class="spacer"></span>
+        <button class="secondary-button" value="cancel" formnovalidate>Cancel</button>
+        <button id="saveProfileBtn" class="primary-button" value="default">Save player</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
+</body>
+</html>
