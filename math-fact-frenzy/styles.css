@@ -335,3 +335,51 @@ h2 { margin-bottom:6px; }
 
 .suite-footer { margin-top: 28px; padding: 12px 0; text-align: center; color: var(--muted); font-size: .78rem; line-height: 1.7; }
 .suite-footer a { color: var(--primary-dark); text-underline-offset: 3px; }
+
+/* Version 1.1: practice pictures and player preferences. */
+.background-controls,.practice-visual-controls{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;margin:14px 0}
+.background-controls input{width:58px;height:40px;border:1px solid #c8cbe0;border-radius:8px}
+.practice-visual-controls select{font:inherit;padding:7px;border:1px solid #b8bdd7;border-radius:8px;background:white;color:var(--ink)}
+.problem-visual{max-width:520px;margin:12px auto;padding:12px;border:1px solid #d5daed;border-radius:16px;background:#f8faff}
+.problem-visual[hidden]{display:none}.problem-visual p{font-size:1rem;margin:0 0 10px}.problem-visual svg{display:block;width:100%;height:auto}
+.model-groups{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}.model-set{display:flex;flex-wrap:wrap;gap:4px;padding:8px;border:1px solid #b8bdd7;border-radius:8px;max-width:220px;align-content:start}
+.model-set.ten-frames{display:grid;grid-template-columns:repeat(5,20px);gap:3px}
+.model-cell{width:20px;height:20px;border:1px solid #a5aec4;border-radius:50%;background:white;position:relative}.model-cell.filled{background:#2786b1}.model-cell.filled.alternate{background:#8961ca}.model-cell.crossed:after{content:'×';position:absolute;inset:-4px;color:#fff;font-size:24px;font-weight:bold;line-height:24px}
+.op-concepts{--op-color:#0f8b8d}.question{overflow-wrap:anywhere}.top-actions{flex-wrap:wrap}#fullscreenStatus{font-size:.75rem;max-width:190px}
+.question.concept-question{font-size:clamp(1.65rem,4.5vw,3rem);line-height:1.2;margin:20px 0}
+.custom-background .topbar{background:var(--panel);padding:12px;border-radius:var(--radius)}
+.custom-background .suite-footer{background:var(--panel);border-radius:12px}
+.model-set.ten-frames{display:flex;max-width:none;flex-wrap:wrap;border:0;padding:0;gap:10px}
+.ten-frame{display:grid;grid-template-columns:repeat(5,20px);gap:3px;padding:5px;border:1px solid #8391b0;border-radius:5px;background:white}
+.op-concepts .operation-symbol{background:#0f6668;color:#fff}.level-choice-row{display:flex;align-items:center;flex-wrap:wrap;gap:10px}.level-choice-row .level-buttons{flex:1;min-width:240px}#assessmentDescription{line-height:1.6}
+
+/* Touch-friendly play: the built-in keypad replaces the software keyboard. */
+.start-countdown{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:rgba(32,35,58,.72);padding:20px}
+.start-countdown[hidden]{display:none}.countdown-card{width:min(420px,100%);padding:40px 24px;background:var(--panel);border-radius:24px;text-align:center;box-shadow:var(--shadow)}
+#countdownWord{font-size:clamp(3rem,12vw,5rem);font-weight:950;color:var(--primary-dark);margin-bottom:24px}
+.keypad button{min-height:48px;touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.answer-input[readonly]{caret-color:transparent;cursor:default}
+button{touch-action:manipulation}.app-shell{padding-bottom:max(20px,env(safe-area-inset-bottom))}
+.touch-game.in-game .question-card{padding:20px 16px 14px}.touch-game.in-game .question{margin:16px 0;font-size:clamp(2.5rem,7vw,4rem)}
+.touch-game.in-game .question.concept-question{font-size:clamp(1.4rem,3.5vw,2rem)}
+.touch-game.in-game .problem-visual{max-width:400px;margin:8px auto;padding:8px}
+.touch-game.in-game .coach-zone{margin:8px auto;min-height:0}.touch-game.in-game .avatar-coach{width:60px;height:60px;font-size:40px}
+.touch-game.in-game .keypad{margin-top:10px;gap:6px}.touch-game.in-game .keypad button{padding:8px}
+.touch-game.in-game .answer-input{font-size:2rem;padding:6px}.touch-game.in-game .practice-visual-controls{margin:8px 0}
+.touch-game.in-game .practice-visual-controls select{font-size:16px;min-height:44px}.touch-game.in-game .top-actions button{min-height:44px}
+@media(max-width:620px){.touch-game.in-game .topbar{gap:8px}.touch-game.in-game .game-topline{gap:8px;padding:9px}.touch-game.in-game .game-counters{gap:10px}}
+@media(prefers-reduced-motion:reduce){.in-game .avatar,.in-game .confetti-piece{animation:none!important}}
+#assessmentDialog{padding:clamp(20px,4vw,30px);max-height:calc(100dvh - 32px);overflow:auto}
+#assessmentDialog h2{margin:0 0 12px;line-height:1.2}
+#assessmentDescription{margin:0 0 20px;color:var(--muted)}
+#assessmentDialog .modal-actions{justify-content:flex-end;flex-wrap:wrap}
+#assessmentTarget{font-size:16px;min-height:44px}
+@media(max-width:620px) and (max-height:950px){
+  .touch-game.in-game .coach-zone{display:none}
+  .touch-game.in-game .topbar{margin-bottom:8px}.touch-game.in-game .top-actions{gap:4px}.touch-game.in-game .top-actions button{font-size:.8rem;padding:6px 8px}
+  .touch-game.in-game .question-card{padding:12px}.touch-game.in-game .question{margin:10px 0}
+  .touch-game.in-game .problem-visual svg{max-height:165px}.touch-game.in-game .problem-visual{margin:6px auto;padding:4px}
+  .touch-game.in-game .practice-notice{margin:8px 0;padding:8px;font-size:.75rem}
+  .touch-game.in-game .feedback-text{min-height:20px;margin-top:4px;font-size:.85rem}
+  .touch-game.in-game .answer-input{font-size:1.7rem;padding:4px}.touch-game.in-game .keypad{gap:4px;margin-top:8px}
+}

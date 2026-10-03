@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Version history · Math Fact Frenzy</title>
+  <link rel="icon" href="favicon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .history-page{max-width:860px;margin:0 auto;padding:40px 24px 56px}
+    .history-back{display:inline-flex;align-items:center;gap:8px;color:#5048b8;text-decoration:none;font-weight:700;font-size:.9rem;padding:8px 0}
+    .history-back:hover{text-decoration:underline;text-underline-offset:4px}
+    .history-header{margin:28px 0 30px}.history-header .eyebrow{color:#5048b8;letter-spacing:.12em}
+    .history-header h1{font-size:clamp(2rem,5vw,2.8rem);letter-spacing:-.04em;margin:6px 0 10px;line-height:1.15}
+    .history-header p{margin:0;color:#626782;line-height:1.6}
+    .release{background:#fff;border:1px solid #e3e3f3;border-radius:22px;padding:28px;margin-top:20px;box-shadow:0 8px 28px rgba(58,62,104,.05)}
+    .release-current{border-top:4px solid #6c63ff}
+    .release-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.release h2{font-size:1.4rem;margin:0;letter-spacing:-.02em}
+    .release-badge{border-radius:999px;background:#eeecff;color:#5048b8;padding:6px 11px;font-weight:750;font-size:.75rem}
+    .release-date{color:#626782;font-size:.85rem;margin:10px 0 24px}
+    .release-notes{list-style:none;margin:0;padding:0;display:grid;gap:18px}
+    .release-notes li{padding-left:18px;position:relative;color:#555b75;line-height:1.6;font-size:.95rem}
+    .release-notes li:before{content:'';position:absolute;left:0;top:.65em;width:6px;height:6px;border-radius:50%;background:#9189e8}
+    .release-notes strong{display:block;color:#292d47;font-size:1rem;margin-bottom:2px}
+    .history-footer{margin-top:26px;color:#626782;font-size:.82rem;line-height:1.7}.history-footer a{color:#5048b8;text-underline-offset:3px}
+    @media(max-width:540px){.history-page{padding:24px 16px 36px}.history-header{margin:22px 0}.release{padding:22px 18px}.release-notes{gap:16px}}
+  </style>
+</head>
+<body>
+  <main class="history-page">
+    <a class="history-back" href="./">← Back to Math Fact Frenzy</a>
+    <header class="history-header">
+      <div class="eyebrow">Math Fact Frenzy</div>
+      <h1>Version history</h1>
+      <p>New ways to practice, play, and build confidence.</p>
+    </header>
+    <section class="release release-current" aria-labelledby="v1-1">
+      <div class="release-heading"><h2 id="v1-1">Version 1.1</h2><span class="release-badge">In development</span></div>
+      <p class="release-date">Updated October 3, 2026 · Not yet released</p>
+      <ul class="release-notes">
+        <li><strong>Picture your math</strong>Optional dots, ten frames, equal groups, and proportional area and tape models—with each player's preference remembered.</li>
+        <li><strong>Explore Concepts</strong>Flexible equations, missing numbers, dot groups, square grids, and labeled bars. Measurements use cm, in, ft, or m; full question text remains available with pictures off.</li>
+        <li><strong>Find your level</strong>Take a 10-question assessment (12 for all-four mixed). Get at least 90% correct on first attempts to unlock your chosen level while keeping existing progress and timed records.</li>
+        <li><strong>Made for touch</strong>A built-in game keypad, larger touch targets, compact layouts, fullscreen controls, and a clearer assessment dialog.</li>
+        <li><strong>Ready? Set? GO!</strong>A cancelable countdown before each round. Your game timer starts afterward.</li>
+        <li><strong>Make it yours</strong>Player backgrounds are remembered in browser storage and cookies, and included in JSON backups.</li>
+        <li><strong>Keep up with changes</strong>This redesigned history page is available from the app's footer.</li>
+      </ul>
+    </section>
+    <section class="release" aria-labelledby="v1-0">
+      <div class="release-heading"><h2 id="v1-0">Version 1.0</h2></div>
+      <p class="release-date">Initial suite version</p>
+      <ul class="release-notes">
+        <li><strong>The first math sprint</strong>Timed challenges, untimed practice, player profiles, progress tracking, and JSON backups.</li>
+        <li><strong>Part of Teaching Apps</strong>Copyright, credits, and a link back to the app collection.</li>
+      </ul>
+    </section>
+    <footer class="history-footer"><a href="README.md#version-history">README release notes</a><br>Copyright 2026 John Chase. Made with help from ChatGPT.</footer>
+  </main>
+</body>
+</html>

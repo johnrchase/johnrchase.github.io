@@ -1,4 +1,4 @@
-# Math Fact Frenzy 1.0
+# Math Fact Frenzy 1.1
 
 A browser-only math-facts game for elementary and middle-school students. No server, account, database, framework, or external library is required.
 
@@ -26,6 +26,7 @@ A browser-only math-facts game for elementary and middle-school students. No ser
 - `styles.css` — layout, responsive design, and animations
 - `app.js` — profiles, question generation, gameplay, persistence, exports, and progress tracking
 - `favicon.svg` — site icon
+- `version-history.html` — in-app release history, synchronized with this README
 
 ## Running it
 
@@ -39,8 +40,27 @@ Older version-1 and version-2 player data is migrated automatically when the app
 
 ## Level behavior
 
-Single-operation timed challenges can unlock the next level by reaching the displayed target score. Mixed modes use the lowest unlocked level among their included operations, so a mixed level never introduces a difficulty the player has not unlocked in each component skill.
+Single-operation timed challenges can unlock the next level by reaching the displayed target score. Mixed modes normally use the lowest unlocked level among their included operations. A successful assessment can independently unlock a higher level for the selected mixed game without changing its component-operation levels.
 
 Subtraction currently avoids negative answers, and division uses whole-number quotients. The structure is ready for later expansion to fractions, decimals, negatives, exponents, or other practice families.
 
-Release version: 1.0. The internal saved-data schema remains version 3 for compatibility with existing player backups.
+Release version: 1.1 (in development; not yet released). The internal saved-data schema remains version 3 for compatibility with existing player backups.
+
+## Version history
+
+### 1.1 — In development (updated October 3, 2026)
+
+- **Visual practice:** Optional dots, ten frames, equal groups, and proportional area/tape models. Remember each player's choice.
+- **Concepts:** Flexible equations, missing numbers, repeated addition, dot groups, square grids, and labeled bars. Use cm, in, ft, or m; retain full question text when pictures are off.
+- **Level assessments:** Test a chosen level with 10 questions (12 for all-four mixed). At least 90% correct on first attempts unlocks it without reducing progress or changing timed records. Results and unlocks are saved and exportable.
+- **Tablet-friendly play:** Built-in game keypad without the software keyboard, larger touch targets, compact layouts, fullscreen controls, and improved assessment-dialog spacing.
+- **Ready? Set? GO!:** A cancelable countdown starts each game, practice session, and assessment before timing begins.
+- **Player preferences:** Custom backgrounds remembered in browser storage and cookies and included in JSON backups.
+- **Version history:** A redesigned release-history page linked from the footer.
+
+### 1.0 — Initial suite version
+
+- Timed challenges, untimed practice, player profiles, progress tracking, and JSON backups.
+- Teaching Apps copyright, credits, and return link.
+
+The README is the canonical release log; keep version-history.html in sync with it. App release numbers are separate from the saved-data schema version. Keep this development batch at 1.1 until committed.

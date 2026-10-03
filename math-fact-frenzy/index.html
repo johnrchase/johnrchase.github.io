@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6c63ff" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <title>Math Fact Frenzy 1.0</title>
+  <title>Math Fact Frenzy 1.1</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -19,7 +19,7 @@
           <small>Timed challenges & untimed practice</small>
         </span>
       </button>
-      <div class="top-actions">
+      <div class="top-actions"><button id="fullscreenBtn" class="secondary-button" type="button" aria-pressed="false">Full screen</button><span id="fullscreenStatus" role="status" class="muted"></span>
         <button id="mainScreenBtn" class="secondary-button top-main-button hidden" type="button" title="Return to player selection">🏠 Players</button>
         <button id="soundToggle" class="icon-button" type="button" aria-pressed="true" title="Turn sound effects on or off">🔊</button>
         <button id="settingsBtn" class="icon-button hidden" type="button" title="Profile settings">⚙️</button>
@@ -102,7 +102,7 @@
                 </div>
                 <span id="unlockMessage" class="unlock-message"></span>
               </div>
-              <div id="levelButtons" class="level-buttons" aria-label="Select level"></div>
+              <div class="level-choice-row"><div id="levelButtons" class="level-buttons" aria-label="Select level"></div><button id="testLevelBtn" class="secondary-button" type="button">Test my current level</button></div>
               <div id="levelDescription" class="level-description"></div>
             </div>
 
@@ -149,7 +149,7 @@
       </section>
 
       <section id="gameScreen" class="screen" aria-labelledby="gameQuestion">
-        <div class="game-wrap">
+        <div class="game-wrap"><div id="startCountdown" class="start-countdown" role="dialog" aria-modal="true" aria-label="Game starting" hidden><div class="countdown-card"><div id="countdownWord" role="status" aria-live="assertive" aria-atomic="true"></div><button id="cancelCountdown" class="secondary-button" type="button">Cancel</button></div></div>
           <div class="game-topline">
             <div class="game-player">
               <div>
@@ -177,8 +177,8 @@
           <div id="questionCard" class="question-card">
             <div id="questionBadge" class="question-badge">Addition • Level 1</div>
             <div id="gameQuestion" class="question" aria-live="polite">2 + 3 = ?</div>
-            <label class="answer-label" for="answerInput">Your answer</label>
-            <input id="answerInput" class="answer-input" type="text" inputmode="numeric" autocomplete="off" aria-describedby="feedbackText" />
+            <div id="practiceVisualControls" class="practice-visual-controls hidden"><label for="visualModel">Picture help</label><select id="visualModel"><option value="off">Off</option><option value="auto">Automatic</option><option value="dots">Dots</option><option value="ten">Ten frames</option><option value="groups">Equal groups</option><option value="area">Area model</option><option value="tape">Tape diagram</option></select></div><div id="problemVisual" class="problem-visual" hidden></div><label class="answer-label" for="answerInput">Your answer</label>
+            <input id="answerInput" class="answer-input" type="text" inputmode="numeric" autocomplete="off" autocapitalize="off" spellcheck="false" aria-describedby="feedbackText" />
             <div id="feedbackText" class="feedback-text" aria-live="assertive"></div>
           </div>
 
@@ -214,7 +214,7 @@
         </div>
       </section>
     </main>
-    <footer class="suite-footer">Copyright 2026 John Chase. Made with help from ChatGPT.<br>Version 1.0 &middot; <a href="../">Back to Teaching Apps</a></footer>
+    <footer class="suite-footer">Copyright 2026 John Chase. Made with help from ChatGPT.<br>Version 1.1 &middot; <a href="version-history.html">Version history</a> &middot; <a href="../">Back to Teaching Apps</a></footer>
   </div>
 
   <dialog id="profileDialog" class="modal">
@@ -228,7 +228,7 @@
       </div>
       <label class="field-label" for="playerName">Name</label>
       <input id="playerName" class="text-input" maxlength="20" placeholder="Your name" required />
-      <fieldset class="avatar-picker-fieldset">
+      <label class="field-label" for="playerBackground">Player background</label><div class="background-controls"><input id="playerBackground" type="color" value="#f5f7ff"><button id="resetBackground" class="secondary-button" type="button">Default background</button></div><fieldset class="avatar-picker-fieldset">
         <legend>Choose an avatar</legend>
         <div id="avatarPicker" class="avatar-picker"></div>
       </fieldset>
@@ -241,6 +241,7 @@
     </form>
   </dialog>
 
+  <dialog id="assessmentDialog" class="modal" aria-labelledby="assessmentTitle" aria-describedby="assessmentDescription"><h2 id="assessmentTitle">Test my current level</h2><p id="assessmentDescription"></p><label class="field-label" for="assessmentTarget">Level to test</label><select id="assessmentTarget" class="text-input"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select><div class="modal-actions"><button id="cancelAssessment" class="secondary-button" type="button">Cancel</button><button id="startAssessment" class="primary-button" type="button">Start assessment</button></div></dialog>
   <script src="app.js"></script>
 </body>
 </html>

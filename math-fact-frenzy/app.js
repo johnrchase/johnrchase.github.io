@@ -12,6 +12,7 @@
   ];
 
   const OPS = {
+    concepts: { label:'Concepts', symbol:'?', className:'op-concepts', color:'#0f8b8d', operations:['concepts'] },
     addition:       { label:'Addition',              symbol:'+',  className:'op-add',      color:'#25b6e8', operations:['addition'] },
     subtraction:    { label:'Subtraction',           symbol:'−',  className:'op-subtract', color:'#ff5e9c', operations:['subtraction'] },
     multiplication: { label:'Multiplication',        symbol:'×',  className:'op-multiply', color:'#6c63ff', operations:['multiplication'] },
@@ -22,9 +23,10 @@
   };
 
   const BASE_OP_KEYS = ['addition','subtraction','multiplication','division'];
-  const ALL_MODE_KEYS = Object.keys(OPS);
+  const ALL_MODE_KEYS = [...Object.keys(OPS).filter(key=>key!=='concepts'),'concepts'];
 
   const LEVELS = {
+    concepts: Array.from({length:8},(_,i)=>['Missing numbers, repeated addition, area and tape models (level '+(i+1)+')']),
     addition: [
       ['Add within 5', 0, 5], ['Add within 10', 0, 10], ['Add within 20', 0, 20], ['Add within 30', 0, 30],
       ['Add within 50', 0, 50], ['Add within 100', 0, 100], ['Two-digit + one-digit', 10, 99], ['Two-digit + two-digit', 10, 99]
@@ -111,6 +113,7 @@
 
   function saveData() {
     localStorage.setItem(APP_KEY, JSON.stringify(data));
+    data.profiles.forEach(p=>setCookie('mff_background_'+p.id,validBackground(p.settings?.background)||'default',3650));
     setCookie(PROFILE_COOKIE, JSON.stringify(data.profiles.map(p => ({ id:p.id, name:p.name, avatar:p.avatar }))), 3650);
   }
 
@@ -145,6 +148,9 @@
   }
 
   function ensureProfileShape(p) {
+    p.settings ??= {};
+    p.settings.background = validBackground(p.settings.background ?? getCookie('mff_background_'+p.id));
+    if(!['off','auto','dots','ten','groups','area','tape'].includes(p.settings.visualModel))p.settings.visualModel='off';
     p.stats ??= {};
     p.sessions ??= [];
     p.sessions.forEach(s => {
@@ -166,8 +172,9 @@
     p.stats.totalPlaySeconds ??= (p.stats.gamesPlayed || 0) * ROUND_SECONDS;
     p.stats.practiceSessions ??= p.sessions.filter(s => s.playMode === 'practice').length;
 
+    p.placementUnlocked = Object.fromEntries(ALL_MODE_KEYS.map(key=>[key,Math.max(1,Math.min(8,Math.floor(Number(p.placementUnlocked?.[key])||1)))]));
     p.unlocked ??= {};
-    BASE_OP_KEYS.forEach(key => p.unlocked[key] ??= 1);
+    [...BASE_OP_KEYS,'concepts'].forEach(key => p.unlocked[key] ??= 1);
     p.bestByOperation ??= {};
     ALL_MODE_KEYS.forEach(key => p.bestByOperation[key] ??= 0);
     return p;
@@ -179,6 +186,9 @@
   }
 
   function showScreen(id) {
+    if(id!=='gameScreen')stopStartCountdown();
+    document.body.classList.toggle('in-game',id==='gameScreen');
+    applyPlayerBackground(id==='profileScreen'?null:getProfile());
     screens.forEach(s => $(s).classList.toggle('active', s === id));
     $('settingsBtn').classList.toggle('hidden', id === 'profileScreen' || !activeProfileId || id === 'gameScreen');
     $('mainScreenBtn').classList.toggle('hidden', id === 'profileScreen');
@@ -186,6 +196,7 @@
   }
 
   function goToMainScreen() {
+    if(game?.starting){stopStartCountdown();game=null;renderProfiles();showScreen('profileScreen');return;}
     if (game && $('gameScreen').classList.contains('active')) {
       const prompt = game.playMode === 'practice'
         ? 'Leave this practice session and return to the player screen?'
@@ -250,6 +261,8 @@
     const profile = profileId ? getProfile(profileId) : null;
     $('profileDialogTitle').textContent = profile ? 'Edit player' : 'Create a player';
     $('playerName').value = profile?.name || '';
+    $('playerBackground').value=profile?.settings.background||'#f5f7ff';
+    $('playerBackground').dataset.custom=profile?.settings.background?'1':'';
     chosenAvatar = profile?.avatar || AVATARS[Math.floor(Math.random() * AVATARS.length)];
     [...$('avatarPicker').children].forEach(x => x.classList.toggle('selected', x.dataset.avatar === chosenAvatar));
     $('deleteProfileBtn').classList.toggle('hidden', !profile);
@@ -273,6 +286,8 @@
       setCookie(ACTIVE_COOKIE, p.id, 3650);
     }
 
+    const savedProfile=getProfile(editingProfileId||activeProfileId);
+    if(savedProfile)savedProfile.settings.background=$('playerBackground').dataset.custom?validBackground($('playerBackground').value):'';
     saveData();
     $('profileDialog').close();
     renderProfiles();
@@ -283,6 +298,7 @@
     if (!editingProfileId) return;
     const p = getProfile(editingProfileId);
     if (!confirm(`Delete ${p.name}'s profile and all saved progress on this device?`)) return;
+    deleteCookie('mff_background_'+editingProfileId);
     data.profiles = data.profiles.filter(x => x.id !== editingProfileId);
     if (activeProfileId === editingProfileId) {
       activeProfileId = null;
@@ -362,7 +378,7 @@
   function getUnlockedLevel(profile, modeKey) {
     if (!profile) return 1;
     const keys = OPS[modeKey]?.operations || [modeKey];
-    return Math.max(1, Math.min(...keys.map(key => profile.unlocked[key] || 1)));
+    return Math.max(1, Math.min(8,profile.placementUnlocked?.[modeKey]||1), Math.min(...keys.map(key => profile.unlocked[key] || 1)));
   }
 
   function renderLevels() {
@@ -389,7 +405,7 @@
       b.disabled = level > unlocked;
       if (level > unlocked) {
         b.title = OPS[selectedOperation].mixed
-          ? `Unlock Level ${level} in every included operation first`
+          ? `Unlock Level ${level} in every included operation, or pass a level assessment`
           : `Score ${unlockTarget(level - 1)} or more on Level ${level - 1} to unlock`;
       } else b.title = `Play Level ${level}`;
       b.addEventListener('click', () => { selectedLevel = level; renderLevels(); });
@@ -405,7 +421,7 @@
 
     if (mode.mixed) {
       const descriptions = mode.operations.map(key => LEVELS[key][level - 1][0]).join(' • ');
-      return `${mode.label}: ${descriptions}. Mixed levels become available when that level is unlocked in every included operation.${practiceSuffix}`;
+      return `${mode.label}: ${descriptions}. Mixed levels become available through a level assessment or when that level is unlocked in every included operation.${practiceSuffix}`;
     }
 
     const cfg = LEVELS[modeKey][level - 1];
@@ -422,11 +438,15 @@
     return 18 + level * 2;
   }
 
-  function startGame() {
+  function startGame(options={}) {
     const p = getProfile();
     if (!p) return;
+    stopStartCountdown();
+    if(game?.timer)clearInterval(game.timer);
 
     game = {
+      placement:options.placement===true,
+      placementCount:OPS[selectedOperation].operations.length===4?12:10,
       operation:selectedOperation,
       level:selectedLevel,
       playMode:selectedPlayMode,
@@ -462,11 +482,9 @@
     $('quitGameBtn').textContent = selectedPlayMode === 'practice' ? 'Finish practice' : 'Quit game';
 
     showScreen('gameScreen');
-    nextQuestion();
-    $('answerInput').focus();
-    sound('start');
-
-    if (selectedPlayMode === 'timed') game.timer = setInterval(tickGame, 250);
+    if(game.placement){game.playMode='placement';$('gameModeLabel').textContent=`${OPS[game.operation].label} · Level ${game.level} assessment`;$('timerWrap').classList.add('hidden');$('practiceNotice').classList.add('hidden');$('quitGameBtn').textContent='Cancel assessment';}
+    configureAnswerInput();
+    beginStartCountdown();
   }
 
   function personalizedStartMessage(name) {
@@ -491,16 +509,20 @@
   }
 
   function nextQuestion() {
-    if (!game) return;
+    if (!game || game.starting || !$('gameScreen').classList.contains('active')) return;
 
     let question;
     do {
-      question = makeQuestionForMode(game.operation, game.level);
+      question = game.placement && OPS[game.operation].mixed ? makeQuestion(OPS[game.operation].operations[game.attempts % OPS[game.operation].operations.length],game.level) : makeQuestionForMode(game.operation, game.level);
     } while (game.previousSignature && questionSignature(question) === game.previousSignature);
     game.question = question;
     game.previousSignature = questionSignature(question);
 
-    $('gameQuestion').textContent = `${question.a} ${OPS[question.op].symbol} ${question.b} = ?`;
+    $('gameQuestion').classList.toggle('concept-question',question.op==='concepts');
+    $('gameQuestion').textContent = question.prompt || `${question.a} ${OPS[question.op].symbol} ${question.b} = ?`;
+    $('practiceVisualControls').classList.toggle('hidden',game.playMode!=='practice');
+    $('visualModel').value=getProfile().settings.visualModel;
+    renderProblemVisual();
     $('answerInput').value = '';
     $('answerInput').className = 'answer-input';
     $('feedbackText').textContent = '';
@@ -511,10 +533,12 @@
       $('coachBubble').textContent = NEXT_PROMPTS[Math.floor(Math.random() * NEXT_PROMPTS.length)];
       animateAvatar('bounce');
     }
-    $('answerInput').focus();
+    if(game.placement)$('questionBadge').textContent=`Question ${game.attempts+1} of ${game.placementCount} · Level ${game.level}`;
+    focusAnswer();
   }
 
   function makeQuestionForMode(modeKey, level) {
+    if(modeKey==='concepts')return makeConceptQuestion(level);
     const baseOps = OPS[modeKey].operations;
     const baseOp = baseOps[rand(0, baseOps.length - 1)];
     return makeQuestion(baseOp, level);
@@ -568,7 +592,7 @@
   }
 
   function questionSignature(q) {
-    return `${q.op}|${q.a}|${q.b}`;
+    return `${q.op}|${q.kind||''}|${q.prompt||''}|${q.a}|${q.b}`;
   }
 
   function submitAnswer() {
@@ -576,6 +600,7 @@
     const raw = $('answerInput').value.trim();
     if (!raw || !/^-?\d+$/.test(raw)) return;
     const value = Number(raw);
+    if(game.placement){submitPlacement(value);return;}
     game.attempts++;
 
     if (value === game.question.answer) {
@@ -603,7 +628,7 @@
         animateAvatar('cheer');
       }
       sound('correct');
-      setTimeout(nextQuestion, 360);
+      const answeredRound=game;setTimeout(()=>{if(game===answeredRound)nextQuestion();},360);
     } else {
       game.streak = 0;
       $('streakDisplay').textContent = '0 🔥';
@@ -614,7 +639,7 @@
       $('coachBubble').textContent = WRONG_COACHING[Math.floor(Math.random() * WRONG_COACHING.length)];
       animateAvatar('wiggle');
       sound('wrong');
-      $('answerInput').select();
+      if(!$('answerInput').readOnly)$('answerInput').select();
       setTimeout(() => $('answerInput').classList.remove('incorrect'), 320);
     }
   }
@@ -641,7 +666,7 @@
   }
 
   function finishGame() {
-    if (!game) return;
+    if (!game || game.starting) return;
     if (game.timer) clearInterval(game.timer);
     const p = getProfile();
     const accuracy = game.attempts ? Math.round((game.score / game.attempts) * 100) : 0;
@@ -740,6 +765,7 @@
 
   function quitGame() {
     if (!game) return;
+    if(game.starting){stopStartCountdown();game=null;openDashboard(activeProfileId);return;}
     if (game.playMode === 'practice') {
       finishGame();
       return;
@@ -754,8 +780,8 @@
     if (!game) return;
     selectedOperation = game.operation;
     selectedLevel = game.level;
-    selectedPlayMode = game.playMode;
-    startGame();
+    selectedPlayMode = game.placement ? 'timed' : game.playMode;
+    startGame({placement:game.placement});
   }
 
   function playNextLevel() {
@@ -786,7 +812,7 @@
       const op = OPS[s.operation] || OPS.addition;
       const row = document.createElement('div');
       row.className = 'session-row';
-      const modeLabel = (s.playMode || 'timed') === 'practice' ? 'Practice' : 'Timed';
+      const modeLabel = s.playMode === 'placement' ? 'Level assessment' : (s.playMode || 'timed') === 'practice' ? 'Practice' : 'Timed';
       const duration = formatDuration(s.durationSeconds ?? ((s.playMode || 'timed') === 'timed' ? ROUND_SECONDS : 0));
       row.innerHTML = `
         <span class="session-op" style="background:${op.color}">${op.symbol}</span>
@@ -1029,6 +1055,10 @@
   }
 
   function bindEvents() {
+    bindExtras();
+    $('cancelCountdown').addEventListener('click',()=>{stopStartCountdown();game=null;openDashboard(activeProfileId);});
+    bindPlacement();
+    document.addEventListener('keydown',e=>{if(!game?.starting)return;if(e.key==='Tab'){e.preventDefault();$('cancelCountdown').focus();}if(e.key==='Escape'){e.preventDefault();$('cancelCountdown').click();}});
     $('newProfileBtn').addEventListener('click', () => openProfileDialog());
     $('profileForm').addEventListener('submit', saveProfileFromDialog);
     $('deleteProfileBtn').addEventListener('click', deleteActiveProfile);
@@ -1038,7 +1068,16 @@
     $('resultMainBtn').addEventListener('click', () => { game = null; goToMainScreen(); });
     $('soundToggle').addEventListener('click', toggleSound);
     $('startGameBtn').addEventListener('click', startGame);
-    $('answerInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitAnswer(); });
+    $('answerInput').addEventListener('keydown', e => {
+      if($('answerInput').readOnly)return;
+      if(game?.inputLocked){e.preventDefault();return;}
+      if(e.key==='Enter'){e.preventDefault();submitAnswer();}
+    });
+    document.addEventListener('keydown',e=>{
+      if(!$('gameScreen').classList.contains('active')||!$('answerInput').readOnly||e.ctrlKey||e.metaKey||e.altKey)return;
+      if(e.target.closest('select,button,dialog')||e.target.isContentEditable)return;
+      if(/^\d$/.test(e.key)||['Backspace','Delete','Enter'].includes(e.key)){e.preventDefault();answerKey(e.key==='Enter'?'enter':e.key==='Backspace'?'backspace':e.key==='Delete'?'clear':e.key);}
+    });
 
     document.querySelectorAll('[data-play-mode]').forEach(btn => {
       btn.addEventListener('click', () => {
@@ -1052,15 +1091,7 @@
       if ($('dashboardScreen').classList.contains('active') && e.key === 'Enter' && !document.querySelector('dialog[open]')) startGame();
     });
 
-    document.querySelectorAll('.keypad button').forEach(btn => btn.addEventListener('click', () => {
-      if (!game || game.inputLocked) return;
-      const key = btn.dataset.key;
-      const input = $('answerInput');
-      if (key === 'enter') submitAnswer();
-      else if (key === 'backspace') input.value = input.value.slice(0,-1);
-      else if (input.value.length < 5) input.value += key;
-      input.focus();
-    }));
+    document.querySelectorAll('.keypad button').forEach(btn=>btn.addEventListener('click',()=>answerKey(btn.dataset.key)));
 
     $('quitGameBtn').addEventListener('click', quitGame);
     $('playAgainBtn').addEventListener('click', playAgain);
@@ -1109,4 +1140,173 @@
       '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;'
     }[c]));
   }
-})();
+  function validBackground(value){return typeof value==='string'&&/^#[0-9a-f]{6}$/i.test(value)?value:'';}
+  function applyPlayerBackground(profile){
+    const color=validBackground(profile?.settings.background);
+    document.body.style.background=color||'';
+    document.body.classList.toggle('custom-background',!!color);
+  }
+  function makeConceptQuestion(level,kind=rand(0,14)){
+    const limit=[5,7,9,10,12,15,20,25][level-1],a=rand(1,limit),b=rand(1,limit),count=rand(2,Math.min(6,level+2)),unit=['cm','in','ft','m'][rand(0,3)];
+    const q={op:'concepts',kind,a,b,unit};
+    if(kind===0)return {...q,prompt:Array(count).fill(a).join(' + ')+' = ?',answer:a*count,model:{op:'multiplication',a:count,b:a,answer:a*count}};
+    if(kind===1)return {...q,prompt:`${a+b} − ? = ${a}`,answer:b};
+    if(kind===2)return {...q,prompt:`${a} + ? = ${a+b}`,answer:b};
+    if(kind===3)return {...q,prompt:`? × ${b} = ${a*b}`,answer:a};
+    if(kind===4)return {...q,prompt:`${a*b} ÷ ? = ${a}`,answer:b};
+    if(kind===5)return {...q,prompt:`A rectangle has area ${a*b} ${unit}² and one side ${a} ${unit}. Find the other side in ${unit}.`,answer:b,diagram:'area',total:a*b};
+    if(kind===6)return {...q,prompt:`A bar is ${a+b} ${unit} long. One part is ${a} ${unit}. How long is the other part in ${unit}?`,answer:b,diagram:'tape',total:a+b};
+    if(kind===7)return {...q,prompt:`? − ${b} = ${a}`,answer:a+b};
+    if(kind===8)return {...q,prompt:`? = ${a} + ${b}`,answer:a+b};
+    if(kind===9){const c=Math.min(count,a+b-1);return {...q,prompt:`${a} + ? = ${a+b-c} + ${c}`,answer:b};}
+    if(kind===10)return {...q,prompt:`${a} × ${count*b} = ${count} × ?`,answer:a*b};
+    if(kind===11){const c=rand(1,count*b-1);return {...q,prompt:`${c} + ${count*b-c} = ${count} × ?`,answer:b};}
+    const rows=rand(2,Math.min(8,level+3)),cols=rand(2,Math.min(10,level+4));
+    if(kind===12)return {...q,a:rows,b:cols,prompt:`${rows} circles each contain ${cols} dots. How many dots altogether?`,answer:rows*cols,diagram:'circles',visualPrompt:'How many dots?'};
+    if(kind===13)return {...q,a:rows,b:cols,prompt:`A grid has ${rows} rows of ${cols} unit squares. How many squares altogether?`,answer:rows*cols,diagram:'grid',visualPrompt:'How many squares?'};
+    return {...q,a:rows,b:cols,prompt:`There are ${rows} bars, each ${cols} ${unit} long. What is their total length in ${unit}?`,answer:rows*cols,diagram:'bars',visualPrompt:`Total length (${unit})?`};
+  }
+  function svgModel(body,label){return `<svg viewBox="0 0 400 200" role="img" aria-label="${escapeHtml(label)}" xmlns="http://www.w3.org/2000/svg"><g font-family="system-ui,sans-serif" font-size="16" text-anchor="middle" fill="#20233a">${body}</g></svg>`;}
+  function tapeModel(total,part,unknown=true,unit='',hideTotal=false){
+    if(total===0)return svgModel(`<text x="200" y="90">Both parts have length 0 ${unit}.</text>`,'Both parts have length zero.');
+    const width=total>0?340*part/total:0,left=30+width/2,right=30+width+(340-width)/2;
+    return svgModel(`<text x="200" y="24">Whole: ${hideTotal?'?':total} ${unit}</text><rect x="30" y="65" width="${width}" height="62" fill="#c8eefe" stroke="#256782"/><rect x="${30+width}" y="65" width="${340-width}" height="62" fill="#eceaff" stroke="#625ac4"/><text x="${left}" y="53">${part}</text><text x="${right}" y="152">${unknown?'?':total-part}</text>`, `Whole ${hideTotal?'unknown':total} ${unit}; parts ${part} and ${unknown?'unknown':total-part}. Drawn to scale.`);
+  }
+  function areaModel(side,other,area,missing=false,unit='cm'){
+    const length=missing?(side?area/side:0):other,scale=Math.min(270/Math.max(length,1),110/Math.max(side,1)),w=length*scale,h=side*scale,x=200-w/2,y=40+(110-h)/2;
+    return svgModel(`<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#dce9ff" stroke="#536ca8" stroke-width="2"/><text x="200" y="25">${missing?'?':length} ${unit}</text><text x="${Math.max(30,x-35)}" y="${y+h/2+5}">${side} ${unit}</text><text x="200" y="185">Area: ${missing?area:'?'} ${unit}²</text>`,missing?`Rectangle: area ${area} square ${unit}, one side ${side} ${unit}, other side unknown. Drawn to scale.`:`Rectangle: sides ${side} and ${length} ${unit}; find the area. Drawn to scale.`);
+  }
+  function equalTapeModel(groups,each,total){
+    let bars='';for(let i=0;i<groups;i++)bars+=`<rect x="${30+340*i/groups}" y="65" width="${340/groups}" height="60" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/>`;
+    return svgModel(`<text x="200" y="25">Total: ${each===null?total:'?'}</text>${bars}<text x="200" y="165">${groups} equal groups · ${each===null?'?':each} in each</text>`,`${groups} equal groups; ${each===null?'unknown':each} in each; total ${each===null?total:'unknown'}.`);
+  }
+  function countingModel(q){
+    let body='';
+    if(q.diagram==='circles'){
+      const columns=Math.min(4,q.a),rows=Math.ceil(q.a/columns),r=Math.min(37,72/rows);
+      for(let i=0;i<q.a;i++){const x=55+(i%columns)*95,y=45+Math.floor(i/columns)*85;body+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#eceaff" stroke="#625ac4"/>`;for(let j=0;j<q.b;j++){const angle=2*Math.PI*j/q.b;body+=`<circle cx="${x+Math.cos(angle)*r*.6}" cy="${y+Math.sin(angle)*r*.6}" r="5.5" fill="#234e91"/>`;}}
+      return svgModel(body,q.prompt);
+    }
+    if(q.diagram==='grid'){
+      const scale=Math.min(250/q.b,170/q.a),w=q.b*scale,h=q.a*scale,x=210-w/2,y=40;
+      for(let i=0;i<q.a;i++)for(let j=0;j<q.b;j++)body+=`<rect x="${x+j*scale}" y="${y+i*scale}" width="${scale}" height="${scale}" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/>`;
+      body+=`<text x="210" y="24">${q.b} columns</text><text x="${x-18}" y="${y+h/2}" transform="rotate(-90 ${x-18} ${y+h/2})">${q.a} rows</text><text x="210" y="240" font-size="14">Each small square = 1</text>`;
+    }else{
+      const w=250,x=90;for(let i=0;i<q.a;i++){const y=26+i*25;body+=`<rect x="${x}" y="${y}" width="${w}" height="20" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/><text x="${x+w/2}" y="${y+15}" font-size="14">${q.b} ${q.unit}</text>`;}
+      const bottom=26+(q.a-1)*25+20;body+=`<path d="M78 26h-9v${bottom-26}h9" fill="none" stroke="#526985"/><text x="48" y="${(26+bottom)/2}" transform="rotate(-90 48 ${(26+bottom)/2})">${q.a} bars</text>`;
+    }
+    return svgModel(body,q.prompt).replace('0 0 400 200','0 0 400 260');
+  }
+  function renderProblemVisual(){
+    const box=$('problemVisual');box.innerHTML='';box.hidden=true;if(!game?.question)return;
+    const q=game.question;
+    if(q.prompt)$('gameQuestion').textContent=q.prompt;
+    if(q.diagram){if(game.playMode==='practice'&&getProfile()?.settings.visualModel==='off')return;if(q.visualPrompt)$('gameQuestion').textContent=q.visualPrompt;box.innerHTML=q.diagram==='area'?areaModel(q.a,q.b,q.total,true,q.unit):q.diagram==='tape'?tapeModel(q.total,q.a,true,q.unit):countingModel(q);box.hidden=false;return;}
+    let style=getProfile()?.settings.visualModel||'off';
+    if(game.playMode!=='practice'||style==='off')return;
+    if(q.op==='concepts'&&!q.model){box.innerHTML='<p>Find the missing number. Use the inverse operation to check your thinking.</p>';box.hidden=false;return;}
+    const n=q.model||q,mult=n.op==='multiplication'||n.op==='division';
+    if(style==='auto')style=mult?'groups':(Math.max(n.a,n.b)<=20?'ten':'tape');
+    let caption='',html='';
+    if(style==='area'&&mult){html=n.op==='division'?areaModel(n.b,0,n.a,true):areaModel(n.a,n.b,n.answer);}
+    else if(style==='tape'||style==='area'){
+      if(mult){const groups=n.op==='division'?n.b:n.a,each=n.op==='division'?null:n.b;html=equalTapeModel(groups,each,n.a);}
+      else if(n.op==='subtraction')html=tapeModel(n.a,n.b);
+      else html=tapeModel(n.a+n.b,n.a,false,'',true);
+    }else{
+      let counts;
+      if(mult){const groups=n.op==='division'?n.answer:n.a,each=n.b;counts=Array.from({length:groups},()=>each);caption=n.op==='division'?`Split ${n.a} into groups of ${n.b}. How many groups?`:`${n.a} groups of ${n.b}. How many altogether?`;}
+      else {counts=n.op==='addition'?[n.a,n.b]:[n.a];caption=n.op==='addition'?`Combine ${n.a} and ${n.b}.`:`Start with ${n.a}; cross out ${n.b}.`;}
+      const total=counts.reduce((x,y)=>x+y,0);
+      if(total>100||counts.length>20){html=svgModel(`<text x="200" y="60">${n.a} ${OPS[n.op].symbol} ${n.b}</text><text x="200" y="100" font-size="14">Try the tape or area model for larger numbers.</text>`,'Numbers are too large for individual dots. Choose tape or area model.');}
+      else {
+        let index=0;html='<div class="model-groups">'+counts.map((count,g)=>{
+          let dots='';const slots=style==='ten'?Math.max(10,Math.ceil(count/10)*10):count;
+          for(let i=0;i<slots;i++){if(style==='ten'&&i%10===0)dots+='<span class="ten-frame">';const filled=i<count,cross=filled&&n.op==='subtraction'&&index<n.b;dots+=`<span class="model-cell ${filled?'filled':''} ${cross?'crossed':''} ${g%2?'alternate':''}" aria-hidden="true"></span>`;if(filled)index++;if(style==='ten'&&i%10===9)dots+='</span>';}
+          return `<div class="model-set ${style==='ten'?'ten-frames':''}" aria-label="${count} objects">${dots||'<span>0</span>'}</div>`;
+        }).join('')+'</div>';
+      }
+    }
+    box.innerHTML=(caption?`<p>${escapeHtml(caption)}</p>`:'')+html;box.hidden=false;
+  }
+  function bindExtras(){
+    $('playerBackground').addEventListener('input',()=>{$('playerBackground').dataset.custom='1';});
+    $('resetBackground').addEventListener('click',()=>{$('playerBackground').value='#f5f7ff';$('playerBackground').dataset.custom='';});
+    $('visualModel').addEventListener('change',()=>{const p=getProfile();if(p){p.settings.visualModel=$('visualModel').value;saveData();renderProblemVisual();}});
+    $('fullscreenBtn').addEventListener('click',async()=>{try{
+      if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error();
+      $('fullscreenStatus').textContent='';
+    }catch(_){$('fullscreenStatus').textContent='Full screen is unavailable in this browser.';}});
+    document.addEventListener('fullscreenchange',()=>{const on=!!document.fullscreenElement;$('fullscreenBtn').textContent=on?'Exit full screen':'Full screen';$('fullscreenBtn').setAttribute('aria-pressed',String(on));});
+  }
+
+  function bindPlacement(){
+    $('testLevelBtn').addEventListener('click',()=>{
+      const unlocked=getUnlockedLevel(getProfile(),selectedOperation);
+      $('assessmentTarget').value=Math.min(8,unlocked+1);
+      $('assessmentDescription').textContent=`${OPS[selectedOperation].label}: ${OPS[selectedOperation].operations.length===4?12:10} questions, no timer or optional picture help. Score at least 90% on first attempts to unlock your chosen level for this game. Existing progress is kept.`;
+      $('assessmentDialog').showModal();
+    });
+    $('cancelAssessment').addEventListener('click',()=>$('assessmentDialog').close());
+    $('startAssessment').addEventListener('click',()=>{
+      selectedLevel=Math.max(1,Math.min(8,Number($('assessmentTarget').value)||1));
+      $('assessmentDialog').close();startGame({placement:true});
+    });
+  }
+  function submitPlacement(value){
+    const round=game;round.attempts++;round.inputLocked=true;
+    const correct=value===round.question.answer;
+    if(correct){round.score++;round.streak++;round.bestStreak=Math.max(round.bestStreak,round.streak);}else round.streak=0;
+    $('scoreDisplay').textContent=round.score;$('streakDisplay').textContent=round.streak;
+    $('feedbackText').textContent=correct?'Correct!':`The answer is ${round.question.answer}. On to the next question.`;
+    $('feedbackText').className='feedback-text '+(correct?'good':'bad');
+    setTimeout(()=>{if(game!==round||!$('gameScreen').classList.contains('active'))return;if(round.attempts>=round.placementCount)finishPlacement();else nextQuestion();},correct?450:1300);
+  }
+  function finishPlacement(){
+    const p=getProfile(),g=game,accuracy=Math.round(100*g.score/g.placementCount),passed=g.score/g.placementCount>=.9;
+    if(passed){if(OPS[g.operation].mixed){p.placementUnlocked??={};p.placementUnlocked[g.operation]=Math.max(p.placementUnlocked[g.operation]||1,g.level);}else p.unlocked[g.operation]=Math.max(p.unlocked[g.operation]||1,g.level);}
+    const durationSeconds=Math.max(1,Math.round((Date.now()-g.startedAt)/1000));
+    p.sessions.push({id:uid(),date:new Date().toISOString(),operation:g.operation,level:g.level,playMode:'placement',score:g.score,attempts:g.attempts,accuracy,bestStreak:g.bestStreak,durationSeconds});
+    if(p.sessions.length>500)p.sessions=p.sessions.slice(-500);
+    p.stats.totalCorrectAll+=g.score;p.stats.totalAttemptsAll+=g.attempts;p.stats.totalPlaySeconds+=durationSeconds;saveData();
+    $('resultAvatar').textContent=p.avatar;$('resultScore').textContent=g.score;$('resultAccuracy').textContent=accuracy+'%';$('resultStreak').textContent=g.bestStreak;
+    $('resultHeading').textContent=passed?'Level unlocked!':'Keep building your skills';
+    $('resultSummary').textContent=passed?`Level ${g.level} is available in ${OPS[g.operation].label}. Choose it from the dashboard.`:`You got ${g.score} of ${g.placementCount} correct. You need ${Math.ceil(g.placementCount*.9)} to unlock this level. Your previous progress is unchanged.`;
+    $('resultStars').textContent=passed?'★ ★ ★':'★';$('levelUpBanner').classList.add('hidden');$('nextLevelBtn').classList.add('hidden');$('playAgainBtn').textContent='Try assessment again';showScreen('resultScreen');
+  }  function configureAnswerInput(){
+    const touch=matchMedia('(any-pointer: coarse)').matches||navigator.maxTouchPoints>0;
+    $('answerInput').readOnly=touch;
+    $('answerInput').inputMode=touch?'none':'numeric';
+    document.body.classList.toggle('touch-game',touch);
+    if(touch&&document.activeElement instanceof HTMLElement)document.activeElement.blur();
+  }
+  function focusAnswer(){if(!$('answerInput').readOnly)$('answerInput').focus({preventScroll:true});}
+  function answerKey(key){
+    if(!game||game.inputLocked||!$('gameScreen').classList.contains('active'))return;
+    const input=$('answerInput');
+    if(key==='enter')submitAnswer();
+    else if(key==='backspace')input.value=input.value.slice(0,-1);
+    else if(key==='clear')input.value='';
+    else if(/^\d$/.test(key)){if(input.classList.contains('incorrect')){input.value='';input.classList.remove('incorrect');}if(input.value.length<5)input.value+=key;}
+    focusAnswer();
+  }
+  function stopStartCountdown(){
+    if(game?.countdownTimer)clearTimeout(game.countdownTimer);
+    if(game)game.starting=false;
+    $('startCountdown').hidden=true;
+  }
+  function beginStartCountdown(){
+    const round=game;round.starting=true;round.inputLocked=true;round.question=null;
+    $('gameQuestion').textContent='';$('problemVisual').hidden=true;$('practiceVisualControls').classList.add('hidden');
+    $('startCountdown').hidden=false;
+    $('cancelCountdown').focus({preventScroll:true});
+    let step=0;const words=['Ready?','Set?','GO!'];
+    function advance(){
+      if(game!==round||!$('gameScreen').classList.contains('active'))return;
+      if(step<words.length){$('countdownWord').textContent=words[step++];round.countdownTimer=setTimeout(advance,800);return;}
+      $('cancelCountdown').blur();$('startCountdown').hidden=true;round.countdownTimer=null;round.starting=false;round.startedAt=Date.now();
+      nextQuestion();sound('start');
+      if(!round.placement&&round.playMode==='timed')round.timer=setInterval(tickGame,250);
+    }
+    advance();
+  }})();
