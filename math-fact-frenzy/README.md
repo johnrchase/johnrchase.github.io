@@ -1,4 +1,4 @@
-# Math Fact Frenzy 1.1.1
+# Math Fact Frenzy 1.2
 
 A browser-only math-facts game for elementary and middle-school students. No server, account, database, framework, or external library is required.
 
@@ -44,11 +44,15 @@ Single-operation timed challenges can unlock the next level by reaching the disp
 
 Subtraction currently avoids negative answers, and division uses whole-number quotients. The structure is ready for later expansion to fractions, decimals, negatives, exponents, or other practice families.
 
-Release version: 1.1.1 (in development; not yet released). The internal saved-data schema remains version 3 for compatibility with existing player backups.
+Release version: 1.2 (in development; not yet released). The internal saved-data schema remains version 3 for compatibility with existing player backups.
 
 ## Version history
 
-### 1.1.1 — In development (updated October 3, 2026)
+### 1.2 — In development (updated October 3, 2026)
+
+- **Gameplay updates:** Concepts picture help defaults on with its own saved preference; length bars join end to end. Untimed practice starts without a countdown. Level assessments require 10 correct answers within 60 seconds. Keypad rows are 789 / 456 / 123.
+
+### 1.1.1 — Cache refresh patch
 
 - **Cache refresh patch:** Versioned JavaScript and stylesheet URLs request fresh assets when the updated page loads, without clearing saved player data.
 
@@ -67,5 +71,5 @@ Release version: 1.1.1 (in development; not yet released). The internal saved-da
 - Timed challenges, untimed practice, player profiles, progress tracking, and JSON backups.
 - Teaching Apps copyright, credits, and return link.
 
-The README is the canonical release log; keep version-history.html in sync with it. App release numbers are separate from the saved-data schema version. Keep this development batch at 1.1.1 until committed.
+The README is the canonical release log; keep version-history.html in sync with it. App release numbers are separate from the saved-data schema version. Keep this development batch at 1.2 until committed.
 When JavaScript or CSS changes, update the asset query identifiers in index.html and version-history.html together. Use a new build suffix for further changes within the same release.

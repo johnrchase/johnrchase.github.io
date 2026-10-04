@@ -446,7 +446,7 @@
 
     game = {
       placement:options.placement===true,
-      placementCount:OPS[selectedOperation].operations.length===4?12:10,
+      placementCount:10,
       operation:selectedOperation,
       level:selectedLevel,
       playMode:selectedPlayMode,
@@ -482,9 +482,9 @@
     $('quitGameBtn').textContent = selectedPlayMode === 'practice' ? 'Finish practice' : 'Quit game';
 
     showScreen('gameScreen');
-    if(game.placement){game.playMode='placement';$('gameModeLabel').textContent=`${OPS[game.operation].label} · Level ${game.level} assessment`;$('timerWrap').classList.add('hidden');$('practiceNotice').classList.add('hidden');$('quitGameBtn').textContent='Cancel assessment';}
+    if(game.placement){game.playMode='placement';$('gameModeLabel').textContent=`${OPS[game.operation].label} · Level ${game.level} assessment`;$('timerWrap').classList.remove('hidden');$('practiceNotice').classList.add('hidden');$('quitGameBtn').textContent='Cancel assessment';}
     configureAnswerInput();
-    beginStartCountdown();
+    if(game.playMode==='practice'){nextQuestion();sound('start');}else beginStartCountdown();
   }
 
   function personalizedStartMessage(name) {
@@ -498,14 +498,14 @@
   }
 
   function tickGame() {
-    if (!game || game.playMode !== 'timed') return;
+    if (!game || (game.playMode !== 'timed' && !game.placement) || game.finished) return;
     const elapsed = (Date.now() - game.startedAt) / 1000;
     const remaining = Math.max(0, ROUND_SECONDS - elapsed);
     game.remaining = remaining;
     $('timerText').textContent = Math.ceil(remaining);
     $('timerBar').style.width = `${(remaining / ROUND_SECONDS) * 100}%`;
     if (remaining <= 10) $('timerBar').style.background = 'linear-gradient(90deg,#ffbd35,#ff5b65)';
-    if (remaining <= 0) finishGame();
+    if (remaining <= 0) { if(game.placement)finishPlacement();else finishGame(); }
   }
 
   function nextQuestion() {
@@ -521,7 +521,7 @@
     $('gameQuestion').classList.toggle('concept-question',question.op==='concepts');
     $('gameQuestion').textContent = question.prompt || `${question.a} ${OPS[question.op].symbol} ${question.b} = ?`;
     $('practiceVisualControls').classList.toggle('hidden',game.playMode!=='practice');
-    $('visualModel').value=getProfile().settings.visualModel;
+    $('visualModel').value=game.operation==='concepts'?(getProfile().settings.conceptsVisualModel||'auto'):getProfile().settings.visualModel;
     renderProblemVisual();
     $('answerInput').value = '';
     $('answerInput').className = 'answer-input';
@@ -533,7 +533,7 @@
       $('coachBubble').textContent = NEXT_PROMPTS[Math.floor(Math.random() * NEXT_PROMPTS.length)];
       animateAvatar('bounce');
     }
-    if(game.placement)$('questionBadge').textContent=`Question ${game.attempts+1} of ${game.placementCount} · Level ${game.level}`;
+    if(game.placement)$('questionBadge').textContent=`${game.score} of 10 correct · Level ${game.level}`;
     focusAnswer();
   }
 
@@ -1164,7 +1164,7 @@
     const rows=rand(2,Math.min(8,level+3)),cols=rand(2,Math.min(10,level+4));
     if(kind===12)return {...q,a:rows,b:cols,prompt:`${rows} circles each contain ${cols} dots. How many dots altogether?`,answer:rows*cols,diagram:'circles',visualPrompt:'How many dots?'};
     if(kind===13)return {...q,a:rows,b:cols,prompt:`A grid has ${rows} rows of ${cols} unit squares. How many squares altogether?`,answer:rows*cols,diagram:'grid',visualPrompt:'How many squares?'};
-    return {...q,a:rows,b:cols,prompt:`There are ${rows} bars, each ${cols} ${unit} long. What is their total length in ${unit}?`,answer:rows*cols,diagram:'bars',visualPrompt:`Total length (${unit})?`};
+    return {...q,a:rows,b:cols,prompt:`${rows} bars are joined end to end, each ${cols} ${unit} long. What is their total length in ${unit}?`,answer:rows*cols,diagram:'bars',visualPrompt:`Total length (${unit})?`};
   }
   function svgModel(body,label){return `<svg viewBox="0 0 400 200" role="img" aria-label="${escapeHtml(label)}" xmlns="http://www.w3.org/2000/svg"><g font-family="system-ui,sans-serif" font-size="16" text-anchor="middle" fill="#20233a">${body}</g></svg>`;}
   function tapeModel(total,part,unknown=true,unit='',hideTotal=false){
@@ -1192,8 +1192,9 @@
       for(let i=0;i<q.a;i++)for(let j=0;j<q.b;j++)body+=`<rect x="${x+j*scale}" y="${y+i*scale}" width="${scale}" height="${scale}" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/>`;
       body+=`<text x="210" y="24">${q.b} columns</text><text x="${x-18}" y="${y+h/2}" transform="rotate(-90 ${x-18} ${y+h/2})">${q.a} rows</text><text x="210" y="240" font-size="14">Each small square = 1</text>`;
     }else{
-      const w=250,x=90;for(let i=0;i<q.a;i++){const y=26+i*25;body+=`<rect x="${x}" y="${y}" width="${w}" height="20" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/><text x="${x+w/2}" y="${y+15}" font-size="14">${q.b} ${q.unit}</text>`;}
-      const bottom=26+(q.a-1)*25+20;body+=`<path d="M78 26h-9v${bottom-26}h9" fill="none" stroke="#526985"/><text x="48" y="${(26+bottom)/2}" transform="rotate(-90 48 ${(26+bottom)/2})">${q.a} bars</text>`;
+      const w=340/q.a,x=30,y=80;
+      for(let i=0;i<q.a;i++)body+=`<rect x="${x+i*w}" y="${y}" width="${w}" height="38" fill="${i%2?'#eceaff':'#c8eefe'}" stroke="#526985"/><text x="${x+(i+.5)*w}" y="${y+24}" font-size="13">${q.b}</text>`;
+      body+=`<text x="200" y="50">Each bar: ${q.b} ${q.unit}</text><path d="M30 130v10h340v-10" fill="none" stroke="#526985"/><text x="200" y="168">Total length = ? ${q.unit}</text>`;
     }
     return svgModel(body,q.prompt).replace('0 0 400 200','0 0 400 260');
   }
@@ -1201,8 +1202,8 @@
     const box=$('problemVisual');box.innerHTML='';box.hidden=true;if(!game?.question)return;
     const q=game.question;
     if(q.prompt)$('gameQuestion').textContent=q.prompt;
-    if(q.diagram){if(game.playMode==='practice'&&getProfile()?.settings.visualModel==='off')return;if(q.visualPrompt)$('gameQuestion').textContent=q.visualPrompt;box.innerHTML=q.diagram==='area'?areaModel(q.a,q.b,q.total,true,q.unit):q.diagram==='tape'?tapeModel(q.total,q.a,true,q.unit):countingModel(q);box.hidden=false;return;}
-    let style=getProfile()?.settings.visualModel||'off';
+    if(q.diagram){if(game.playMode==='practice'&&(getProfile()?.settings.conceptsVisualModel||'auto')==='off')return;if(q.visualPrompt)$('gameQuestion').textContent=q.visualPrompt;box.innerHTML=q.diagram==='area'?areaModel(q.a,q.b,q.total,true,q.unit):q.diagram==='tape'?tapeModel(q.total,q.a,true,q.unit):countingModel(q);box.hidden=false;return;}
+    let style=q.op==='concepts'?(getProfile()?.settings.conceptsVisualModel||'auto'):(getProfile()?.settings.visualModel||'off');
     if(game.playMode!=='practice'||style==='off')return;
     if(q.op==='concepts'&&!q.model){box.innerHTML='<p>Find the missing number. Use the inverse operation to check your thinking.</p>';box.hidden=false;return;}
     const n=q.model||q,mult=n.op==='multiplication'||n.op==='division';
@@ -1232,7 +1233,7 @@
   function bindExtras(){
     $('playerBackground').addEventListener('input',()=>{$('playerBackground').dataset.custom='1';});
     $('resetBackground').addEventListener('click',()=>{$('playerBackground').value='#f5f7ff';$('playerBackground').dataset.custom='';});
-    $('visualModel').addEventListener('change',()=>{const p=getProfile();if(p){p.settings.visualModel=$('visualModel').value;saveData();renderProblemVisual();}});
+    $('visualModel').addEventListener('change',()=>{const p=getProfile();if(p){p.settings[game?.operation==='concepts'?'conceptsVisualModel':'visualModel']=$('visualModel').value;saveData();renderProblemVisual();}});
     $('fullscreenBtn').addEventListener('click',async()=>{try{
       if(document.fullscreenElement)await document.exitFullscreen();else if(document.documentElement.requestFullscreen)await document.documentElement.requestFullscreen();else throw Error();
       $('fullscreenStatus').textContent='';
@@ -1244,7 +1245,7 @@
     $('testLevelBtn').addEventListener('click',()=>{
       const unlocked=getUnlockedLevel(getProfile(),selectedOperation);
       $('assessmentTarget').value=Math.min(8,unlocked+1);
-      $('assessmentDescription').textContent=`${OPS[selectedOperation].label}: ${OPS[selectedOperation].operations.length===4?12:10} questions, no timer or optional picture help. Score at least 90% on first attempts to unlock your chosen level for this game. Existing progress is kept.`;
+      $('assessmentDescription').textContent=`${OPS[selectedOperation].label}: Get 10 correct answers in 60 seconds to unlock your chosen level. Incorrect answers move to the next question. Existing progress is kept.`;
       $('assessmentDialog').showModal();
     });
     $('cancelAssessment').addEventListener('click',()=>$('assessmentDialog').close());
@@ -1254,16 +1255,19 @@
     });
   }
   function submitPlacement(value){
-    const round=game;round.attempts++;round.inputLocked=true;
+    const round=game;if(round.finished)return;if(Date.now()-round.startedAt>=ROUND_SECONDS*1000){finishPlacement();return;}round.attempts++;round.inputLocked=true;
     const correct=value===round.question.answer;
     if(correct){round.score++;round.streak++;round.bestStreak=Math.max(round.bestStreak,round.streak);}else round.streak=0;
     $('scoreDisplay').textContent=round.score;$('streakDisplay').textContent=round.streak;
     $('feedbackText').textContent=correct?'Correct!':`The answer is ${round.question.answer}. On to the next question.`;
     $('feedbackText').className='feedback-text '+(correct?'good':'bad');
-    setTimeout(()=>{if(game!==round||!$('gameScreen').classList.contains('active'))return;if(round.attempts>=round.placementCount)finishPlacement();else nextQuestion();},correct?450:1300);
+    if(round.score>=round.placementCount){finishPlacement();return;}
+    setTimeout(()=>{if(game!==round||round.finished||!$('gameScreen').classList.contains('active'))return;nextQuestion();},correct?450:1300);
   }
   function finishPlacement(){
-    const p=getProfile(),g=game,accuracy=Math.round(100*g.score/g.placementCount),passed=g.score/g.placementCount>=.9;
+    if(!game||game.finished)return;
+    const p=getProfile(),g=game;g.finished=true;g.inputLocked=true;if(g.timer)clearInterval(g.timer);
+    const accuracy=g.attempts?Math.round(100*g.score/g.attempts):0,passed=g.score>=10;
     if(passed){if(OPS[g.operation].mixed){p.placementUnlocked??={};p.placementUnlocked[g.operation]=Math.max(p.placementUnlocked[g.operation]||1,g.level);}else p.unlocked[g.operation]=Math.max(p.unlocked[g.operation]||1,g.level);}
     const durationSeconds=Math.max(1,Math.round((Date.now()-g.startedAt)/1000));
     p.sessions.push({id:uid(),date:new Date().toISOString(),operation:g.operation,level:g.level,playMode:'placement',score:g.score,attempts:g.attempts,accuracy,bestStreak:g.bestStreak,durationSeconds});
@@ -1271,7 +1275,7 @@
     p.stats.totalCorrectAll+=g.score;p.stats.totalAttemptsAll+=g.attempts;p.stats.totalPlaySeconds+=durationSeconds;saveData();
     $('resultAvatar').textContent=p.avatar;$('resultScore').textContent=g.score;$('resultAccuracy').textContent=accuracy+'%';$('resultStreak').textContent=g.bestStreak;
     $('resultHeading').textContent=passed?'Level unlocked!':'Keep building your skills';
-    $('resultSummary').textContent=passed?`Level ${g.level} is available in ${OPS[g.operation].label}. Choose it from the dashboard.`:`You got ${g.score} of ${g.placementCount} correct. You need ${Math.ceil(g.placementCount*.9)} to unlock this level. Your previous progress is unchanged.`;
+    $('resultSummary').textContent=passed?`Level ${g.level} is available in ${OPS[g.operation].label}. Choose it from the dashboard.`:`You got ${g.score} correct in 60 seconds. Get 10 correct to unlock this level. Your previous progress is unchanged.`;
     $('resultStars').textContent=passed?'★ ★ ★':'★';$('levelUpBanner').classList.add('hidden');$('nextLevelBtn').classList.add('hidden');$('playAgainBtn').textContent='Try assessment again';showScreen('resultScreen');
   }  function configureAnswerInput(){
     const touch=matchMedia('(any-pointer: coarse)').matches||navigator.maxTouchPoints>0;
@@ -1306,7 +1310,7 @@
       if(step<words.length){$('countdownWord').textContent=words[step++];round.countdownTimer=setTimeout(advance,800);return;}
       $('cancelCountdown').blur();$('startCountdown').hidden=true;round.countdownTimer=null;round.starting=false;round.startedAt=Date.now();
       nextQuestion();sound('start');
-      if(!round.placement&&round.playMode==='timed')round.timer=setInterval(tickGame,250);
+      if(round.placement||round.playMode==='timed')round.timer=setInterval(tickGame,250);
     }
     advance();
   }})();

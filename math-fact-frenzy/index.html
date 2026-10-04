@@ -5,8 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#6c63ff" />
   <link rel="icon" href="favicon.svg" type="image/svg+xml" />
-  <title>Math Fact Frenzy 1.1.1</title>
-  <link rel="stylesheet" href="styles.css?v=1.1.1" />
+  <title>Math Fact Frenzy 1.2</title>
+  <link rel="stylesheet" href="styles.css?v=1.2" />
 </head>
 <body>
   <div id="confetti-layer" aria-hidden="true"></div>
@@ -183,9 +183,9 @@
           </div>
 
           <div class="keypad" aria-label="On-screen number pad">
-            <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
-            <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
             <button type="button" data-key="7">7</button><button type="button" data-key="8">8</button><button type="button" data-key="9">9</button>
+            <button type="button" data-key="4">4</button><button type="button" data-key="5">5</button><button type="button" data-key="6">6</button>
+            <button type="button" data-key="1">1</button><button type="button" data-key="2">2</button><button type="button" data-key="3">3</button>
             <button type="button" data-key="backspace" class="key-special">⌫</button><button type="button" data-key="0">0</button><button type="button" data-key="enter" class="key-submit">↵</button>
           </div>
 
@@ -214,7 +214,7 @@
         </div>
       </section>
     </main>
-    <footer class="suite-footer">Copyright 2026 John Chase. Made with help from ChatGPT.<br>Version 1.1.1 &middot; <a href="version-history.html">Version history</a> &middot; <a href="../">Back to Teaching Apps</a></footer>
+    <footer class="suite-footer">Copyright 2026 John Chase. Made with help from ChatGPT.<br>Version 1.2 &middot; <a href="version-history.html">Version history</a> &middot; <a href="../">Back to Teaching Apps</a></footer>
   </div>
 
   <dialog id="profileDialog" class="modal">
@@ -242,6 +242,6 @@
   </dialog>
 
   <dialog id="assessmentDialog" class="modal" aria-labelledby="assessmentTitle" aria-describedby="assessmentDescription"><h2 id="assessmentTitle">Test my current level</h2><p id="assessmentDescription"></p><label class="field-label" for="assessmentTarget">Level to test</label><select id="assessmentTarget" class="text-input"><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option></select><div class="modal-actions"><button id="cancelAssessment" class="secondary-button" type="button">Cancel</button><button id="startAssessment" class="primary-button" type="button">Start assessment</button></div></dialog>
-  <script src="app.js?v=1.1.1"></script>
+  <script src="app.js?v=1.2"></script>
 </body>
 </html>
