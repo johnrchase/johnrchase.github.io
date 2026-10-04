@@ -435,7 +435,7 @@
   }
 
   function unlockTarget(level) {
-    return 18 + level * 2;
+    return 20;
   }
 
   function startGame(options={}) {
@@ -1244,6 +1244,11 @@
   function bindPlacement(){
     $('testLevelBtn').addEventListener('click',()=>{
       const unlocked=getUnlockedLevel(getProfile(),selectedOperation);
+      $('assessmentTarget').replaceChildren(...Array.from({length:8},(_,i)=>{
+        const level=i+1;
+        const description=OPS[selectedOperation].operations.map(key=>LEVELS[key][i][0]).join(' / ');
+        return new Option(`${level} - ${description}`,String(level));
+      }));
       $('assessmentTarget').value=Math.min(8,unlocked+1);
       $('assessmentDescription').textContent=`${OPS[selectedOperation].label}: Get 10 correct answers in 60 seconds to unlock your chosen level. Incorrect answers move to the next question. Existing progress is kept.`;
       $('assessmentDialog').showModal();
