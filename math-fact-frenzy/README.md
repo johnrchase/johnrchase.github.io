@@ -1,4 +1,4 @@
-# Math Fact Frenzy 1.2.1
+# Math Fact Frenzy 1.2.2
 
 A browser-only math-facts game for elementary and middle-school students. No server, account, database, framework, or external library is required.
 
@@ -11,7 +11,7 @@ A browser-only math-facts game for elementary and middle-school students. No ser
 - Eight difficulty levels per operation
 - 60-second scored challenges
 - Untimed practice for every operation and mixed mode; practice contributes to lifetime activity totals but does not affect points, best scores, or unlocks
-- Exact problems are never repeated twice in a row (commuted facts such as `0 × 5` then `5 × 0` are allowed)
+- Avoid the last 10 facts, treating reversed addition/multiplication pairs as the same fact; small pools fall back to their oldest sampled fact.
 - Progress dashboard with current level/mastery by core skill, lifetime accuracy, attempts, correct answers, time played, streaks, active days, and recent activity
 - One-click next-level play when the next level is available
 - Optional browser-generated sound effects and confetti
@@ -44,11 +44,16 @@ Single-operation timed challenges can unlock the next level by reaching the disp
 
 Subtraction currently avoids negative answers, and division uses whole-number quotients. The structure is ready for later expansion to fractions, decimals, negatives, exponents, or other practice families.
 
-Release version: 1.2.1 (in development; not yet released). The internal saved-data schema remains version 3 for compatibility with existing player backups.
+Release version: 1.2.2 (in development; not yet released). The internal saved-data schema remains version 3 for compatibility with existing player backups.
 
 ## Version history
 
-### 1.2.1 — In development (updated October 3, 2026)
+### 1.2.2 — In development (updated October 5, 2026)
+
+- **Recognizable dots:** Dice-style layouts, including a 3×3 nine and two groups of five for ten.
+- **Focused levels:** Addition totals and subtraction starting numbers use separate bands through 100; levels 7–8 use three-digit numbers with one-/two-digit partners. Multiplication requires a factor in the current band, including 15–20 at level 8; division uses current-band divisors. Concepts use larger equation numbers and distinct visual counts at each level. Regular timed games and practice (including mixed games) sample approximately 70% current-level material and 30% previous-level review. Level 1 and assessments stay on their selected level. Multiplication partners remain broad (for example, 3 × 15 is included). Avoid the last 10 facts, counting commuted addition/multiplication as repeats; bounded retries reuse the oldest sampled fact for small pools.
+
+### 1.2.1 — Level progression and tests (committed)
 
 - **Level progression:** Every normal level unlock requires 20 correct answers in a 60-second round.
 - **Level tests:** Confirmed the 60-second timer and 10-correct target. The level dropdown now includes operation-specific descriptions alongside the numbers.
@@ -76,5 +81,5 @@ Release version: 1.2.1 (in development; not yet released). The internal saved-da
 - Timed challenges, untimed practice, player profiles, progress tracking, and JSON backups.
 - Teaching Apps copyright, credits, and return link.
 
-The README is the canonical release log; keep version-history.html in sync with it. App release numbers are separate from the saved-data schema version. Keep this development batch at 1.2.1 until committed.
+The README is the canonical release log; keep version-history.html in sync with it. App release numbers are separate from the saved-data schema version. Keep this development batch at 1.2.2 until committed.
 When JavaScript or CSS changes, update the asset query identifiers in index.html and version-history.html together. Use a new build suffix for further changes within the same release.

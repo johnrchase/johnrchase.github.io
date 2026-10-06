@@ -29,19 +29,19 @@
     concepts: Array.from({length:8},(_,i)=>['Missing numbers, repeated addition, area and tape models (level '+(i+1)+')']),
     addition: [
       ['Add within 5', 0, 5], ['Add within 10', 0, 10], ['Add within 20', 0, 20], ['Add within 30', 0, 30],
-      ['Add within 50', 0, 50], ['Add within 100', 0, 100], ['Two-digit + one-digit', 10, 99], ['Two-digit + two-digit', 10, 99]
+      ['Add within 50', 0, 50], ['Add within 100', 0, 100], ['Three-digit + one-digit', 10, 99], ['Three-digit + two-digit', 10, 99]
     ],
     subtraction: [
       ['Subtract within 5', 0, 5], ['Subtract within 10', 0, 10], ['Subtract within 20', 0, 20], ['Subtract within 30', 0, 30],
-      ['Subtract within 50', 0, 50], ['Subtract within 100', 0, 100], ['Two-digit − one-digit', 10, 99], ['Two-digit − two-digit', 10, 99]
+      ['Subtract within 50', 0, 50], ['Subtract within 100', 0, 100], ['Three-digit − one-digit', 10, 99], ['Three-digit − two-digit', 10, 99]
     ],
     multiplication: [
-      ['Facts × 0, 1, and 2', 0, 2], ['Facts through × 5', 0, 5], ['Facts through × 7', 0, 7], ['Facts through × 9', 0, 9],
-      ['Facts through × 10', 0, 10], ['Facts through × 12', 0, 12], ['Challenge facts through × 15', 0, 15], ['Challenge facts through × 20', 0, 20]
+      ['Facts × 0, 1, and 2', 0, 2], ['Facts with × 3–5', 0, 5], ['Facts with × 6–7', 0, 7], ['Facts with × 8–9', 0, 9],
+      ['Facts with × 10', 0, 10], ['Facts with × 11–12', 0, 12], ['Challenge facts with × 13–15', 0, 15], ['Challenge facts with × 15–20', 0, 20]
     ],
     division: [
-      ['Divide by 1 and 2', 1, 2], ['Divide by numbers through 5', 1, 5], ['Divide by numbers through 7', 1, 7], ['Divide by numbers through 9', 1, 9],
-      ['Divide by numbers through 10', 1, 10], ['Divide by numbers through 12', 1, 12], ['Challenge divisors through 15', 1, 15], ['Challenge divisors through 20', 1, 20]
+      ['Divide by 1 and 2', 1, 2], ['Divide by 3–5', 1, 5], ['Divide by 6–7', 1, 7], ['Divide by 8–9', 1, 9],
+      ['Divide by 10', 1, 10], ['Divide by 11–12', 1, 12], ['Challenge divisors 13–15', 1, 15], ['Challenge divisors 15–20', 1, 20]
     ]
   };
 
@@ -457,7 +457,7 @@
       startedAt:Date.now(),
       remaining:ROUND_SECONDS,
       question:null,
-      previousSignature:null,
+      recentSignatures:[],
       timer:null,
       inputLocked:false
     };
@@ -511,12 +511,23 @@
   function nextQuestion() {
     if (!game || game.starting || !$('gameScreen').classList.contains('active')) return;
 
-    let question;
-    do {
-      question = game.placement && OPS[game.operation].mixed ? makeQuestion(OPS[game.operation].operations[game.attempts % OPS[game.operation].operations.length],game.level) : makeQuestionForMode(game.operation, game.level);
-    } while (game.previousSignature && questionSignature(question) === game.previousSignature);
+    const sourceLevel=!game.placement&&game.level>1&&Math.random()<.3?game.level-1:game.level;
+    const recent=game.recentSignatures;
+    let question,bestAge=Infinity;
+    // Keep the chosen level's weighting; fall back to its oldest sampled fact
+    // when a small fact pool cannot fill a ten-question exclusion window.
+    for(let attempt=0;attempt<200;attempt++){
+      const candidate=game.placement&&OPS[game.operation].mixed
+        ? makeQuestion(OPS[game.operation].operations[game.attempts%OPS[game.operation].operations.length],sourceLevel)
+        : makeQuestionForMode(game.operation,sourceLevel);
+      const age=recent.lastIndexOf(questionSignature(candidate));
+      if(age<bestAge){question=candidate;bestAge=age;}
+      if(age===-1)break;
+    }
     game.question = question;
-    game.previousSignature = questionSignature(question);
+    game.question.sourceLevel=sourceLevel;
+    recent.push(questionSignature(question));
+    if(recent.length>10)recent.shift();
 
     $('gameQuestion').classList.toggle('concept-question',question.op==='concepts');
     $('gameQuestion').textContent = question.prompt || `${question.a} ${OPS[question.op].symbol} ${question.b} = ?`;
@@ -545,53 +556,33 @@
   }
 
   function makeQuestion(op, level) {
-    const cfg = LEVELS[op][level - 1];
-    let a, b, answer;
-
-    if (op === 'addition') {
-      if (level <= 6) {
-        const max = cfg[2];
-        a = rand(0, max);
-        b = rand(0, max - a);
-      } else if (level === 7) {
-        a = rand(10, 99);
-        b = rand(1, 9);
-      } else {
-        a = rand(10, 99);
-        b = rand(10, 99);
-      }
-      answer = a + b;
-    } else if (op === 'subtraction') {
-      if (level <= 6) {
-        const max = cfg[2];
-        a = rand(0, max);
-        b = rand(0, a);
-      } else if (level === 7) {
-        a = rand(10, 99);
-        b = rand(1, Math.min(9, a));
-      } else {
-        a = rand(10, 99);
-        b = rand(10, a);
-      }
-      answer = a - b;
-    } else if (op === 'multiplication') {
-      const max = cfg[2];
-      a = rand(0, max);
-      b = rand(0, level === 1 ? 12 : max);
-      if (level <= 6 && Math.random() < .5) b = rand(0, 12);
-      answer = a * b;
-    } else {
-      const max = cfg[2];
-      b = rand(1, max);
-      const quotientMax = level <= 6 ? 12 : max;
-      answer = rand(0, quotientMax);
-      a = b * answer;
+    const bands=[0,3,6,8,10,11,13,15];
+    let a,b,answer;
+    if(op==='addition'){
+      if(level<=6){
+        const ceilings=[5,10,20,30,50,100];
+        answer=rand(level===1?0:ceilings[level-2]+1,ceilings[level-1]);
+        a=rand(level===1?0:1,level===1?answer:answer-1);b=answer-a;
+      }else{a=rand(100,999);b=level===7?rand(1,9):rand(10,99);answer=a+b;}
+    }else if(op==='subtraction'){
+      if(level<=6){
+        const ceilings=[5,10,20,30,50,100];
+        a=rand(level===1?0:ceilings[level-2]+1,ceilings[level-1]);
+        b=rand(level===1?0:1,level===1?a:a-1);
+      }else{a=rand(100,999);b=level===7?rand(1,9):rand(10,99);}
+      answer=a-b;
+    }else if(op==='multiplication'){
+      a=rand(bands[level-1],LEVELS[op][level-1][2]);
+      b=rand(level===1?0:3,level===1?12:LEVELS[op][level-1][2]);
+      if(Math.random()<.5)[a,b]=[b,a];answer=a*b;
+    }else{
+      b=rand(level===1?1:bands[level-1],LEVELS[op][level-1][2]);
+      answer=rand(level===1?0:3,level<=6?12:LEVELS[op][level-1][2]);a=b*answer;
     }
-
-    return { op, a, b, answer };
+    return {op,a,b,answer};
   }
-
   function questionSignature(q) {
+    if(q.op==='addition'||q.op==='multiplication')return `${q.op}|${Math.min(q.a,q.b)}|${Math.max(q.a,q.b)}`;
     return `${q.op}|${q.kind||''}|${q.prompt||''}|${q.a}|${q.b}`;
   }
 
@@ -1147,7 +1138,7 @@
     document.body.classList.toggle('custom-background',!!color);
   }
   function makeConceptQuestion(level,kind=rand(0,14)){
-    const limit=[5,7,9,10,12,15,20,25][level-1],a=rand(1,limit),b=rand(1,limit),count=rand(2,Math.min(6,level+2)),unit=['cm','in','ft','m'][rand(0,3)];
+    const limits=[5,7,9,10,12,15,20,25],limit=limits[level-1],min=level===1?1:limits[level-2]+1,a=rand(min,limit),b=rand(min,limit),count=rand(2,Math.min(6,level+2)),unit=['cm','in','ft','m'][rand(0,3)];
     const q={op:'concepts',kind,a,b,unit};
     if(kind===0)return {...q,prompt:Array(count).fill(a).join(' + ')+' = ?',answer:a*count,model:{op:'multiplication',a:count,b:a,answer:a*count}};
     if(kind===1)return {...q,prompt:`${a+b} − ? = ${a}`,answer:b};
@@ -1161,7 +1152,7 @@
     if(kind===9){const c=Math.min(count,a+b-1);return {...q,prompt:`${a} + ? = ${a+b-c} + ${c}`,answer:b};}
     if(kind===10)return {...q,prompt:`${a} × ${count*b} = ${count} × ?`,answer:a*b};
     if(kind===11){const c=rand(1,count*b-1);return {...q,prompt:`${c} + ${count*b-c} = ${count} × ?`,answer:b};}
-    const rows=rand(2,Math.min(8,level+3)),cols=rand(2,Math.min(10,level+4));
+    const rows=rand(2,Math.min(8,level+3)),cols=level+2;
     if(kind===12)return {...q,a:rows,b:cols,prompt:`${rows} circles each contain ${cols} dots. How many dots altogether?`,answer:rows*cols,diagram:'circles',visualPrompt:'How many dots?'};
     if(kind===13)return {...q,a:rows,b:cols,prompt:`A grid has ${rows} rows of ${cols} unit squares. How many squares altogether?`,answer:rows*cols,diagram:'grid',visualPrompt:'How many squares?'};
     return {...q,a:rows,b:cols,prompt:`${rows} bars are joined end to end, each ${cols} ${unit} long. What is their total length in ${unit}?`,answer:rows*cols,diagram:'bars',visualPrompt:`Total length (${unit})?`};
@@ -1184,7 +1175,20 @@
     let body='';
     if(q.diagram==='circles'){
       const columns=Math.min(4,q.a),rows=Math.ceil(q.a/columns),r=Math.min(37,72/rows);
-      for(let i=0;i<q.a;i++){const x=55+(i%columns)*95,y=45+Math.floor(i/columns)*85;body+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#eceaff" stroke="#625ac4"/>`;for(let j=0;j<q.b;j++){const angle=2*Math.PI*j/q.b;body+=`<circle cx="${x+Math.cos(angle)*r*.6}" cy="${y+Math.sin(angle)*r*.6}" r="5.5" fill="#234e91"/>`;}}
+      const patterns={
+        1:[[0,0]],2:[[-1,-1],[1,1]],3:[[-1,-1],[0,0],[1,1]],
+        4:[[-1,-1],[1,-1],[-1,1],[1,1]],5:[[-1,-1],[1,-1],[0,0],[-1,1],[1,1]],
+        6:[[-1,-1],[1,-1],[-1,0],[1,0],[-1,1],[1,1]],
+        7:[[-1,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[1,1]],
+        8:[[-1,-1],[0,-1],[1,-1],[-1,0],[1,0],[-1,1],[0,1],[1,1]],
+        9:[[-1,-1],[0,-1],[1,-1],[-1,0],[0,0],[1,0],[-1,1],[0,1],[1,1]],
+        10:[[-1.5,-1],[-.5,-1],[-1,0],[-1.5,1],[-.5,1],[.5,-1],[1.5,-1],[1,0],[.5,1],[1.5,1]]
+      };
+      for(let i=0;i<q.a;i++){
+        const x=55+(i%columns)*95,y=45+Math.floor(i/columns)*85,spacing=q.b===10?12:17;
+        body+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#eceaff" stroke="#625ac4"/>`;
+        for(const [dx,dy] of patterns[q.b])body+=`<circle cx="${x+dx*spacing}" cy="${y+dy*spacing}" r="5" fill="#234e91"/>`;
+      }
       return svgModel(body,q.prompt);
     }
     if(q.diagram==='grid'){
