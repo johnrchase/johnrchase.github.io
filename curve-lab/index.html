@@ -340,7 +340,7 @@
       </div>
       <div class="tiny" style="margin-top:7px"><b>Ride Curve</b> switches to an elevated first-person perspective attached to the Frenet frame: forward = T and up = B. Drag to look around without changing your riding position; scroll in for a closer first-person view or scroll out to pull behind the moving TNB frame for a chase view. Frenet vectors become undefined where r′ is zero or where curvature vanishes; the app flags those points rather than inventing a frame.</div>
     </div>
-    <div class="tiny" style="text-align:center;margin-top:8px;color:#61778b">© 2026 John Chase · Made with help from ChatGPT<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.0 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a></span></div>
+    <div class="tiny" style="text-align:center;margin-top:8px;color:#61778b">© 2026 John Chase · Made with help from ChatGPT<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.1 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a><br><a href="version-history.html" style="color:inherit;font-size:11px">Version history</a></span></div>
   </aside>
 
   <main>
@@ -1168,9 +1168,13 @@
     state[key]=!!val; const b=$(id); if(!b) return;
     b.textContent=state[key]?'Shown':'Hidden'; b.classList.toggle('active',state[key]);
   }
+function captureLabUI(){return {fields:Object.fromEntries([...document.querySelectorAll('input[id],select[id],textarea[id]')].filter(e=>!e.readOnly&&e.type!=='file').map(e=>[e.id,{value:e.value,checked:e.checked,min:e.min,max:e.max,step:e.step}])),panels:[...document.querySelectorAll('.section')].map(e=>({collapsed:e.classList.contains('collapsed'),visible:e.dataset.visible})),eyes:Object.fromEntries([...document.querySelectorAll('button.eye[id]')].map(e=>[e.id,e.classList.contains('visible')])),sidebar:document.body.classList.contains('sidebar-collapsed'),camera:{position:camera.position.toArray(),up:camera.up.toArray(),target:controls.target.toArray(),zoom:camera.zoom,left:camera.left,right:camera.right,top:camera.top,bottom:camera.bottom}};}
+function restoreLabFields(ui){if(!ui?.fields)return;for(const [id,v] of Object.entries(ui.fields)){const e=document.getElementById(id);if(!e||!e.matches('input,select,textarea')||e.readOnly||e.type==='file')continue;for(const k of ['min','max','step'])if(typeof v[k]==='string')e[k]=v[k];if(typeof v.value==='string')e.value=v.value;if(typeof v.checked==='boolean')e.checked=v.checked;}}
+function restoreLabPanels(ui){if(!ui)return;[...document.querySelectorAll('.section')].forEach((e,i)=>{const p=ui.panels?.[i];if(!p)return;if(e.classList.contains('collapsed')!==p.collapsed)e.querySelector('.collapse,.collapseBtn')?.click();if(p.visible!==undefined&&e.dataset.visible!==p.visible)e.querySelector('.eye')?.click();});document.body.classList.toggle('sidebar-collapsed',!!ui.sidebar);}
+function restoreLabCamera(ui){const c=ui?.camera;if(!c)return;for(const key of ['position','up'])if(Array.isArray(c[key])&&c[key].length===3&&c[key].every(Number.isFinite))camera[key].fromArray(c[key]);if(Array.isArray(c.target)&&c.target.length===3&&c.target.every(Number.isFinite))controls.target.fromArray(c.target);for(const key of ['zoom','left','right','top','bottom'])if(Number.isFinite(c[key]))camera[key]=c[key];camera.updateProjectionMatrix();controls.update();}
   function captureShareState(){
     return {
-      v:4, fx:$('fx').value, fy:$('fy').value, fz:$('fz').value,
+      v:5, ui:captureLabUI(), oh:orthoHeight, playing:state.playing, direction:state.direction, ride:[state.rideYaw,state.ridePitch,state.rideFov,state.rideBack], fx:$('fx').value, fy:$('fy').value, fz:$('fz').value,
       mn:$('tmin').value, mx:$('tmax').value, sm:$('samples').value, t:$('tSlider').value,
       fa:$('fa').value, fb:$('fb').value, fc:$('fc').value,
       vl:$('vecLen').value, po:$('planeOpacity').value, pm:state.planeMode,
@@ -1203,7 +1207,8 @@
     try{return decodeShareState(m[1]);}catch(e){showWarning('This share link could not be read.');return null;}
   }
   function applySharedState(o){
-    if(!o || ![1,2,3,4].includes(o.v)) return false;
+    if(!o || ![1,2,3,4,5].includes(o.v)) return false;
+    restoreLabFields(o.ui);
     const value=(id,v)=>{if(v!==undefined && $(id)) $(id).value=v;};
     value('fx',o.fx); value('fy',o.fy); value('fz',o.fz); value('tmin',o.mn); value('tmax',o.mx); value('samples',o.sm);
     value('fa',o.fa); value('fb',o.fb); value('fc',o.fc); value('vecLen',o.vl); value('planeOpacity',o.po);
@@ -1513,7 +1518,10 @@
     if(Array.isArray(sharedState.cp)&&sharedState.cp.length===3) camera.position.set(...sharedState.cp.map(Number));
     if(Array.isArray(sharedState.ct)&&sharedState.ct.length===3) controls.target.set(...sharedState.ct.map(Number));
     controls.update();
+    if(Number.isFinite(sharedState.oh))orthoHeight=sharedState.oh;resize();restoreLabPanels(sharedState.ui);restoreLabCamera(sharedState.ui);
     if(sharedState.im) setImmersiveRide(true); else syncRideButton();
+    if(Array.isArray(sharedState.ride)){[state.rideYaw,state.ridePitch,state.rideFov,state.rideBack]=sharedState.ride;}
+    if(sharedState.playing&&!state.playing) $('playBtn').click();if(sharedState.direction===1||sharedState.direction===-1)state.direction=sharedState.direction;
   }
   requestAnimationFrame(animate);
 })();

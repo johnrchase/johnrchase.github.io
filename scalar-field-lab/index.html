@@ -88,7 +88,7 @@ main{position:relative;min-width:0;overflow:hidden;background:var(--bg)}#viewpor
       <div class="buttonrow" style="margin-top:6px"><button id="shareBtn">Copy share link</button><button id="fullscreenBtn">Fullscreen</button></div>
     </div>
   </section>
-  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><a href="../" style="color:var(--muted);text-underline-offset:3px">Back to Teaching Apps</a></div>
+  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><a href="../" style="color:var(--muted);text-underline-offset:3px">Back to Teaching Apps</a><br><span>Version 1.1 · <a href="version-history.html" style="color:var(--muted)">Version history</a></span></div>
 </aside>
 
 <main>
@@ -130,6 +130,7 @@ const EXAMPLES=[
  {name:'Cubic symmetry',expr:'x^3 + y^3 + z^3 - 3*x*y*z',dom:[-2.5,2.5,-2.5,2.5,-2.5,2.5],point:[1.2,-0.5,0.8]}
 ];
 let fn, state={x:1,y:1,z:1,vmin:0,vmax:27};
+let levelPosition=1;
 let anim={x:false,y:false,z:false,level:false,last:performance.now(),lastLevelMesh:0};
 let levelGroup, currentLevelMesh, stackGroup, cloud, fieldBoxGroup, fieldVolumeTexture, sliceXY, sliceXZ, sliceYZ, pointMesh, gradArrow, tangentPlaneMesh, levelGradientGroup, trailGroup, axes, grid, domainBox;
 let fieldCache=null;
@@ -492,7 +493,7 @@ function buildLevelGradients(){
   updateGradientVisibility();
 }
 function disposeMesh(m){if(!m)return;if(m.parent)m.parent.remove(m);m.geometry&&m.geometry.dispose();if(m.material){if(Array.isArray(m.material))m.material.forEach(x=>x.dispose());else m.material.dispose()}}
-function setLevelValue(v,silent=false){$('levelC').value=v;$('levelNum').value=+v.toFixed(5);if(!silent&&!$('attachLevel').checked)scheduleCurrentLevel()}
+function setLevelValue(v,silent=false){levelPosition=Number.isFinite(v)?v:levelPosition;$('levelC').value=v;$('levelNum').value=+v.toFixed(5);if(!silent&&!$('attachLevel').checked)scheduleCurrentLevel()}
 let levelTimer;function scheduleCurrentLevel(fast=false){clearTimeout(levelTimer);levelTimer=setTimeout(()=>buildCurrentLevel(fast),fast?10:70)}
 function buildCurrentLevel(fast=false){
   disposeMesh(currentLevelMesh);
@@ -501,7 +502,7 @@ function buildCurrentLevel(fast=false){
 
   if(!$('showCurrentLevel').checked)return;
 
-  const c=+$('levelC').value,
+  const c=levelPosition,
         res=fast?Math.min(28,+$('levelRes').value):+$('levelRes').value,
         geo=isoGeometry(c,res),
         mat=new THREE.MeshPhongMaterial({
@@ -699,7 +700,7 @@ function loadExample(i){
   applyAll(true);
 }
 
-function animate(now=performance.now()){requestAnimationFrame(animate);const dt=Math.min(.05,(now-anim.last)/1000);anim.last=now;const d=domain();for(const a of ['x','y','z'])if(anim[a]){const mn=d[a+'min'],mx=d[a+'max'],span=mx-mn,speed=axisSpeed($(a+'speed'));let v=state[a]+span*.12*speed*dt;if(v>mx)v=mn+(v-mx);setAxis(a,v,true)}if(anim.level){const mn=+$('vmin').value,mx=+$('vmax').value,span=mx-mn,speed=+$('levelSpeed').value;let v=+$('levelC').value+span*.08*speed*dt;if(v>mx)v=mn+(v-mx);$('attachLevel').checked=false;setLevelValue(v,true);if(now-anim.lastLevelMesh>85){anim.lastLevelMesh=now;buildCurrentLevel(true)}}controls.update();renderer.render(scene,camera)}
+function animate(now=performance.now()){requestAnimationFrame(animate);const dt=Math.min(.05,(now-anim.last)/1000);anim.last=now;const d=domain();for(const a of ['x','y','z'])if(anim[a]){const mn=d[a+'min'],mx=d[a+'max'],span=mx-mn,speed=axisSpeed($(a+'speed'));let v=state[a]+span*.12*speed*dt;if(v>mx)v=mn+(v-mx);setAxis(a,v,true)}if(anim.level){const mn=+$('vmin').value,mx=+$('vmax').value,span=mx-mn,speed=+$('levelSpeed').value;let v=levelPosition+span*.08*speed*dt;if(v>mx)v=mn+(v-mx);$('attachLevel').checked=false;setLevelValue(v,true);if(now-anim.lastLevelMesh>85){anim.lastLevelMesh=now;buildCurrentLevel(true)}}controls.update();renderer.render(scene,camera)}
 
 function wireEvents(){
  document.querySelectorAll('.collapse').forEach(b=>{const s=b.closest('.section');b.textContent=s.classList.contains('collapsed')?'◂':'▾';b.onclick=()=>{s.classList.toggle('collapsed');b.textContent=s.classList.contains('collapsed')?'◂':'▾'}});
@@ -725,10 +726,23 @@ function wireEvents(){
  $('fullscreenBtn').onclick=()=>document.fullscreenElement?document.exitFullscreen():document.documentElement.requestFullscreen();$('shareBtn').onclick=copyShare;
  }
  function setView(x,y,z){const d=domain(),cx=(d.xmin+d.xmax)/2,cy=(d.ymin+d.ymax)/2,cz=(d.zmin+d.zmax)/2,m=Math.max(d.xmax-d.xmin,d.ymax-d.ymin,d.zmax-d.zmin);controls.target.set(cx,cy,cz);camera.position.set(cx+x*2*m,cy+y*2*m,cz+z*2*m);camera.up.set(0,1,0);if(y!==0)camera.up.set(0,0,-1);controls.update()}
- function copyShare(){const p=new URLSearchParams({f:$('expr').value,xmin:$('xmin').value,xmax:$('xmax').value,ymin:$('ymin').value,ymax:$('ymax').value,zmin:$('zmin').value,zmax:$('zmax').value,x:state.x,y:state.y,z:state.z});const u=location.origin+location.pathname+'?'+p.toString();navigator.clipboard?.writeText(u).then(()=>toast('Share link copied'))}
+function captureLabUI(){return {fields:Object.fromEntries([...document.querySelectorAll('input[id],select[id],textarea[id]')].filter(e=>!e.readOnly&&e.type!=='file').map(e=>[e.id,{value:e.value,checked:e.checked,min:e.min,max:e.max,step:e.step}])),panels:[...document.querySelectorAll('.section')].map(e=>({collapsed:e.classList.contains('collapsed'),visible:e.dataset.visible})),eyes:Object.fromEntries([...document.querySelectorAll('button.eye[id]')].map(e=>[e.id,e.classList.contains('visible')])),sidebar:document.body.classList.contains('sidebar-collapsed'),camera:{position:camera.position.toArray(),up:camera.up.toArray(),target:controls.target.toArray(),zoom:camera.zoom,left:camera.left,right:camera.right,top:camera.top,bottom:camera.bottom}};}
+function restoreLabFields(ui){if(!ui?.fields)return;for(const [id,v] of Object.entries(ui.fields)){const e=document.getElementById(id);if(!e||!e.matches('input,select,textarea')||e.readOnly||e.type==='file')continue;for(const k of ['min','max','step'])if(typeof v[k]==='string')e[k]=v[k];if(typeof v.value==='string')e.value=v.value;if(typeof v.checked==='boolean')e.checked=v.checked;}}
+function restoreLabPanels(ui){if(!ui)return;[...document.querySelectorAll('.section')].forEach((e,i)=>{const p=ui.panels?.[i];if(!p)return;if(e.classList.contains('collapsed')!==p.collapsed)e.querySelector('.collapse,.collapseBtn')?.click();if(p.visible!==undefined&&e.dataset.visible!==p.visible)e.querySelector('.eye')?.click();});document.body.classList.toggle('sidebar-collapsed',!!ui.sidebar);}
+function restoreLabCamera(ui){const c=ui?.camera;if(!c)return;for(const key of ['position','up'])if(Array.isArray(c[key])&&c[key].length===3&&c[key].every(Number.isFinite))camera[key].fromArray(c[key]);if(Array.isArray(c.target)&&c.target.length===3&&c.target.every(Number.isFinite))controls.target.fromArray(c.target);for(const key of ['zoom','left','right','top','bottom'])if(Number.isFinite(c[key]))camera[key]=c[key];camera.updateProjectionMatrix();controls.update();}
+ function captureScalarShare(){return {v:1,ui:captureLabUI(),point:[state.x,state.y,state.z],theme:document.body.dataset.theme,values:valueVisualsOn,gradients:gradientToolsOn,run:{x:anim.x,y:anim.y,z:anim.z,level:anim.level}};}
+ async function copyShare(){const u=location.href.split('#')[0].split('?')[0]+'#state='+encodeURIComponent(JSON.stringify(captureScalarShare()));try{await navigator.clipboard.writeText(u);toast('Share link copied')}catch(e){window.prompt('Copy this share link:',u)}}
+ function loadScalarShare(){
+  const m=location.hash.match(/^#state=(.+)$/);if(!m)return false;
+  try{const q=JSON.parse(decodeURIComponent(m[1]));if(q.v!==1)return false;restoreLabFields(q.ui);if(q.point)[state.x,state.y,state.z]=q.point;applyAll(false);restoreLabFields(q.ui);state.vmin=+$('vmin').value;state.vmax=+$('vmax').value;setupSliders();syncLevelRange();setLevelValue(Number(q.ui.fields.levelNum.value),true);
+    valueVisualsOn=!!q.values;gradientToolsOn=!!q.gradients;setEye($('valueEye'),valueVisualsOn);setEye($('gradientEye'),gradientToolsOn);if(q.ui?.eyes?.levelsEye!==undefined)setEye($('levelsEye'),q.ui.eyes.levelsEye);
+    if(q.theme&&q.theme!==document.body.dataset.theme)$('themeToggle').click();switchCamera($('orthoToggle').checked);axes.visible=$('axesToggle').checked;grid.visible=$('gridToggle').checked;restoreLabPanels(q.ui);updateProbe();updateSlices();buildCloud();if($('showFieldBox').checked)buildFieldBox();refreshLevelSurfaces();updateDomainBox();updateValueVisibility();updateGradientVisibility();updateHudLegend();restoreLabCamera(q.ui);
+    for(const a of ['x','y','z'])if(q.run?.[a])document.querySelector('.playAxis[data-axis="'+a+'"]').click();if(q.run?.level)$('levelPlay').click();return true;
+  }catch(e){showWarn('This share link could not be read.');return false;}
+ }
  function loadQuery(){const q=new URLSearchParams(location.search);if(!q.has('f'))return false;$('expr').value=q.get('f');for(const id of ['xmin','xmax','ymin','ymax','zmin','zmax'])if(q.has(id))$(id).value=q.get(id);for(const a of ['x','y','z'])if(q.has(a))state[a]=+q.get(a);applyAll(true);return true}
 
-init3D();enablePointDragging();wireEvents();setEye($('valueEye'),true);setEye($('levelsEye'),false);setEye($('gradientEye'),false);gradientToolsOn=false;valueVisualsOn=true;levelGroup.visible=false;stackGroup.visible=false;$('showCurrentLevel').checked=true;$('showStack').checked=true;$('attachLevel').checked=true;$('colorLevels').checked=true;$('showXY').checked=false;$('showXZ').checked=false;$('showYZ').checked=false;$('showCloud').checked=true;$('showFieldBox').checked=false;$('showGrad').checked=false;$('normalizeGrad').checked=false;$('showTangentPlane').checked=false;$('showLevelGradients').checked=false;$('gridToggle').checked=false;$('boxToggle').checked=false;grid.visible=false;updateLevelGradientAvailability();if(!loadQuery())loadExample(0);updateProbe();updateValueVisibility();updateGradientVisibility();
+init3D();enablePointDragging();wireEvents();setEye($('valueEye'),true);setEye($('levelsEye'),false);setEye($('gradientEye'),false);gradientToolsOn=false;valueVisualsOn=true;levelGroup.visible=false;stackGroup.visible=false;$('showCurrentLevel').checked=true;$('showStack').checked=true;$('attachLevel').checked=true;$('colorLevels').checked=true;$('showXY').checked=false;$('showXZ').checked=false;$('showYZ').checked=false;$('showCloud').checked=true;$('showFieldBox').checked=false;$('showGrad').checked=false;$('normalizeGrad').checked=false;$('showTangentPlane').checked=false;$('showLevelGradients').checked=false;$('gridToggle').checked=false;$('boxToggle').checked=false;grid.visible=false;updateLevelGradientAvailability();if(!loadScalarShare()&&!loadQuery())loadExample(0);updateProbe();updateValueVisibility();updateGradientVisibility();
 })();
 </script>
 </body>
