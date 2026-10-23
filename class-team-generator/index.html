@@ -57,7 +57,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 .robot-screen,.member.rule-violation,.rule-status,.rule-badge,.popover,.popover button,.dialog,.iconbtn,textarea,
 .export-options,.export-field input,.export-field select,.image-preview,.toast,.rules-note{border-radius:3px}
 .hat-body{position:absolute;inset:0}
-@media(max-width:1100px){.controls{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 110px 110px}.controls>div:last-child{grid-column:1/-1;justify-self:end}}
+@media(max-width:1100px){.controls{grid-template-columns:minmax(220px,1fr) minmax(220px,1fr) 110px 110px}.controls>.appearance-tools{grid-column:1/-1;justify-self:end}}
 @media(max-width:980px){.controls{grid-template-columns:1fr 1fr 110px 110px}.workspace{grid-template-columns:1fr}.picker{position:relative;top:auto;max-width:520px;width:100%;justify-self:center}.visual{height:190px}}
 @media(max-width:700px){.rules-grid{grid-template-columns:1fr}.app{width:min(100% - 18px,1440px);padding-top:14px}.topbar{align-items:flex-start;flex-direction:column}.actions{width:100%;justify-content:stretch}.actions>.btn,.actions>.share-menu{flex:1}.share-menu>.btn{width:100%}.controls{grid-template-columns:1fr 1fr}.class-field,.saved-class-field{grid-column:1/-1}.font-tools,.mode-tools{align-self:end}.groups-grid{grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:9px}.status{align-items:flex-start;flex-direction:column;gap:3px}.card-head{padding:10px 11px}ol{padding-left:34px}}
 @media print{body{background:#fff;color:#111}.topbar .actions,.controls,.picker,.footerbar,.subtitle,.status{display:none!important}.app{width:100%;padding:0}.workspace{display:block}.groups-grid{grid-template-columns:repeat(3,1fr)}.card{box-shadow:none;break-inside:avoid;background:#fff;color:#111;border-color:#ccc}.card-head,li{border-color:#ddd}.count{background:#f4f4f4;color:#555}}
@@ -65,7 +65,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 <style>
 /* Version 1.3: classroom adjustments and restore controls. */
 .controls{grid-template-columns:minmax(190px,1fr) minmax(390px,1.7fr) 85px 85px;gap:10px;padding:12px}
-.controls>div:last-child{grid-column:1/-1}
+.controls>.appearance-tools{grid-column:1/-1}
 .class-field,.saved-class-field{min-width:0}.number-field{width:auto}
 .saved-class-row{grid-template-columns:minmax(180px,1fr) repeat(3,auto);align-items:center}
 .saved-class-row select{grid-column:auto;min-width:0}.saved-class-row .btn{font-size:.8rem;padding:10px 8px}
@@ -143,7 +143,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 @media(max-width:700px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:380px){.group-theme-row{flex-wrap:wrap}}
 </style>
-<link rel="stylesheet" href="classroom-tools.css?v=1.3-4">
+<link rel="stylesheet" href="classroom-tools.css?v=1.4-4">
 </head>
 <body>
 <div class="app">
@@ -215,7 +215,7 @@ body.picker-huge{overflow:hidden}body.picker-huge:before{content:"";position:fix
 
   <section class="restore-panel" id="restorePanel" hidden aria-labelledby="restoreHeading"><div class="restore-heading"><h2 id="restoreHeading">Absent students &amp; removed groups</h2><button class="btn compact" id="restoreAllBtn">Restore all</button></div><p>Set aside from groups and the random picker. Restore them whenever you are ready.</p><div class="restore-list" id="restoreList"></div></section>
   <div class="footerbar"><button class="btn primary" id="rerunBottom">↻ Rerun groups</button><button class="btn" id="editBottom">Edit names</button><button class="btn" id="rulesBottom">Grouping rules</button></div>
-  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.3 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a> &middot; <a href="version-history.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Version history</a></span></div>
+  <div class="copyright">Copyright 2026 John Chase. Made with help from ChatGPT.<br><span style="display:inline-block;margin-top:6px;font-size:12px">Version 1.4 &middot; <a href="../" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Back to Teaching Apps</a> &middot; <a href="version-history.html" style="color:inherit;text-decoration:underline;text-underline-offset:3px">Version history</a></span></div>
 </div>
 
 <div class="overlay" id="classOverlay" role="dialog" aria-modal="true" aria-labelledby="classDialogTitle">
@@ -260,6 +260,7 @@ Parker | Quinn"></textarea></div>
         <label class="export-check"><input id="exportBorders" type="checkbox" checked> Show group borders</label>
         <label class="export-check"><input id="exportColors" type="checkbox" checked> Color-code groups</label>
         <label class="export-check"><input id="exportMembers" type="checkbox" checked> Show group members</label>
+        <label class="export-check"><input id="exportGroupNames" type="checkbox" checked> Show group names</label>
         <label class="export-check"><input id="exportNumbers" type="checkbox" checked> Number group members</label>
         <label class="export-check"><input id="exportInstructions" type="checkbox"> Show instructions</label>
         <label class="export-check"><input id="exportHighlights" type="checkbox"> Show highlighted group members</label>
@@ -281,7 +282,7 @@ Parker | Quinn"></textarea></div>
 </div>
 <div class="toast" id="toast"></div>
 
-<script src="community-questions.js?v=1.3"></script><script src="timer-art.js?v=1.3-4"></script><script src="classroom-tools.js?v=1.3-4"></script>
+<script src="community-questions.js?v=1.4-4"></script><script src="timer-art.js?v=1.4-4"></script><script src="classroom-tools.js?v=1.4-4"></script>
 <script>
 (() => {
 'use strict';
@@ -361,6 +362,7 @@ function imageExportPreferencesSnapshot(){
     showBorders:!!els.exportBorders.checked,
     colorGroups:!!els.exportColors.checked,
     showMembers:!!els.exportMembers.checked,
+    showGroupNames:$('exportGroupNames').checked,
     numberMembers:!!els.exportNumbers.checked,
     showInstructions:$('exportInstructions').checked,
     showHighlights:$('exportHighlights').checked,
@@ -385,6 +387,7 @@ function loadImageExportPreferences(){
   if(typeof ex.showMembers==='boolean')els.exportMembers.checked=ex.showMembers;
   if(typeof ex.showInstructions==='boolean')$('exportInstructions').checked=ex.showInstructions;
   if(typeof ex.showHighlights==='boolean')$('exportHighlights').checked=ex.showHighlights;
+  if(typeof ex.showGroupNames==='boolean')$('exportGroupNames').checked=ex.showGroupNames;
   if(typeof ex.numberMembers==='boolean')els.exportNumbers.checked=ex.numberMembers;
   if(Number.isFinite(Number(ex.columns))){els.exportColumns.value=clampInt(ex.columns,1,Math.max(1,state.groups),autoExportColumns());els.exportColumns.dataset.touched='1';}
   if(['auto','wide','balanced','tall','custom'].includes(ex.preset))els.exportPreset.value=ex.preset;
@@ -705,7 +708,7 @@ function buildShareUrl(){
   return u.href;
 }
 function updateUrl(push){ if(window.qtgToolWindow)return;try{history[push?'pushState':'replaceState'](null,'',buildShareUrl());}catch(_){} saveWorkspace();}
-function teamsAsText(){ const heading=state.className.trim()?state.className.trim()+'\n\n':''; const instructions=$('exportInstructions').checked?classroomTools?.instructions():'';return heading+(instructions?instructions+'\n\n':'')+currentTeams.map((team,i)=>`${groupLabel(i)}\n${team.map((n,j)=>`${classroomTools?.label(j)?classroomTools.label(j)+'. ':''}${displayName(n)}${$('exportHighlights').checked&&classroomTools?.isHighlighted(n)?' [selected]':''}`).join('\n')}`).join('\n\n'); }
+function teamsAsText(){ const heading=state.className.trim()?state.className.trim()+'\n\n':''; const instructions=$('exportInstructions').checked?classroomTools?.instructions():'';return heading+(instructions?instructions+'\n\n':'')+currentTeams.map((team,i)=>`${$('exportGroupNames').checked?groupLabel(i)+'\n':''}${team.map((n,j)=>`${classroomTools?.label(j)?classroomTools.label(j)+'. ':''}${displayName(n)}${$('exportHighlights').checked&&classroomTools?.isHighlighted(n)?' [selected]':''}`).join('\n')}`).join('\n\n'); }
 
 let toastTimer;
 function showToast(msg){ clearTimeout(toastTimer); els.toast.textContent=msg; els.toast.classList.add('show'); toastTimer=setTimeout(()=>els.toast.classList.remove('show'),1900); }
@@ -961,6 +964,7 @@ function makeExportCanvas(){
   const showBorders=els.exportBorders.checked;
   const colorGroups=els.exportColors.checked;
   const showMembers=els.exportMembers.checked;
+  const showGroupNames=$('exportGroupNames').checked;
   const showNumbers=els.exportNumbers.checked;
   const showHighlights=$('exportHighlights').checked;
   const instructions=$('exportInstructions').checked?(classroomTools?.instructions()||''):'';
@@ -971,7 +975,7 @@ function makeExportCanvas(){
   const boxPadX=hasBox?12:4;
   const headFontSize=fontSize+2;
   const titleFontSize=Math.max(22,fontSize+8);
-  const headH=Math.max(28,Math.round(fontSize*2));
+  const headH=showGroupNames?Math.max(28,Math.round(fontSize*2)):4;
   const lineH=Math.max(18,Math.round(fontSize*1.55));
   const titleH=showTitle?titleFontSize+12:0;
   const fontFamily='Aptos, "Segoe UI", Arial, sans-serif';
@@ -983,7 +987,7 @@ function makeExportCanvas(){
   function teamTextWidth(team,index){
     let widest=0;
     ctx.font=`700 ${headFontSize}px ${fontFamily}`;
-    widest=Math.max(widest,ctx.measureText(groupLabel(index)).width);
+    if(showGroupNames)widest=Math.max(widest,ctx.measureText(groupLabel(index)).width);
     if(showMembers){
       ctx.font=`600 ${fontSize}px ${fontFamily}`;
       team.forEach((name,j)=>{
@@ -1054,7 +1058,7 @@ function makeExportCanvas(){
       }
       ctx.fillStyle='#111827';
       ctx.font=`700 ${headFontSize}px ${fontFamily}`;
-      ctx.fillText(groupLabel(teamIndex),x+boxPadX,y+8);
+      if(showGroupNames)ctx.fillText(groupLabel(teamIndex),x+boxPadX,y+8);
       if(showMembers){
         ctx.font=`600 ${fontSize}px ${fontFamily}`;
         team.forEach((name,j)=>{
@@ -1135,6 +1139,7 @@ function applyAppPreferences(pref){
   if(typeof ex.showMembers==='boolean')els.exportMembers.checked=ex.showMembers;
   if(typeof ex.showInstructions==='boolean')$('exportInstructions').checked=ex.showInstructions;
   if(typeof ex.showHighlights==='boolean')$('exportHighlights').checked=ex.showHighlights;
+  if(typeof ex.showGroupNames==='boolean')$('exportGroupNames').checked=ex.showGroupNames;
   if(typeof ex.numberMembers==='boolean')els.exportNumbers.checked=ex.numberMembers;
   if(Number.isFinite(Number(ex.columns)))els.exportColumns.value=clampInt(ex.columns,1,Math.max(1,state.groups),autoExportColumns());
   if(['auto','wide','balanced','tall','custom'].includes(ex.preset))els.exportPreset.value=ex.preset;
@@ -1247,7 +1252,7 @@ $('copyLink').addEventListener('click',()=>{copyText(buildShareUrl(),'Share link
 $('imageExport').addEventListener('click',()=>{els.shareMenu.classList.remove('open');openImage();});$('exportCurrentData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportCurrentData();});$('exportAllData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');exportAllData();});$('importData').addEventListener('click',()=>{els.shareMenu.classList.remove('open');$('importDataFile').click();});$('importDataFile').addEventListener('change',async e=>{const file=e.target.files&&e.target.files[0];if(file)await importDataFile(file);e.target.value='';});$('printBtn').addEventListener('click',()=>{els.shareMenu.classList.remove('open');window.print();});
 $('nativeShare').addEventListener('click',async()=>{els.shareMenu.classList.remove('open');if(navigator.share){try{await navigator.share({title:state.className.trim()||'Team Generator',text:'Random team generator',url:buildShareUrl()});}catch(_){}}else copyText(buildShareUrl(),'Share link copied');});
 $('closeImage').addEventListener('click',closeImage);$('copyPng').addEventListener('click',copyPng);$('quickCopyImage').addEventListener('click',copyPng);$('downloadPng').addEventListener('click',()=>downloadImage('png'));$('downloadJpg').addEventListener('click',()=>downloadImage('jpg'));
-[els.exportTitle,els.exportBorders,els.exportColors,els.exportMembers,els.exportNumbers,$('exportInstructions'),$('exportHighlights'),els.exportFont,els.exportGap].forEach(el=>{
+[els.exportTitle,els.exportBorders,els.exportColors,els.exportMembers,els.exportNumbers,$('exportGroupNames'),$('exportInstructions'),$('exportHighlights'),els.exportFont,els.exportGap].forEach(el=>{
   const update=()=>{saveImageExportPreferences();makeExportCanvas();};
   el.addEventListener('input',update);el.addEventListener('change',update);
 });

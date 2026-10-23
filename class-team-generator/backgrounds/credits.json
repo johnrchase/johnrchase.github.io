@@ -1,0 +1,134 @@
+[
+  {
+    "file": "backgrounds/mountainscape.jpg",
+    "title": "mountainscape",
+    "credit": "Hagerty, Ryan/USFWS",
+    "source": "https://www.fws.gov/media/mountainscape",
+    "original": "https://www.fws.gov/sites/default/files/images/2007-09/13574.jpg",
+    "width": 4816,
+    "height": 2739,
+    "license": "Public Domain",
+    "bytes": 10501653
+  },
+  {
+    "file": "backgrounds/montana-landscape.jpg",
+    "title": "montana landscape",
+    "credit": "Aubin Douglas/USFWS",
+    "source": "https://www.fws.gov/media/montana-landscape",
+    "original": "https://www.fws.gov/sites/default/files/banner_images/2022-12/Montana%20Landscape%20Aubin%20Douglas%20USFWS.jpg",
+    "width": 2560,
+    "height": 1920,
+    "license": "Public Domain",
+    "bytes": 523448
+  },
+  {
+    "file": "backgrounds/sand-dune.jpg",
+    "title": "sand dune",
+    "credit": "Andrea Pickart/USFWS",
+    "source": "https://www.fws.gov/media/sand-dune",
+    "original": "https://www.fws.gov/sites/default/files/2021-08/1.jpg",
+    "width": 2600,
+    "height": 1726,
+    "license": "Public Domain",
+    "bytes": 748043
+  },
+  {
+    "file": "backgrounds/sunset-over-big-muddy.jpg",
+    "title": "sunset over big muddy",
+    "credit": "Hillebrand, Steve/USFWS",
+    "source": "https://www.fws.gov/media/sunset-over-big-muddy",
+    "original": "https://www.fws.gov/sites/default/files/images/2008-10/6724.jpg",
+    "width": 3263,
+    "height": 2175,
+    "license": "Public Domain",
+    "bytes": 6090373
+  },
+  {
+    "file": "backgrounds/collins-creek-waterfall.jpg",
+    "title": "collins creek waterfall",
+    "credit": "Joseph Kelly/USFWS",
+    "source": "https://www.fws.gov/media/collins-creek-waterfall",
+    "original": "https://www.fws.gov/sites/default/files/banner_images/2020-04/CollinsCreek2.jpg",
+    "width": 3626,
+    "height": 2720,
+    "license": "Public Domain",
+    "bytes": 2942986
+  },
+  {
+    "file": "backgrounds/waterfall-small-cascade-pond.jpg",
+    "title": "waterfall small cascade pond",
+    "credit": "Tricia Andriski/USFWS",
+    "source": "https://www.fws.gov/media/waterfall-small-cascade-pond",
+    "original": "https://www.fws.gov/sites/default/files/banner_images/2021-11/7Q8A3983a.jpg",
+    "width": 6020,
+    "height": 4013,
+    "license": "Public Domain",
+    "bytes": 3374721
+  },
+  {
+    "file": "backgrounds/sunrise-monomoy-refuge.jpg",
+    "title": "sunrise monomoy refuge",
+    "credit": "USFWS",
+    "source": "https://www.fws.gov/media/sunrise-monomoy-refuge",
+    "original": "https://www.fws.gov/sites/default/files/images/2024-03-6/25528.jpg",
+    "width": 3648,
+    "height": 2736,
+    "license": "Public Domain",
+    "bytes": 8424344
+  },
+  {
+    "file": "backgrounds/scenic-view-wetlands-waterfowl-and-mountains.jpg",
+    "title": "scenic view wetlands waterfowl and mountains",
+    "credit": "Hagerty, Ryan/USFWS",
+    "source": "https://www.fws.gov/media/scenic-view-wetlands-waterfowl-and-mountains",
+    "original": "https://www.fws.gov/sites/default/files/images/2009-10/14911.jpg",
+    "width": 5596,
+    "height": 3730,
+    "license": "Public Domain",
+    "bytes": 15949440
+  },
+  {
+    "file": "backgrounds/aurora-borealis-or-northern-lights-over-alaska.jpg",
+    "title": "aurora borealis or northern lights over alaska",
+    "credit": "Keith Ramos/USFWS",
+    "source": "https://www.fws.gov/media/aurora-borealis-or-northern-lights-over-alaska",
+    "original": "https://www.fws.gov/sites/default/files/2022-01/8-KoyukukRegion-NorthernLights-KeithRamosUSFWS.jpg",
+    "width": 2998,
+    "height": 1983,
+    "license": "Public Domain",
+    "bytes": 1457845
+  },
+  {
+    "file": "backgrounds/scenery-0.jpg",
+    "title": "scenery 0",
+    "credit": "Erin Cox/USFWS",
+    "source": "https://www.fws.gov/media/scenery-0",
+    "original": "https://www.fws.gov/sites/default/files/2021-04/USFWS%2C%20Erin%20Cox%20%283%29.JPG",
+    "width": 3008,
+    "height": 2000,
+    "license": "Public Domain",
+    "bytes": 1961016
+  },
+  {
+    "file": "backgrounds/scenic-mountains.jpg",
+    "title": "scenic mountains",
+    "credit": "Jonsson, Kayt/USFWS",
+    "source": "https://www.fws.gov/media/scenic-mountains",
+    "original": "https://www.fws.gov/sites/default/files/images/2016-07/24097.jpg",
+    "width": 5472,
+    "height": 3648,
+    "license": "Public Domain",
+    "bytes": 17120529
+  },
+  {
+    "file": "backgrounds/migrating-birds-fly-across-sky-sunset-valle-de-oro-national-wildlife-refuge.jpg",
+    "title": "migrating birds fly across sky sunset valle de oro national wildlife refuge",
+    "credit": "Gilbert Quintana/USFWS",
+    "source": "https://www.fws.gov/media/migrating-birds-fly-across-sky-sunset-valle-de-oro-national-wildlife-refuge",
+    "original": "https://www.fws.gov/sites/default/files/banner_images/2023-05/Sunset%20migration.jpg",
+    "width": 4551,
+    "height": 2560,
+    "license": "Public Domain",
+    "bytes": 5216746
+  }
+]
