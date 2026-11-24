@@ -38,7 +38,7 @@ The root homepage is independent from the individual apps.
 
 App folders include:
 
-- class-team-generator/
+- total-teacher-toolkit/
 - curve-lab/
 - logic-hoops/
 - transformation-quest/
