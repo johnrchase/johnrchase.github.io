@@ -133,7 +133,7 @@
       tasks.forEach((task,i)=>put(task.names,matches[i].slots));
     }else put(remaining,available);
     if((rules.togetherRaw?.length||rules.apartPairs?.length)&&mode!=='groups'){
-      const result=seatWithRules(chart,all,assignments,rules,mode,seatOrder,put);
+      const result=seatWithRules(chart,all,assignments,rules,mode,seatOrder,put,randomInt,!anywhere);
       if(result)return {error:result};
     }
     const seated=new Set(Object.values(assignments)),unseated=chart.roster.filter(n=>!seated.has(n));
@@ -147,7 +147,7 @@
     for(const [a,b]of rules.apartPairs||[])if(where.has(a)&&where.get(a)===where.get(b))warnings.push(a+' and '+b+' should sit at different tables or table groups.');
     return [...new Set(warnings)];
   }
-  function seatWithRules(chart,all,assignments,rules,mode,frontOrder,put){
+  function seatWithRules(chart,all,assignments,rules,mode,frontOrder,put,randomInt,preferFilledTables){
     const failure='Cannot satisfy grouping rules with these seats and locks. Together students need one table or table group; apart students need different tables. Adjust the rules, table groups, or locks.';
     if(rules.contradictions?.length)return failure;
     const names=Object.values(assignments),active=new Set(names),parent=new Map(names.map(n=>[n,n]));
@@ -155,11 +155,12 @@
     for(const line of rules.togetherRaw||[]){if(line.some(n=>active.has(n))&&line.some(n=>!active.has(n)))return failure;const members=line.filter(n=>active.has(n));for(const n of members.slice(1))parent.set(find(n),find(members[0]));}
     const bundles=new Map();for(const n of names){const root=find(n);if(!bundles.has(root))bundles.set(root,[]);bundles.get(root).push(n);}
     const apart=new Map([...bundles.keys()].map(k=>[k,new Set()]));for(const [a,b]of rules.apartPairs||[])if(active.has(a)&&active.has(b)){const x=find(a),y=find(b);if(x===y)return failure;apart.get(x).add(y);apart.get(y).add(x);}
+    const preferredTables=new Set(all.filter(s=>assignments[s.id]).map(s=>s.tableId));
     const fixed=all.filter(s=>lockedSeat(chart,s)&&chart.assignments[s.id]),free=all.filter(s=>!lockedSeat(chart,s)),tables=[...new Set(frontOrder(all).map(s=>s.tableId))],capacity=new Map(tables.map(id=>[id,free.filter(s=>s.tableId===id).length])),pinned=new Map(fixed.map(s=>[chart.assignments[s.id],s.tableId]));
     const tasks=[...bundles].map(([id,members])=>({id,members,moving:members.filter(n=>!pinned.has(n)),allowed:tables.filter(t=>members.every(n=>(!pinned.has(n)||pinned.get(n)===t)&&(mode!=='within'||all.find(s=>chart.assignments[s.id]===n)?.tableId===t)))}));
     tasks.sort((a,b)=>a.allowed.length-b.allowed.length||b.members.filter(n=>chart.priorityStudents.includes(n)).length-a.members.filter(n=>chart.priorityStudents.includes(n)).length||b.members.length-a.members.length||apart.get(b.id).size-apart.get(a.id).size);
     let visits=0;const chosen=new Map(),priorityCapacity=new Map(tables.map(t=>[t,free.filter(s=>s.tableId===t&&chart.prioritySeats.includes(s.id)).length]));
-    function search(i){if(i===tasks.length)return true;if(++visits>50000)return false;const task=tasks[i];const candidates=task.allowed.slice().sort((a,b)=>{const priorityCount=task.moving.filter(n=>chart.priorityStudents.includes(n)).length;const score=t=>Math.min(priorityCount,priorityCapacity.get(t));return score(b)-score(a);});for(const t of candidates){if(capacity.get(t)<task.moving.length||[...apart.get(task.id)].some(id=>chosen.get(id)===t))continue;const prior=priorityCapacity.get(t),need=task.moving.filter(n=>chart.priorityStudents.includes(n)).length;chosen.set(task.id,t);capacity.set(t,capacity.get(t)-task.moving.length);priorityCapacity.set(t,Math.max(0,prior-need));if(search(i+1))return true;capacity.set(t,capacity.get(t)+task.moving.length);priorityCapacity.set(t,prior);chosen.delete(task.id);}return false;}
+    function search(i){if(i===tasks.length)return true;if(++visits>50000)return false;const task=tasks[i];const candidates=shuffled(task.allowed,randomInt).sort((a,b)=>{const priorityCount=task.moving.filter(n=>chart.priorityStudents.includes(n)).length;const score=t=>Math.min(priorityCount,priorityCapacity.get(t));return score(b)-score(a)||(preferFilledTables?Number(preferredTables.has(b))-Number(preferredTables.has(a)):0);});for(const t of candidates){if(capacity.get(t)<task.moving.length||[...apart.get(task.id)].some(id=>chosen.get(id)===t))continue;const prior=priorityCapacity.get(t),need=task.moving.filter(n=>chart.priorityStudents.includes(n)).length;chosen.set(task.id,t);capacity.set(t,capacity.get(t)-task.moving.length);priorityCapacity.set(t,Math.max(0,prior-need));if(search(i+1))return true;capacity.set(t,capacity.get(t)+task.moving.length);priorityCapacity.set(t,prior);chosen.delete(task.id);}return false;}
     if(!search(0))return failure;
     for(const id of Object.keys(assignments))delete assignments[id];for(const s of fixed)assignments[s.id]=chart.assignments[s.id];
     for(const t of tables)put(tasks.filter(task=>chosen.get(task.id)===t).flatMap(task=>task.moving),free.filter(s=>s.tableId===t));

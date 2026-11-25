@@ -6,6 +6,29 @@ function make(count=8){
   return E.normalizeChart({name:'Test chart',classKey:'class-a',className:'Class A',layout:E.starter(count),roster:Array.from({length:count},(_,i)=>'Student '+i),assignments:{},priorityStudents:[],prioritySeats:[],lockedStudents:[],lockedGroups:[]});
 }
 function assign(chart){chart.assignments=E.randomize(chart,random).assignments;return chart;}
+
+test('together groups vary their table across constrained fills and randomizations',()=>{
+  for(const mode of ['all','alpha-first','alpha-last','randomize']){
+    const c=make(12),[a,b,d]=c.roster,rules={togetherRaw:[[a,b]],apartPairs:[[a,d]]},locations=new Set();
+    for(let seed=1;seed<=32;seed++){
+      let value=seed;const seeded=n=>{value=(Math.imul(value,1664525)+1013904223)>>>0;return value%n;};
+      const result=E.randomize(c,seeded,mode,[],rules,{randomSeatLocations:mode==='randomize'});
+      assert(!result.error,result.error);assert.equal(result.unseated.length,0);
+      assert.deepEqual(E.ruleWarnings({...c,assignments:result.assignments},rules),[]);
+      const seat=E.seats(c.layout).find(s=>result.assignments[s.id]===a);locations.add(seat.tableId);
+    }
+    assert(locations.size>1,mode+' should vary the together group location');
+  }
+});
+
+test('constrained partial fills still prefer available front tables',()=>{
+  const c=make(12);c.roster=c.roster.slice(0,2);const rules={togetherRaw:[c.roster],apartPairs:[]};
+  const seats=E.seats(c.layout),frontTable=seats.slice().sort((a,b)=>a.y-b.y||a.x-b.x)[0].tableId;
+  for(const mode of ['all','alpha-first','alpha-last']){
+    const result=E.randomize(c,n=>n-1,mode,[],rules);assert(!result.error,result.error);
+    assert(seats.filter(s=>result.assignments[s.id]).every(s=>s.tableId===frontTable));
+  }
+});
 test('randomization seats each student once and fills priority seats first',()=>{
   for(let i=0;i<40;i++){
     const c=make(),slots=E.seats(c.layout);c.priorityStudents=c.roster.slice(0,2);c.prioritySeats=slots.slice(-2).map(s=>s.id);
